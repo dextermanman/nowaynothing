@@ -273,8 +273,12 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
 
   <div class="panel ranking-panel" id="addPanel">
     <h2>🔎 실시간 검색으로 명소 추가</h2>
-    <p class="hint">네이버 지역검색 API로 실시간 조회 → 마음에 들면 커뮤니티 DB에 바로 추가돼요 (모두에게 공유됩니다)</p>
+    <p class="hint">네이버 지역검색·블로그 후기 API로 실시간 조회 → 마음에 들면 커뮤니티 DB에 바로 추가돼요 (모두에게 공유됩니다)</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <select id="addSearchType" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;">
+        <option value="local">📍 장소 검색</option>
+        <option value="blog">✍️ 블로그 후기 검색</option>
+      </select>
       <select id="addCity" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
       <select id="addTheme" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
       <input id="addQuery" type="text" placeholder="검색어 (예: 동탄 스타벅스, 화성 맛집)" style="flex:1;min-width:180px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
@@ -1081,14 +1085,30 @@ function populateAddPanelDropdowns(){
 
 async function searchAndAdd(){
   const query = document.getElementById('addQuery').value.trim();
+  const searchType = document.getElementById('addSearchType').value; // 'local' | 'blog'
   const resultsBox = document.getElementById('addResults');
   if(!query){ resultsBox.innerHTML = '<div class="empty">검색어를 입력해주세요.</div>'; return; }
   resultsBox.innerHTML = '<div class="empty">검색 중…</div>';
   try{
-    const res = await fetch(`/api/naver-search?query=${encodeURIComponent(query)}`);
+    const res = await fetch(`/api/naver-search?query=${encodeURIComponent(query)}&type=${searchType}`);
     const data = await res.json();
     if(data.error){ resultsBox.innerHTML = `<div class="empty">오류: ${escapeHtml(data.error)}</div>`; return; }
     if(!data.items || data.items.length === 0){ resultsBox.innerHTML = '<div class="empty">검색 결과가 없어요.</div>'; return; }
+
+    if(searchType === 'blog'){
+      // 블로그 후기는 정보 열람용 (커뮤니티 DB 추가 대상 아님, 원문 링크로 연결)
+      resultsBox.innerHTML = data.items.map(item=>{
+        const dateFmt = item.date && item.date.length===8 ? `${item.date.slice(0,4)}.${item.date.slice(4,6)}.${item.date.slice(6,8)}` : '';
+        return `
+        <div class="card" style="margin-bottom:10px;">
+          <p class="card-name">${escapeHtml(item.title)}</p>
+          <p class="card-meta" style="margin:4px 0 8px;">${escapeHtml(item.blogger || '')} ${dateFmt ? '· '+dateFmt : ''}</p>
+          <p class="hint" style="margin-bottom:8px;">${escapeHtml(item.description)}</p>
+          <a href="${item.link}" target="_blank" rel="noopener" class="btn-mini" style="display:inline-block;text-decoration:none;">원문 보기 →</a>
+        </div>`;
+      }).join('');
+      return;
+    }
 
     resultsBox.innerHTML = data.items.map((item, idx)=>`
       <div class="card" style="margin-bottom:10px;">
