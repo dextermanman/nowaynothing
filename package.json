@@ -1,0 +1,9 @@
+{
+  "name": "korea-spots-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "지역별 나들이 명소 커뮤니티 대시보드 (Vercel + Supabase + 네이버 지역검색 API)",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
