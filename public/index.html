@@ -261,6 +261,7 @@ const THEMES = {
   activity: {label:'액티비티',    color:'#2dd4bf'},
   night:    {label:'쇼핑·야경',   color:'#9b8cf2'},
   family:   {label:'키즈·풀빌라', color:'#ec7fb0'},
+  public:   {label:'공공기관',    color:'#7fb3ec'},
 };
 
 const REGIONS = [
@@ -655,6 +656,10 @@ const SEED_SPOTS = [
   {id:'yeongildaesand', city:'pohang', name:'포항 영일대 모래놀이터', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:39},
   {id:'busankidsgrandpark', city:'busan', name:'부산어린이대공원', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'1.2만', popularity:57},
   {id:'sokchoexpopark', city:'sokcho', name:'속초 엑스포공원 놀이터', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'4천', popularity:44},
+
+  // 공공기관(국가·지자체 운영시설)
+  {id:'hwaseongchildcenter', city:'hwaseong', name:'화성시어린이문화센터', theme:'public', weekday:true, weekend:true, rating:4.5, reviews:'1.3만', popularity:62},
+  {id:'seoulchildmuseum', city:'seoul', name:'서울상상나라(어린이대공원 내)', theme:'public', weekday:true, weekend:true, rating:4.5, reviews:'2.1만', popularity:70},
 ];
 
 /* ---------------- Supabase 설정 ---------------- */
@@ -700,6 +705,7 @@ function getTags(spot){
     activity: ['#액티비티', '#체험코스'],
     night:    ['#야경맛집', '#인생샷'],
     family:   ['#아이랑가기좋은', '#키즈스팟'],
+    public:   ['#국가운영', '#무료입장가능'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
