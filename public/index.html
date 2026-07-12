@@ -59,6 +59,34 @@ html[data-theme="light"] body{
 html[data-theme="light"] .badge.source-bbcs{ background:#23262b; color:#fff; border-color:#23262b; }
 html[data-theme="light"] .region-label{ fill:#1a1a1a; }
 html[data-theme="light"] .mode-toggle button.active{ color:#fff; }
+
+html[data-theme="cute"]{
+  --bg: #fff3f8;
+  --bg-panel: #ffffff;
+  --bg-card: #fffafc;
+  --bg-sunken: #ffe9f2;
+  --line: #ffd3e6;
+  --ink: #5c3d52;
+  --ink-dim: #a687a0;
+  --heading: #ff6fa8;
+  --route: #4fc8bd;
+  --route-glow: #4fc8bd66;
+  --amber: #ffb648;
+  --red: #ff6f91;
+  --jade: #59cf94;
+  --violet: #b18aff;
+  --gold: #ffce54;
+}
+html[data-theme="cute"] body{
+  background: radial-gradient(ellipse at 20% 0%, #fff9fb 0%, var(--bg) 60%);
+}
+html[data-theme="cute"] h1{ font-family:'Black Han Sans',sans-serif; text-shadow: 2px 2px 0 #ffd3e6; }
+html[data-theme="cute"] .panel,
+html[data-theme="cute"] .card{ border-radius:20px; }
+html[data-theme="cute"] .region-tile{ rx:18; }
+html[data-theme="cute"] .btn-mini, html[data-theme="cute"] .chip, html[data-theme="cute"] .hashtag{ border-radius:14px; }
+html[data-theme="cute"] .badge.source-bbcs{ background:#5c3d52; color:#fff; border-color:#5c3d52; }
+html[data-theme="cute"] .mode-toggle button.active{ color:#fff; }
 ::-webkit-scrollbar{width:8px;height:8px;}
 ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
 
@@ -302,21 +330,26 @@ window.addEventListener('error', function(e){
   document.body.appendChild(box);
 });
 
-/* ---------------- 다크/라이트 모드 ---------------- */
+/* ---------------- 다크/라이트/큐티 모드 ---------------- */
+const THEME_ORDER = ['dark', 'light', 'cute'];
+const THEME_ICON = { dark:'🌙', light:'☀️', cute:'🌸' };
 function applyTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
   const btn = document.getElementById('themeToggle');
-  if(btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+  if(btn) btn.textContent = THEME_ICON[theme] || '🌙';
   try{ localStorage.setItem('spot-radar-theme', theme); }catch(e){}
 }
 (function initTheme(){
   let saved = 'dark';
   try{ saved = localStorage.getItem('spot-radar-theme') || 'dark'; }catch(e){}
+  if(!THEME_ORDER.includes(saved)) saved = 'dark';
   applyTheme(saved);
 })();
 document.getElementById('themeToggle')?.addEventListener('click', ()=>{
-  const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-  applyTheme(current === 'light' ? 'dark' : 'light');
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  const idx = THEME_ORDER.indexOf(current);
+  const next = THEME_ORDER[(idx + 1) % THEME_ORDER.length];
+  applyTheme(next);
 });
 
 /* ---------------- 데이터 ---------------- */
