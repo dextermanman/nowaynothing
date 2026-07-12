@@ -137,6 +137,9 @@ h1{
 
 .card-meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ink-dim);font-family:'JetBrains Mono';margin-top:2px;}
 
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
+.hashtag{font-size:10.5px;color:#8b9bb4;background:#0f1725;border:1px solid var(--line);border-radius:6px;padding:3px 7px;font-family:'JetBrains Mono';}
+
 .card-actions{display:flex;gap:6px;margin-top:12px;}
 .btn-mini{
   flex:1;border:1px solid var(--line);background:#0f1725;color:var(--ink);
@@ -209,6 +212,22 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
     <canvas id="rankChart"></canvas>
   </div>
 
+  <div class="panel ranking-panel" id="pediatricPanel" style="border-color:#e0554a55;">
+    <h2>🏥 우리 아이 소아과, 지금 문 연 곳 찾기</h2>
+    <p class="hint">병원 영업시간은 이 대시보드 데이터가 아니라, 실시간으로 정확한 정부 공식 서비스로 바로 연결해드려요 (점심시간·휴진·야간진료 변동이 잦아 고정 정보로 넣으면 위험해요)</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <a href="https://www.e-gen.or.kr" target="_blank" rel="noopener" class="btn-mini" style="flex:1;min-width:200px;text-align:center;text-decoration:none;padding:14px;">
+        🔎 응급의료포털 e-gen<br><span style="font-size:10px;color:var(--ink-dim);">지금 문 연 병원·약국 실시간 검색</span>
+      </a>
+      <a href="https://www.e-gen.or.kr/moonlight/main.do" target="_blank" rel="noopener" class="btn-mini" style="flex:1;min-width:200px;text-align:center;text-decoration:none;padding:14px;">
+        🌙 달빛어린이병원<br><span style="font-size:10px;color:var(--ink-dim);">평일 야간·주말·공휴일 소아 전담 병원</span>
+      </a>
+      <a href="https://icaretok.nemc.or.kr" target="_blank" rel="noopener" class="btn-mini" style="flex:1;min-width:200px;text-align:center;text-decoration:none;padding:14px;">
+        💬 아이안심톡<br><span style="font-size:10px;color:var(--ink-dim);">소아 응급 의료진 24시간 온라인 상담</span>
+      </a>
+    </div>
+  </div>
+
   <div class="panel ranking-panel" id="addPanel">
     <h2>🔎 실시간 검색으로 명소 추가</h2>
     <p class="hint">네이버 지역검색 API로 실시간 조회 → 마음에 들면 커뮤니티 DB에 바로 추가돼요 (모두에게 공유됩니다)</p>
@@ -241,6 +260,7 @@ const THEMES = {
   food:     {label:'맛집',        color:'#e0554a'},
   activity: {label:'액티비티',    color:'#2dd4bf'},
   night:    {label:'쇼핑·야경',   color:'#9b8cf2'},
+  family:   {label:'키즈·풀빌라', color:'#ec7fb0'},
 };
 
 const REGIONS = [
@@ -278,6 +298,7 @@ const CITIES = {
     { id:'anyang', name:'안양' },
     { id:'paju', name:'파주' },
     { id:'ansan', name:'안산' },
+    { id:'gapyeong', name:'가평' },
   ],
   gangwon: [
     { id:'gangneung', name:'강릉' },
@@ -589,6 +610,51 @@ const SEED_SPOTS = [
   {id:'namgangyudeung', city:'jinju', name:'진주 남강유등축제거리', theme:'night', weekday:true, weekend:true, rating:4.5, reviews:'1.2만', popularity:60},
   {id:'jinjumarket', city:'jinju', name:'진주중앙시장', theme:'food', weekday:true, weekend:true, rating:4.2, reviews:'5천', popularity:46},
   {id:'namgangwalk', city:'jinju', name:'진주 남강변 산책로', theme:'nature', weekday:true, weekend:true, rating:4.3, reviews:'4천', popularity:41},
+
+  // 가평 (풀빌라·자연휴양 핵심지역)
+  {id:'jarasum', city:'gapyeong', name:'자라섬', theme:'nature', weekday:true, weekend:true, rating:4.5, reviews:'2.2만', popularity:74},
+  {id:'gapyeongpoolvilla', city:'gapyeong', name:'가평·청평 풀빌라촌', theme:'family', weekday:true, weekend:true, rating:4.4, reviews:'1.8만', popularity:69},
+  {id:'petitefrance', city:'gapyeong', name:'쁘띠프랑스', theme:'culture', weekday:true, weekend:true, rating:4.3, reviews:'3.1만', popularity:72},
+  {id:'gapyeongchicken', city:'gapyeong', name:'가평 닭갈비거리', theme:'food', weekday:true, weekend:true, rating:4.3, reviews:'9천', popularity:56},
+  {id:'railbike', city:'gapyeong', name:'강촌 레일바이크', theme:'activity', weekday:true, weekend:true, rating:4.4, reviews:'1.4만', popularity:63},
+
+  // 키즈·풀빌라 테마 (전국)
+  {id:'childrengrandpark', city:'seoul', name:'서울 어린이대공원', theme:'family', weekday:true, weekend:true, rating:4.4, reviews:'2.6만', popularity:75},
+  {id:'seoulkidscafe', city:'seoul', name:'서울형 키즈카페(권역별 예약)', theme:'family', weekday:true, weekend:false, rating:4.3, reviews:'5천', popularity:50},
+  {id:'onemount', city:'goyang', name:'원마운트 워터파크·스노우파크', theme:'family', weekday:true, weekend:true, rating:4.4, reviews:'2.4만', popularity:73},
+  {id:'kidsfantasia', city:'bucheon', name:'국제키즈판타지아', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'6천', popularity:55},
+  {id:'gwanggyowaterpark', city:'suwon', name:'광교호수공원 어린이 물놀이터', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'5천', popularity:52},
+  {id:'yuldongpark', city:'seongnam', name:'분당 율동공원 놀이터', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'4천', popularity:47},
+  {id:'seamarkwater', city:'gangneung', name:'강릉 씨마크 워터파크', theme:'family', weekday:true, weekend:true, rating:4.4, reviews:'6천', popularity:58},
+  {id:'animationmuseum', city:'chuncheon', name:'춘천 애니메이션박물관·토이로봇관', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'7천', popularity:54},
+  {id:'ponyfarm', city:'jejucity', name:'제주 조랑말체험공원', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'1.1만', popularity:56},
+  {id:'shinhwaworld', city:'seogwipo', name:'제주 신화월드 키즈파크·워터파크', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'1.9만', popularity:67},
+
+  // 키즈·가족동반 2차 확장 (미보유 도시 위주)
+  {id:'sohaepoguport', city:'incheon', name:'소래포구 젓갈시장', theme:'food', weekday:true, weekend:true, rating:4.2, reviews:'2.2만', popularity:65},
+  {id:'incheonparkcamp', city:'incheon', name:'인천대공원 가족캠핑장', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'6천', popularity:50},
+  {id:'hanokvillageplay', city:'yongin', name:'한국민속촌 전통놀이체험마당', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'9천', popularity:55},
+  {id:'hwaseongmudflat', city:'hwaseong', name:'화성 갯벌체험마을(뻘밭)', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'4천', popularity:44},
+  {id:'anyangwaterplay', city:'anyang', name:'안양예술공원 물놀이장', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:38},
+  {id:'majanglake', city:'paju', name:'파주 마장호수 출렁다리', theme:'family', weekday:true, weekend:true, rating:4.4, reviews:'1.5만', popularity:62},
+  {id:'hwarangwaterplay', city:'ansan', name:'화랑유원지 물놀이장', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:39},
+  {id:'sparvis', city:'asan', name:'아산 스파비스 워터파크', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'1.6만', popularity:64},
+  {id:'gyeryongforest', city:'daejeon', name:'계룡산 자연휴양림 가족동', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'5천', popularity:47},
+  {id:'jochiwonberry', city:'sejong', name:'조치원 딸기체험농장', theme:'family', weekday:true, weekend:false, rating:4.2, reviews:'2천', popularity:34},
+  {id:'mirforest', city:'cheongju', name:'청주 미르숲 유아체험원', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'3천', popularity:40},
+  {id:'sorikids', city:'jeonju', name:'한국소리문화의전당 어린이체험관', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'4천', popularity:42},
+  {id:'seonyudocamp', city:'gunsan', name:'선유도 해수욕장 가족캠핑장', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'6천', popularity:50},
+  {id:'suncheonwetlandkids', city:'suncheon', name:'순천만 갈대숲 어린이 생태체험', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'5천', popularity:48},
+  {id:'gwangjufamilyland', city:'gwangjucity', name:'광주 패밀리랜드', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'1.0만', popularity:56},
+  {id:'suseongmot', city:'daegu', name:'대구 수성못 오리보트 가족나들이', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'8천', popularity:53},
+  {id:'ulsanparkrose', city:'ulsan', name:'울산대공원 장미원 놀이터', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'6천', popularity:49},
+  {id:'sangnamwater', city:'changwon', name:'창원 상남분수광장 물놀이', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:37},
+  {id:'jinyangzoo', city:'jinju', name:'진양호 가족동물원', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'5천', popularity:45},
+  {id:'yisunsinparkplay', city:'tongyeong', name:'통영 이순신공원 놀이터', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'2천', popularity:36},
+  {id:'bomunpension', city:'gyeongju', name:'경주 보문단지 패밀리 펜션촌', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'7천', popularity:51},
+  {id:'yeongildaesand', city:'pohang', name:'포항 영일대 모래놀이터', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:39},
+  {id:'busankidsgrandpark', city:'busan', name:'부산어린이대공원', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'1.2만', popularity:57},
+  {id:'sokchoexpopark', city:'sokcho', name:'속초 엑스포공원 놀이터', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'4천', popularity:44},
 ];
 
 /* ---------------- Supabase 설정 ---------------- */
@@ -623,6 +689,26 @@ async function loadCommunitySpots(){
   }catch(e){
     console.warn('커뮤니티 명소 로드 오류', e);
   }
+}
+
+// 테마·인기도·배지 기반으로 인스타 감성 해시태그를 자동 생성 (일일이 손으로 안 달아도 됨)
+function getTags(spot){
+  const base = {
+    nature:   ['#자연', '#힐링스팟'],
+    culture:  ['#전통', '#역사탐방'],
+    food:     ['#맛집', '#인스타맛집'],
+    activity: ['#액티비티', '#체험코스'],
+    night:    ['#야경맛집', '#인생샷'],
+    family:   ['#아이랑가기좋은', '#키즈스팟'],
+  };
+  const tags = [...(base[spot.theme] || [])];
+  if (spot.popularity >= 85) tags.push('#핫플레이스');
+  if (spot.weekend && !spot.weekday) tags.push('#주말한정');
+  else if (spot.weekend) tags.push('#주말나들이');
+  if (spot.weekday && !spot.weekend) tags.push('#평일한적');
+  if (spot.badge === 'jyj') tags.push('#정용진픽');
+  if (spot.badge === 'bbcs') tags.push('#흑백요리사');
+  return tags;
 }
 
 /* ---------------- 상태 ---------------- */
@@ -744,6 +830,7 @@ async function renderCards(){
         <span>★ ${s.rating}</span>
         <span>리뷰 ${s.reviews}</span>
       </div>
+      <div class="tag-row">${getTags(s).map(t=>`<span class="hashtag">${t}</span>`).join('')}</div>
       <div class="card-actions">
         <button class="btn-mini" data-checkin="${s.id}">✅ 다녀왔어요 (<span class="checkin-count" data-count="${s.id}">-</span>)</button>
         <button class="btn-mini" data-toggle="${s.id}">💬 후기 보기</button>
