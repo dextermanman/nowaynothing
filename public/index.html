@@ -191,7 +191,7 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
     <div class="panel">
       <h2>지역 선택</h2>
       <p class="hint">간략화된 스키매틱 맵 (실제 좌표 아님, 위치감만 참고)</p>
-      <svg id="map-svg" viewBox="0 0 320 420"></svg>
+      <svg id="map-svg" viewBox="0 0 320 470"></svg>
       <div class="legend" id="legend"></div>
     </div>
 
@@ -244,18 +244,31 @@ const THEMES = {
 };
 
 const REGIONS = [
-  { id:'capital', name:'수도권', sub:'서울·인천·경기', x:70,  y:40,  w:110, h:80, color:'#2dd4bf' },
-  { id:'gangwon', name:'강원',   sub:'강릉·속초·춘천', x:200, y:20,  w:100, h:100, color:'#4fae7a' },
-  { id:'chung',   name:'충청',   sub:'대전·청주·세종·천안', x:80,  y:150, w:110, h:80, color:'#e8c766' },
-  { id:'jeolla',  name:'전라',   sub:'전주·여수·군산·순천', x:40,  y:250, w:110, h:100, color:'#e0554a' },
-  { id:'gyeong',  name:'경상',   sub:'부산·대구·경주·포항', x:190, y:230, w:120, h:110, color:'#9b8cf2' },
-  { id:'jeju',    name:'제주',   sub:'제주시·서귀포', x:90, y:360, w:130, h:50, color:'#f2a65a' },
+  { id:'incheon',  name:'인천', sub:'인천', x:10,  y:15,  w:85,  h:55,  color:'#2dd4bf' },
+  { id:'seoul',    name:'서울', sub:'서울', x:105, y:15,  w:85,  h:55,  color:'#e0554a' },
+  { id:'gangwon',  name:'강원', sub:'강릉·속초·춘천', x:200, y:15,  w:110, h:120, color:'#4fae7a' },
+  { id:'gyeonggi', name:'경기', sub:'수원·고양·성남 외', x:10,  y:80,  w:180, h:55,  color:'#9b8cf2' },
+  { id:'chungnam', name:'충남', sub:'천안·아산', x:10,  y:145, w:85,  h:55,  color:'#e8c766' },
+  { id:'daejeonsejong', name:'대전·세종', sub:'대전·세종', x:105, y:145, w:85, h:55, color:'#f2a65a' },
+  { id:'chungbuk', name:'충북', sub:'청주', x:200, y:145, w:110, h:55,  color:'#e8c766' },
+  { id:'jeonbuk',  name:'전북', sub:'전주·군산', x:10,  y:210, w:110, h:55, color:'#e0554a' },
+  { id:'gyeongbuk',name:'경북', sub:'경주·포항', x:130, y:210, w:180, h:55, color:'#9b8cf2' },
+  { id:'gwangjujeonnam', name:'광주·전남', sub:'광주·여수·순천', x:10, y:275, w:110, h:115, color:'#4fae7a' },
+  { id:'daegu',    name:'대구', sub:'대구', x:130, y:275, w:85,  h:55,  color:'#2dd4bf' },
+  { id:'ulsan',    name:'울산', sub:'울산', x:225, y:275, w:85,  h:55,  color:'#f2a65a' },
+  { id:'gyeongnam',name:'경남', sub:'통영·창원·진주', x:130, y:340, w:110, h:50, color:'#e0554a' },
+  { id:'busan',    name:'부산', sub:'부산', x:250, y:340, w:60,  h:50,  color:'#2dd4bf' },
+  { id:'jeju',     name:'제주', sub:'제주시·서귀포', x:10,  y:400, w:300, h:55, color:'#f2a65a' },
 ];
 
 const CITIES = {
-  capital: [
-    { id:'seoul', name:'서울' },
+  incheon: [
     { id:'incheon', name:'인천' },
+  ],
+  seoul: [
+    { id:'seoul', name:'서울' },
+  ],
+  gyeonggi: [
     { id:'suwon', name:'수원' },
     { id:'goyang', name:'고양' },
     { id:'seongnam', name:'성남' },
@@ -271,24 +284,43 @@ const CITIES = {
     { id:'sokcho', name:'속초' },
     { id:'chuncheon', name:'춘천' },
   ],
-  chung: [
-    { id:'daejeon', name:'대전' },
-    { id:'cheongju', name:'청주' },
-    { id:'sejong', name:'세종' },
+  chungnam: [
     { id:'cheonan', name:'천안' },
+    { id:'asan', name:'아산' },
   ],
-  jeolla: [
+  daejeonsejong: [
+    { id:'daejeon', name:'대전' },
+    { id:'sejong', name:'세종' },
+  ],
+  chungbuk: [
+    { id:'cheongju', name:'청주' },
+  ],
+  jeonbuk: [
     { id:'jeonju', name:'전주' },
-    { id:'yeosu', name:'여수' },
     { id:'gunsan', name:'군산' },
+  ],
+  gyeongbuk: [
+    { id:'gyeongju', name:'경주' },
+    { id:'pohang', name:'포항' },
+  ],
+  gwangjujeonnam: [
+    { id:'gwangjucity', name:'광주' },
+    { id:'yeosu', name:'여수' },
     { id:'suncheon', name:'순천' },
   ],
-  gyeong: [
-    { id:'busan', name:'부산' },
-    { id:'gyeongju', name:'경주' },
+  daegu: [
     { id:'daegu', name:'대구' },
-    { id:'pohang', name:'포항' },
+  ],
+  ulsan: [
+    { id:'ulsan', name:'울산' },
+  ],
+  gyeongnam: [
     { id:'tongyeong', name:'통영' },
+    { id:'changwon', name:'창원' },
+    { id:'jinju', name:'진주' },
+  ],
+  busan: [
+    { id:'busan', name:'부산' },
   ],
   jeju: [
     { id:'jejucity', name:'제주시' },
@@ -527,6 +559,36 @@ const SEED_SPOTS = [
   {id:'ommabapsang', city:'daegu', name:'팔공산 엄마밥상(칠곡)', theme:'food', weekday:true, weekend:true, rating:4.3, reviews:'3천', popularity:45, badge:'bbcs'},
   {id:'oneulsushi', city:'suwon', name:'오늘의초밥', theme:'food', weekday:true, weekend:true, rating:4.4, reviews:'6천', popularity:55, badge:'bbcs'},
   {id:'neomeunbom', city:'jejucity', name:'넘은 봄', theme:'food', weekday:true, weekend:true, rating:4.3, reviews:'2천', popularity:42, badge:'bbcs'},
+
+  // 아산 (온양온천)
+  {id:'hyeonchungsa', city:'asan', name:'현충사', theme:'culture', weekday:true, weekend:true, rating:4.5, reviews:'1.2만', popularity:56},
+  {id:'sinjeongho', city:'asan', name:'신정호수공원', theme:'nature', weekday:true, weekend:true, rating:4.3, reviews:'8천', popularity:52},
+  {id:'onyangmarket', city:'asan', name:'온양전통시장', theme:'food', weekday:true, weekend:true, rating:4.1, reviews:'4천', popularity:41},
+  {id:'onyangspa', city:'asan', name:'온양온천 스파', theme:'activity', weekday:true, weekend:true, rating:4.2, reviews:'6천', popularity:47},
+
+  // 광주
+  {id:'actcenter', city:'gwangjucity', name:'국립아시아문화전당(ACC)', theme:'culture', weekday:true, weekend:true, rating:4.5, reviews:'2.3만', popularity:73},
+  {id:'mudeungsan', city:'gwangjucity', name:'무등산 국립공원', theme:'nature', weekday:true, weekend:true, rating:4.6, reviews:'1.8만', popularity:70},
+  {id:'songjeongmarket', city:'gwangjucity', name:'1913송정역시장', theme:'food', weekday:true, weekend:true, rating:4.4, reviews:'1.5만', popularity:66},
+  {id:'chungjangro', city:'gwangjucity', name:'충장로 쇼핑거리', theme:'night', weekday:true, weekend:true, rating:4.2, reviews:'9천', popularity:58},
+
+  // 울산
+  {id:'taehwariver', city:'ulsan', name:'태화강 국가정원', theme:'nature', weekday:true, weekend:true, rating:4.6, reviews:'2.0만', popularity:71},
+  {id:'daewangam', city:'ulsan', name:'대왕암공원', theme:'culture', weekday:true, weekend:true, rating:4.5, reviews:'1.3만', popularity:63},
+  {id:'ganjeoljot', city:'ulsan', name:'간절곶', theme:'activity', weekday:true, weekend:true, rating:4.4, reviews:'9천', popularity:57},
+  {id:'sinjeongmarket', city:'ulsan', name:'울산 신정시장', theme:'food', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:39},
+
+  // 창원
+  {id:'yeojwacheon', city:'changwon', name:'진해 여좌천(벚꽃길)', theme:'nature', weekday:true, weekend:true, rating:4.5, reviews:'1.7만', popularity:67},
+  {id:'masanmarket', city:'changwon', name:'마산 어시장', theme:'food', weekday:true, weekend:true, rating:4.3, reviews:'1.1만', popularity:59},
+  {id:'seongsanart', city:'changwon', name:'성산아트홀', theme:'culture', weekday:true, weekend:true, rating:4.2, reviews:'3천', popularity:38},
+  {id:'sangnamst', city:'changwon', name:'상남동 먹자골목 야경', theme:'night', weekday:true, weekend:true, rating:4.2, reviews:'5천', popularity:45},
+
+  // 진주
+  {id:'jinjuseong', city:'jinju', name:'진주성', theme:'culture', weekday:true, weekend:true, rating:4.6, reviews:'1.6만', popularity:65},
+  {id:'namgangyudeung', city:'jinju', name:'진주 남강유등축제거리', theme:'night', weekday:true, weekend:true, rating:4.5, reviews:'1.2만', popularity:60},
+  {id:'jinjumarket', city:'jinju', name:'진주중앙시장', theme:'food', weekday:true, weekend:true, rating:4.2, reviews:'5천', popularity:46},
+  {id:'namgangwalk', city:'jinju', name:'진주 남강변 산책로', theme:'nature', weekday:true, weekend:true, rating:4.3, reviews:'4천', popularity:41},
 ];
 
 /* ---------------- Supabase 설정 ---------------- */
