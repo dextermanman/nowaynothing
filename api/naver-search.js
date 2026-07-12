@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   // 다른 도메인에서 이 API를 함부로 가져다 쓰지 못하게 최소한의 보호
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  const { query } = req.query;
+  const { query, type } = req.query; // type: 'local'(기본, 장소) | 'blog'(블로그 후기)
   if (!query || query.trim().length === 0) {
     return res.status(400).json({ error: 'query 파라미터가 필요합니다. 예: /api/naver-search?query=동탄 맛집' });
   }
@@ -22,7 +22,34 @@ export default async function handler(req, res) {
     });
   }
 
+  const clean = (str) => (str || '').replace(/<[^>]+>/g, '');
+
   try {
+    if (type === 'blog') {
+      // 네이버 블로그 검색 API (같은 키 재사용)
+      const url = `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(query)}&display=10&sort=sim`;
+      const naverRes = await fetch(url, {
+        headers: {
+          'X-Naver-Client-Id': clientId,
+          'X-Naver-Client-Secret': clientSecret,
+        },
+      });
+      if (!naverRes.ok) {
+        const errText = await naverRes.text();
+        return res.status(naverRes.status).json({ error: '네이버 블로그 API 오류', detail: errText });
+      }
+      const data = await naverRes.json();
+      const items = (data.items || []).map((item) => ({
+        title: clean(item.title),
+        description: clean(item.description),
+        blogger: item.bloggername,
+        date: item.postdate, // YYYYMMDD
+        link: item.link,
+      }));
+      return res.status(200).json({ query, type: 'blog', items });
+    }
+
+    // 기본: 네이버 지역검색 API (장소)
     const url = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=10&sort=comment`;
     const naverRes = await fetch(url, {
       headers: {
@@ -37,10 +64,6 @@ export default async function handler(req, res) {
     }
 
     const data = await naverRes.json();
-
-    // 네이버가 <b> 태그로 강조 표시를 넣어주는데, 프론트에서 쓰기 편하게 제거
-    const clean = (str) => (str || '').replace(/<[^>]+>/g, '');
-
     const items = (data.items || []).map((item) => ({
       name: clean(item.title),
       category: item.category,
@@ -49,7 +72,7 @@ export default async function handler(req, res) {
       link: item.link,
     }));
 
-    return res.status(200).json({ query, items });
+    return res.status(200).json({ query, type: 'local', items });
   } catch (err) {
     return res.status(500).json({ error: '서버 오류', detail: String(err) });
   }
