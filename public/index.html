@@ -212,6 +212,21 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
     <canvas id="rankChart"></canvas>
   </div>
 
+  <div class="panel ranking-panel" id="govDataPanel" style="border-color:#7fb3ec55;">
+    <h2>🇰🇷 나라 데이터로 전국 어디든 검색 (공공데이터포털)</h2>
+    <p class="hint">시드 데이터에 없는 시·군·구도 전부 조회돼요. 소아과는 국립중앙의료원 데이터라 요일별 진료시간까지 나옵니다 (단, 신고 기준이라 방문 전 전화 확인 필수!)</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <select id="govType" style="background:#0f1725;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;">
+        <option value="hospital">🏥 소아과 병원 (진료시간 포함)</option>
+        <option value="museum">🏛️ 박물관·미술관</option>
+      </select>
+      <select id="govSido" style="background:#0f1725;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
+      <input id="govSigungu" type="text" placeholder="시군구 (예: 화성시, 아산시 — 비워도 됨)" style="flex:1;min-width:180px;background:#0f1725;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
+      <button id="govSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
+    </div>
+    <div id="govResults"></div>
+  </div>
+
   <div class="panel ranking-panel" id="pediatricPanel" style="border-color:#e0554a55;">
     <h2>🏥 우리 아이 소아과, 지금 문 연 곳 찾기</h2>
     <p class="hint">병원 영업시간은 이 대시보드 데이터가 아니라, 실시간으로 정확한 정부 공식 서비스로 바로 연결해드려요 (점심시간·휴진·야간진료 변동이 잦아 고정 정보로 넣으면 위험해요)</p>
@@ -262,6 +277,7 @@ const THEMES = {
   night:    {label:'쇼핑·야경',   color:'#9b8cf2'},
   family:   {label:'키즈·풀빌라', color:'#ec7fb0'},
   public:   {label:'공공기관',    color:'#7fb3ec'},
+  museum:   {label:'박물관·과학관', color:'#c98fdb'},
 };
 
 const REGIONS = [
@@ -660,6 +676,16 @@ const SEED_SPOTS = [
   // 공공기관(국가·지자체 운영시설)
   {id:'hwaseongchildcenter', city:'hwaseong', name:'화성시어린이문화센터', theme:'public', weekday:true, weekend:true, rating:4.5, reviews:'1.3만', popularity:62},
   {id:'seoulchildmuseum', city:'seoul', name:'서울상상나라(어린이대공원 내)', theme:'public', weekday:true, weekend:true, rating:4.5, reviews:'2.1만', popularity:70},
+
+  // 박물관·과학관 (아이와 가기 좋은 국공립 위주)
+  {id:'natmuseumkids', city:'seoul', name:'국립중앙박물관 어린이박물관', theme:'museum', weekday:true, weekend:true, rating:4.6, reviews:'1.8만', popularity:72},
+  {id:'natsciencemuseum', city:'daejeon', name:'국립중앙과학관', theme:'museum', weekday:true, weekend:true, rating:4.5, reviews:'2.0만', popularity:71},
+  {id:'busansciencemuseum', city:'busan', name:'국립부산과학관', theme:'museum', weekday:true, weekend:true, rating:4.5, reviews:'1.4만', popularity:66},
+  {id:'gwangjusciencemuseum', city:'gwangjucity', name:'국립광주과학관', theme:'museum', weekday:true, weekend:true, rating:4.5, reviews:'9천', popularity:60},
+  {id:'gyeongjumuseum', city:'gyeongju', name:'국립경주박물관(어린이박물관)', theme:'museum', weekday:true, weekend:true, rating:4.6, reviews:'1.2만', popularity:64},
+  {id:'jeonjumuseum', city:'jeonju', name:'국립전주박물관', theme:'museum', weekday:true, weekend:true, rating:4.4, reviews:'6천', popularity:52},
+  {id:'chuncheonmuseum', city:'chuncheon', name:'국립춘천박물관', theme:'museum', weekday:true, weekend:true, rating:4.4, reviews:'5천', popularity:48},
+  {id:'jejufolkmuseum', city:'jejucity', name:'제주민속자연사박물관', theme:'museum', weekday:true, weekend:true, rating:4.4, reviews:'8천', popularity:55},
 ];
 
 /* ---------------- Supabase 설정 ---------------- */
@@ -706,6 +732,7 @@ function getTags(spot){
     night:    ['#야경맛집', '#인생샷'],
     family:   ['#아이랑가기좋은', '#키즈스팟'],
     public:   ['#국가운영', '#무료입장가능'],
+    museum:   ['#아이랑박물관', '#체험학습'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -1071,6 +1098,67 @@ try{
 }catch(e){
   console.warn('실시간 검색 패널 초기화 실패', e);
 }
+
+/* ---------------- 공공데이터 검색 (소아과 병원 · 박물관) ---------------- */
+const SIDO_LIST = ['서울특별시','부산광역시','대구광역시','인천광역시','광주광역시','대전광역시','울산광역시','세종특별자치시','경기도','강원특별자치도','충청북도','충청남도','전북특별자치도','전라남도','경상북도','경상남도','제주특별자치도'];
+
+function initGovPanel(){
+  const sidoSelect = document.getElementById('govSido');
+  if(!sidoSelect) return;
+  sidoSelect.innerHTML = SIDO_LIST.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sidoSelect.value = '경기도';
+  document.getElementById('govSearchBtn')?.addEventListener('click', searchGovData);
+}
+
+async function searchGovData(){
+  const type = document.getElementById('govType').value;
+  const sido = document.getElementById('govSido').value;
+  const sigungu = document.getElementById('govSigungu').value.trim();
+  const box = document.getElementById('govResults');
+  box.innerHTML = '<div class="empty">국가 데이터 조회 중…</div>';
+
+  const endpoint = type === 'hospital' ? '/api/hospital-search' : '/api/museum-search';
+  const qs = new URLSearchParams({ sido });
+  if(sigungu) qs.set('sigungu', sigungu);
+
+  try{
+    const res = await fetch(`${endpoint}?${qs.toString()}`);
+    const data = await res.json();
+    if(data.error){ box.innerHTML = `<div class="empty">오류: ${escapeHtml(data.error)}</div>`; return; }
+    if(!data.items || data.items.length === 0){ box.innerHTML = '<div class="empty">결과가 없어요. 시군구 이름을 확인해보세요 (예: 화성시).</div>'; return; }
+
+    const noticeHtml = data.notice ? `<p class="hint" style="margin-bottom:10px;">⚠️ ${escapeHtml(data.notice)}</p>` : '';
+
+    box.innerHTML = noticeHtml + data.items.map(item=>{
+      if(type === 'hospital'){
+        const hoursHtml = (item.hours && item.hours.length)
+          ? `<div class="tag-row">${item.hours.map(h=>`<span class="hashtag">${escapeHtml(h)}</span>`).join('')}</div>`
+          : '<p class="card-meta">진료시간 정보 미등록 — 전화 문의 필요</p>';
+        return `
+        <div class="card" style="--tag-color:#e0554a;margin-bottom:10px;">
+          <p class="card-name">${escapeHtml(item.name || '')}</p>
+          <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '')}</p>
+          ${item.tel ? `<p class="card-meta">📞 <a href="tel:${escapeHtml(item.tel)}" style="color:var(--route);">${escapeHtml(item.tel)}</a></p>` : ''}
+          ${hoursHtml}
+        </div>`;
+      }
+      // museum
+      return `
+      <div class="card" style="--tag-color:#c98fdb;margin-bottom:10px;">
+        <p class="card-name">${escapeHtml(item.name || '')}</p>
+        <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '')}</p>
+        ${item.open ? `<p class="card-meta">🕐 ${escapeHtml(item.open)}</p>` : ''}
+        ${item.closed ? `<p class="card-meta">휴관: ${escapeHtml(item.closed)}</p>` : ''}
+        ${item.fee ? `<p class="card-meta">입장료: ${escapeHtml(item.fee)}</p>` : ''}
+        ${item.tel ? `<p class="card-meta">📞 ${escapeHtml(item.tel)}</p>` : ''}
+      </div>`;
+    }).join('');
+  }catch(e){
+    box.innerHTML = '<div class="empty">조회 중 오류가 발생했어요.</div>';
+  }
+}
+
+try{ initGovPanel(); }catch(e){ console.warn('공공데이터 패널 초기화 실패', e); }
 
 /* ---------------- 초기화 ---------------- */
 (async function init(){
