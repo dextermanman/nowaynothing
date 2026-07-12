@@ -535,11 +535,11 @@ const SEED_SPOTS = [
 const SUPABASE_URL = 'https://gmkgtdqqdciwthaokgqy.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_Q86Mm4xL0mU9CQ5NQtNLmw_g-qeCEE9';
 
-let supabase = null;
+let supabaseClient = null;
 let supabaseReady = false;
 try {
   if (!SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     supabaseReady = true;
   }
 } catch (e) {
@@ -553,7 +553,7 @@ let SPOTS = [...SEED_SPOTS];
 async function loadCommunitySpots(){
   if(!supabaseReady) return; // Supabase 미설정 시 시드 데이터만 사용
   try{
-    const { data, error } = await supabase.from('spots').select('*').eq('source','community');
+    const { data, error } = await supabaseClient.from('spots').select('*').eq('source','community');
     if(error){ console.warn('커뮤니티 명소 로드 실패', error); return; }
     if(data && data.length){
       SPOTS = [...SEED_SPOTS, ...data];
@@ -719,7 +719,7 @@ async function loadCheckinCount(spotId){
   if(!el) return;
   if(!supabaseReady){ el.textContent = '–'; return; }
   try{
-    const { data, error } = await supabase.from('checkins').select('count').eq('spot_id', spotId).maybeSingle();
+    const { data, error } = await supabaseClient.from('checkins').select('count').eq('spot_id', spotId).maybeSingle();
     if(error) throw error;
     el.textContent = data ? data.count : 0;
   }catch(e){
@@ -733,9 +733,9 @@ async function handleCheckin(spotId, btn){
     return;
   }
   try{
-    const { data } = await supabase.from('checkins').select('count').eq('spot_id', spotId).maybeSingle();
+    const { data } = await supabaseClient.from('checkins').select('count').eq('spot_id', spotId).maybeSingle();
     const nextCount = (data ? data.count : 0) + 1;
-    const { error } = await supabase.from('checkins').upsert({ spot_id: spotId, count: nextCount });
+    const { error } = await supabaseClient.from('checkins').upsert({ spot_id: spotId, count: nextCount });
     if(error) throw error;
     btn.classList.add('checked');
     loadCheckinCount(spotId);
@@ -788,7 +788,7 @@ async function submitReview(spotId){
     return;
   }
   try{
-    const { error } = await supabase.from('reviews').insert({ spot_id: spotId, name, text });
+    const { error } = await supabaseClient.from('reviews').insert({ spot_id: spotId, name, text });
     if(error) throw error;
     textInput.value = '';
     loadReviews(spotId);
@@ -897,7 +897,7 @@ async function addSpotToCommunity(item, btn){
   };
 
   try{
-    const { error } = await supabase.from('spots').insert(row);
+    const { error } = await supabaseClient.from('spots').insert(row);
     if(error) throw error;
     btn.textContent = '✅ 추가 완료';
     btn.disabled = true;
