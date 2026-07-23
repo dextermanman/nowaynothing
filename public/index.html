@@ -841,6 +841,64 @@ function getTags(spot){
   return tags;
 }
 
+/* ---------------- 도시 → 관광공사 지역코드 매핑 ---------------- */
+// 지도에서 도시를 고르면 이 표를 보고 관광공사 데이터를 자동으로 불러옵니다.
+const CITY_TOUR = {
+  seoul:{area:'1'}, incheon:{area:'2'}, daejeon:{area:'3'}, daegu:{area:'4'},
+  gwangjucity:{area:'5'}, busan:{area:'6'}, ulsan:{area:'7'}, sejong:{area:'8'},
+  suwon:{area:'31',sgg:'수원시'}, goyang:{area:'31',sgg:'고양시'}, seongnam:{area:'31',sgg:'성남시'},
+  yongin:{area:'31',sgg:'용인시'}, hwaseong:{area:'31',sgg:'화성시'}, bucheon:{area:'31',sgg:'부천시'},
+  anyang:{area:'31',sgg:'안양시'}, paju:{area:'31',sgg:'파주시'}, ansan:{area:'31',sgg:'안산시'},
+  gapyeong:{area:'31',sgg:'가평군'},
+  gangneung:{area:'32',sgg:'강릉시'}, sokcho:{area:'32',sgg:'속초시'}, chuncheon:{area:'32',sgg:'춘천시'},
+  cheongju:{area:'33',sgg:'청주시'},
+  cheonan:{area:'34',sgg:'천안시'}, asan:{area:'34',sgg:'아산시'},
+  gyeongju:{area:'35',sgg:'경주시'}, pohang:{area:'35',sgg:'포항시'},
+  tongyeong:{area:'36',sgg:'통영시'}, changwon:{area:'36',sgg:'창원시'}, jinju:{area:'36',sgg:'진주시'},
+  jeonju:{area:'37',sgg:'전주시'}, gunsan:{area:'37',sgg:'군산시'},
+  yeosu:{area:'38',sgg:'여수시'}, suncheon:{area:'38',sgg:'순천시'},
+  jejucity:{area:'39',sgg:'제주시'}, seogwipo:{area:'39',sgg:'서귀포시'},
+};
+
+// 관광공사 분류코드 → 이 대시보드 테마
+const TOUR_TYPE_THEME = {
+  '12':'nature', '14':'culture', '15':'culture', '25':'activity',
+  '28':'activity', '32':'family', '38':'night', '39':'food',
+};
+
+const tourCache = {}; // 같은 도시를 다시 눌러도 재요청 안 하도록 캐시
+
+async function loadTourSpots(cityId){
+  if(tourCache[cityId]) return tourCache[cityId];
+  const m = CITY_TOUR[cityId];
+  if(!m) return [];
+
+  const qs = new URLSearchParams({ areaCode: m.area, rows: '18' });
+  if(m.sgg) qs.set('sigunguName', m.sgg);
+
+  try{
+    const res = await fetch(`/api/tour-search?${qs.toString()}`);
+    const data = await res.json().catch(()=>null);
+    if(!data || data.error || !data.items){ tourCache[cityId] = []; return []; }
+
+    const spots = data.items.map(it=>({
+      id: `tour_${it.contentId}`,
+      city: cityId,
+      name: it.name,
+      theme: TOUR_TYPE_THEME[it.contentTypeId] || 'nature',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: it.image, address: it.address, tel: it.tel,
+      fromTour: true,
+    }));
+    tourCache[cityId] = spots;
+    return spots;
+  }catch(e){
+    tourCache[cityId] = [];
+    return [];
+  }
+}
+
 /* ---------------- 상태 ---------------- */
 let currentMode = 'all';
 let currentRegion = null;
@@ -925,24 +983,18 @@ function renderThemeChips(){
 }
 
 /* ---------------- 카드 ---------------- */
-async function renderCards(){
-  const box = document.getElementById('cards');
-  if(!currentRegion){ box.innerHTML = '<div class="empty">왼쪽 지도에서 지역을 먼저 선택해주세요.</div>'; return; }
+function spotCardHTML(s){
+  const t = THEMES[s.theme] || THEMES.nature;
+  const metaLine = s.fromTour
+    ? `<div class="card-meta"><span style="font-size:10.5px;">${escapeHtml(s.address || '주소 정보 없음')}</span></div>`
+    : `<div class="card-meta"><span>★ ${s.rating ?? '-'}</span><span>리뷰 ${s.reviews ?? '-'}</span></div>`;
 
-  let spots = SPOTS.filter(s=>s.city===currentCity);
-  if(currentTheme !== 'all') spots = spots.filter(s=>s.theme===currentTheme);
-  if(currentMode === 'weekday') spots = spots.filter(s=>s.weekday);
-  if(currentMode === 'weekend') spots = spots.filter(s=>s.weekend);
-
-  if(spots.length === 0){ box.innerHTML = '<div class="empty">조건에 맞는 명소가 없어요. 필터를 바꿔보세요.</div>'; return; }
-
-  box.innerHTML = spots.map(s=>{
-    const t = THEMES[s.theme];
-    return `
+  return `
     <div class="card" style="--tag-color:${t.color}" data-spot="${s.id}">
+      ${s.image ? `<img src="${s.image}" alt="" loading="lazy" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:10px;">` : ''}
       <div class="card-top">
         <div>
-          <p class="card-name">${s.name}</p>
+          <p class="card-name">${escapeHtml(s.name)}</p>
           <p class="card-theme">${t.label.toUpperCase()}</p>
         </div>
       </div>
@@ -951,16 +1003,14 @@ async function renderCards(){
         ${s.weekend ? '<span class="badge weekend">주말 추천</span>' : ''}
         ${s.badge==='jyj' ? '<span class="badge source-jyj">🥩 정용진 추천</span>' : ''}
         ${s.badge==='bbcs' ? '<span class="badge source-bbcs">🔪 흑백요리사</span>' : ''}
+        ${s.fromTour ? '<span class="badge" style="background:#4fae7a22;color:var(--jade);">🧭 관광공사</span>' : ''}
       </div>
-      <div class="index-row">
+      ${s.fromTour ? '' : `<div class="index-row">
         <div class="index-bar"><div class="index-fill" style="width:${s.popularity}%"></div></div>
         <span class="index-num">${s.popularity}</span>
-      </div>
-      <div class="card-meta">
-        <span>★ ${s.rating}</span>
-        <span>리뷰 ${s.reviews}</span>
-      </div>
-      <div class="tag-row">${getTags(s).map(t=>`<span class="hashtag">${t}</span>`).join('')}</div>
+      </div>`}
+      ${metaLine}
+      <div class="tag-row">${getTags(s).map(tg=>`<span class="hashtag">${tg}</span>`).join('')}</div>
       <div class="card-actions">
         <button class="btn-mini" data-checkin="${s.id}">✅ 다녀왔어요 (<span class="checkin-count" data-count="${s.id}">-</span>)</button>
         <button class="btn-mini" data-toggle="${s.id}">💬 후기 보기</button>
@@ -974,22 +1024,59 @@ async function renderCards(){
         </div>
       </div>
     </div>`;
-  }).join('');
+}
 
-  // 체크인 수 로드
-  for(const s of spots){
-    loadCheckinCount(s.id);
-  }
+function applyFilters(list){
+  let out = list;
+  if(currentTheme !== 'all') out = out.filter(s=>s.theme===currentTheme);
+  if(currentMode === 'weekday') out = out.filter(s=>s.weekday);
+  if(currentMode === 'weekend') out = out.filter(s=>s.weekend);
+  return out;
+}
 
-  box.querySelectorAll('[data-checkin]').forEach(btn=>{
+function bindCardEvents(scope, spots){
+  for(const s of spots) loadCheckinCount(s.id);
+  scope.querySelectorAll('[data-checkin]').forEach(btn=>{
+    if(btn.dataset.bound) return; btn.dataset.bound='1';
     btn.addEventListener('click', ()=> handleCheckin(btn.dataset.checkin, btn));
   });
-  box.querySelectorAll('[data-toggle]').forEach(btn=>{
+  scope.querySelectorAll('[data-toggle]').forEach(btn=>{
+    if(btn.dataset.bound) return; btn.dataset.bound='1';
     btn.addEventListener('click', ()=> toggleReviews(btn.dataset.toggle));
   });
-  box.querySelectorAll('[data-submit]').forEach(btn=>{
+  scope.querySelectorAll('[data-submit]').forEach(btn=>{
+    if(btn.dataset.bound) return; btn.dataset.bound='1';
     btn.addEventListener('click', ()=> submitReview(btn.dataset.submit));
   });
+}
+
+async function renderCards(){
+  const box = document.getElementById('cards');
+  if(!currentRegion){ box.innerHTML = '<div class="empty">왼쪽 지도에서 지역을 먼저 선택해주세요.</div>'; return; }
+
+  const cityAtStart = currentCity;
+  const seedSpots = applyFilters(SPOTS.filter(s=>s.city===currentCity));
+
+  box.innerHTML = seedSpots.map(spotCardHTML).join('')
+    + `<div class="empty" id="tourLoading" style="grid-column:1/-1;">🧭 관광공사 데이터 불러오는 중…</div>`;
+  bindCardEvents(box, seedSpots);
+
+  // 관광공사 공식 DB를 이어서 붙이기
+  const tourSpots = await loadTourSpots(cityAtStart);
+  if(cityAtStart !== currentCity) return; // 그 사이 도시를 바꿨으면 무시
+
+  const loadingEl = document.getElementById('tourLoading');
+  if(loadingEl) loadingEl.remove();
+
+  const filteredTour = applyFilters(tourSpots);
+  if(filteredTour.length){
+    box.insertAdjacentHTML('beforeend', filteredTour.map(spotCardHTML).join(''));
+    bindCardEvents(box, filteredTour);
+  }
+
+  if(seedSpots.length === 0 && filteredTour.length === 0){
+    box.innerHTML = '<div class="empty">조건에 맞는 명소가 없어요. 필터를 바꿔보세요.</div>';
+  }
 }
 
 /* ---------------- 저장소 연동 (체크인 / 후기) — Supabase 버전 ---------------- */
@@ -1265,8 +1352,20 @@ async function searchTour(){
 
   try{
     const res = await fetch(`/api/tour-search?${qs.toString()}`);
-    const data = await res.json();
-    if(data.error){ box.innerHTML = `<div class="empty">오류: ${escapeHtml(data.error)}</div>`; return; }
+    const data = await res.json().catch(()=>null);
+
+    if(!data){
+      box.innerHTML = `<div class="empty">응답을 읽지 못했어요 (HTTP ${res.status}). api/tour-search.js 파일이 GitHub의 api 폴더에 올라갔는지 확인해주세요.</div>`;
+      return;
+    }
+    if(data.error){
+      box.innerHTML = `<div class="empty" style="text-align:left;line-height:1.7;">
+        <b>오류:</b> ${escapeHtml(data.error)}<br>
+        ${data.hint ? `<span style="color:var(--amber)">${escapeHtml(data.hint)}</span><br>` : ''}
+        ${data.detail ? `<code style="font-size:11px;word-break:break-all;">${escapeHtml(data.detail)}</code>` : ''}
+      </div>`;
+      return;
+    }
     if(!data.items || data.items.length === 0){ box.innerHTML = '<div class="empty">결과가 없어요. 키워드를 비우거나 분류를 바꿔보세요.</div>'; return; }
 
     const mapped = TOUR_TYPES.find(t=>t.id===contentTypeId);
