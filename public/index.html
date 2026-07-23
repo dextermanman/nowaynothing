@@ -1148,7 +1148,9 @@ function bindCardEvents(scope, spots){
   });
 }
 
+let renderSeq = 0;
 async function renderCards(){
+  const mySeq = ++renderSeq;              // 이번 호출의 순번
   const box = document.getElementById('cards');
   if(!currentRegion){ box.innerHTML = '<div class="empty">왼쪽 지도에서 지역을 먼저 선택해주세요.</div>'; return; }
 
@@ -1161,12 +1163,19 @@ async function renderCards(){
 
   // 관광공사 공식 DB를 이어서 붙이기
   const tourSpots = await loadTourSpots(cityAtStart);
-  if(cityAtStart !== currentCity) return; // 그 사이 도시를 바꿨으면 무시
+  // 기다리는 동안 다시 렌더가 걸렸으면(도시·테마 변경 등) 이번 결과는 버립니다.
+  if(mySeq !== renderSeq || cityAtStart !== currentCity) return;
 
   const loadingEl = document.getElementById('tourLoading');
   if(loadingEl) loadingEl.remove();
 
-  const filteredTour = applyFilters(tourSpots);
+  const shownNames = new Set(seedSpots.map(x=>String(x.name).replace(/\s/g,'')));
+  const filteredTour = applyFilters(tourSpots).filter(x=>{
+    const key = String(x.name).replace(/\s/g,'');
+    if(shownNames.has(key)) return false;
+    shownNames.add(key);
+    return true;
+  });
   if(filteredTour.length){
     box.insertAdjacentHTML('beforeend', filteredTour.map(spotCardHTML).join(''));
     bindCardEvents(box, filteredTour);
