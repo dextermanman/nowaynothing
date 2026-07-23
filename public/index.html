@@ -378,6 +378,7 @@ const THEMES = {
   stay:     {label:'숙소·풀빌라',   color:'#5b9bd5'},
   camping:  {label:'캠핑·글램핑',   color:'#7aa86a'},
   festival: {label:'축제·행사',     color:'#f2795a'},
+  clinic:   {label:'소아과',        color:'#e05a7a'},
 };
 
 const REGIONS = [
@@ -836,6 +837,7 @@ function getTags(spot){
     stay:     ['#숙소추천', '#풀빌라', '#가족숙소'],
     camping:  ['#캠핑', '#글램핑', '#차박'],
     festival: ['#축제', '#행사', '#이번주말'],
+    clinic:   ['#소아과', '#아이아플때'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -873,6 +875,14 @@ const AREA_DO_NAME = {
   '37':'전라북', '38':'전라남', '39':'제주',
 };
 
+// 병원 API는 정식 시도명이 필요합니다.
+const AREA_SIDO_FULL = {
+  '1':'서울특별시', '2':'인천광역시', '3':'대전광역시', '4':'대구광역시', '5':'광주광역시',
+  '6':'부산광역시', '7':'울산광역시', '8':'세종특별자치시', '31':'경기도', '32':'강원특별자치도',
+  '33':'충청북도', '34':'충청남도', '35':'경상북도', '36':'경상남도',
+  '37':'전북특별자치도', '38':'전라남도', '39':'제주특별자치도',
+};
+
 // 관광공사 분류코드 → 이 대시보드 테마
 const TOUR_TYPE_THEME = {
   '12':'nature', '14':'culture', '15':'festival', '25':'activity',
@@ -902,12 +912,13 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps, festivals, museums] = await Promise.all([
+  const [general, stays, camps, festivals, museums, clinics] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
     fetchOne(buildUrl({ rows:'12', mode:'festival' })),    // 진행중·예정 축제
     fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
+    fetchHospitals(m),                                      // 소아청소년과 (국립중앙의료원)
   ]);
 
   const seen = new Set();
@@ -963,8 +974,36 @@ async function loadTourSpots(cityId){
     });
   });
 
+  // 소아과 합치기 (테마를 직접 선택했을 때만 노출)
+  clinics.forEach(c=>{
+    spots.push({
+      id: `clinic_${(c.name||'').replace(/\s/g,'')}_${cityId}`,
+      city: cityId,
+      name: c.name,
+      theme: 'clinic',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: null, address: c.address, tel: c.tel,
+      dutyHours: c.hours || [],
+      fromClinic: true, fromTour: true,
+    });
+  });
+
   tourCache[cityId] = spots;
   return spots;
+}
+
+async function fetchHospitals(m){
+  const sido = AREA_SIDO_FULL[m.area];
+  if(!sido) return [];
+  const qs = new URLSearchParams({ sido });
+  if(m.sgg) qs.set('sigungu', m.sgg);
+  try{
+    const res = await fetch(`/api/hospital-search?${qs.toString()}`);
+    const data = await res.json().catch(()=>null);
+    if(!data || data.error || !data.items) return [];
+    return data.items;
+  }catch(e){ return []; }
 }
 
 async function fetchMuseums(m){
@@ -1139,6 +1178,11 @@ function spotCardHTML(s){
         <span class="index-num">${s.popularity}</span>
       </div>`}
       ${metaLine}
+      ${s.fromClinic ? `
+        ${s.tel ? `<p class="card-meta" style="margin:6px 0;">📞 <a href="tel:${escapeHtml(s.tel)}" style="color:var(--route);font-weight:700;">${escapeHtml(s.tel)}</a></p>` : ''}
+        <div class="tag-row">${(s.dutyHours||[]).map(h=>`<span class="hashtag">${escapeHtml(h)}</span>`).join('') || '<span class="hashtag">진료시간 미등록</span>'}</div>
+        <p class="hint" style="margin:8px 0 0;color:var(--amber);font-size:11px;">⚠️ 신고 기준 정보예요. 방문 전 꼭 전화로 확인하세요.</p>
+      ` : ''}
       <div class="tag-row">${getTags(s).map(tg=>`<span class="hashtag">${tg}</span>`).join('')}</div>
       <div class="card-actions">
         <button class="btn-mini" data-checkin="${s.id}">✅ 다녀왔어요 (<span class="checkin-count" data-count="${s.id}">-</span>)</button>
@@ -1157,6 +1201,8 @@ function spotCardHTML(s){
 
 function applyFilters(list){
   let out = list;
+  // 소아과는 놀거리와 성격이 달라, 테마를 직접 골랐을 때만 보여줍니다.
+  if(currentTheme === 'all') out = out.filter(s=>s.theme !== 'clinic');
   if(currentTheme !== 'all') out = out.filter(s=>s.theme===currentTheme);
   if(currentMode === 'weekday') out = out.filter(s=>s.weekday);
   if(currentMode === 'weekend') out = out.filter(s=>s.weekend);
