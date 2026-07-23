@@ -375,6 +375,7 @@ const THEMES = {
   family:   {label:'키즈·풀빌라', color:'#ec7fb0'},
   public:   {label:'공공기관',    color:'#7fb3ec'},
   museum:   {label:'박물관·과학관', color:'#c98fdb'},
+  stay:     {label:'숙소·풀빌라',   color:'#5b9bd5'},
 };
 
 const REGIONS = [
@@ -727,7 +728,7 @@ const SEED_SPOTS = [
 
   // 가평 (풀빌라·자연휴양 핵심지역)
   {id:'jarasum', city:'gapyeong', name:'자라섬', theme:'nature', weekday:true, weekend:true, rating:4.5, reviews:'2.2만', popularity:74},
-  {id:'gapyeongpoolvilla', city:'gapyeong', name:'가평·청평 풀빌라촌', theme:'family', weekday:true, weekend:true, rating:4.4, reviews:'1.8만', popularity:69},
+  {id:'gapyeongpoolvilla', city:'gapyeong', name:'가평·청평 풀빌라촌', theme:'stay', weekday:true, weekend:true, rating:4.4, reviews:'1.8만', popularity:69},
   {id:'petitefrance', city:'gapyeong', name:'쁘띠프랑스', theme:'culture', weekday:true, weekend:true, rating:4.3, reviews:'3.1만', popularity:72},
   {id:'gapyeongchicken', city:'gapyeong', name:'가평 닭갈비거리', theme:'food', weekday:true, weekend:true, rating:4.3, reviews:'9천', popularity:56},
   {id:'railbike', city:'gapyeong', name:'강촌 레일바이크', theme:'activity', weekday:true, weekend:true, rating:4.4, reviews:'1.4만', popularity:63},
@@ -765,7 +766,7 @@ const SEED_SPOTS = [
   {id:'sangnamwater', city:'changwon', name:'창원 상남분수광장 물놀이', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:37},
   {id:'jinyangzoo', city:'jinju', name:'진양호 가족동물원', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'5천', popularity:45},
   {id:'yisunsinparkplay', city:'tongyeong', name:'통영 이순신공원 놀이터', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'2천', popularity:36},
-  {id:'bomunpension', city:'gyeongju', name:'경주 보문단지 패밀리 펜션촌', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'7천', popularity:51},
+  {id:'bomunpension', city:'gyeongju', name:'경주 보문단지 패밀리 펜션촌', theme:'stay', weekday:true, weekend:true, rating:4.2, reviews:'7천', popularity:51},
   {id:'yeongildaesand', city:'pohang', name:'포항 영일대 모래놀이터', theme:'family', weekday:true, weekend:true, rating:4.1, reviews:'3천', popularity:39},
   {id:'busankidsgrandpark', city:'busan', name:'부산어린이대공원', theme:'family', weekday:true, weekend:true, rating:4.3, reviews:'1.2만', popularity:57},
   {id:'sokchoexpopark', city:'sokcho', name:'속초 엑스포공원 놀이터', theme:'family', weekday:true, weekend:true, rating:4.2, reviews:'4천', popularity:44},
@@ -830,6 +831,7 @@ function getTags(spot){
     family:   ['#아이랑가기좋은', '#키즈스팟'],
     public:   ['#국가운영', '#무료입장가능'],
     museum:   ['#아이랑박물관', '#체험학습'],
+    stay:     ['#숙소추천', '#풀빌라', '#가족숙소'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -863,7 +865,7 @@ const CITY_TOUR = {
 // 관광공사 분류코드 → 이 대시보드 테마
 const TOUR_TYPE_THEME = {
   '12':'nature', '14':'culture', '15':'culture', '25':'activity',
-  '28':'activity', '32':'family', '38':'night', '39':'food',
+  '28':'activity', '32':'stay', '38':'night', '39':'food',
 };
 
 const tourCache = {}; // 같은 도시를 다시 눌러도 재요청 안 하도록 캐시
@@ -873,30 +875,47 @@ async function loadTourSpots(cityId){
   const m = CITY_TOUR[cityId];
   if(!m) return [];
 
-  const qs = new URLSearchParams({ areaCode: m.area, rows: '18' });
-  if(m.sgg) qs.set('sigunguName', m.sgg);
+  // 숙박은 일반 목록에서 관광지에 밀려 잘 안 나오므로 따로 한 번 더 불러옵니다.
+  const buildUrl = (extra={})=>{
+    const qs = new URLSearchParams({ areaCode: m.area, ...extra });
+    if(m.sgg) qs.set('sigunguName', m.sgg);
+    return `/api/tour-search?${qs.toString()}`;
+  };
 
-  try{
-    const res = await fetch(`/api/tour-search?${qs.toString()}`);
-    const data = await res.json().catch(()=>null);
-    if(!data || data.error || !data.items){ tourCache[cityId] = []; return []; }
+  const fetchOne = async (url)=>{
+    try{
+      const res = await fetch(url);
+      const data = await res.json().catch(()=>null);
+      if(!data || data.error || !data.items) return [];
+      return data.items;
+    }catch(e){ return []; }
+  };
 
-    const spots = data.items.map(it=>({
-      id: `tour_${it.contentId}`,
-      city: cityId,
-      name: it.name,
-      theme: TOUR_TYPE_THEME[it.contentTypeId] || 'nature',
-      weekday: true, weekend: true,
-      rating: null, reviews: null, popularity: 50,
-      image: it.image, address: it.address, tel: it.tel,
-      fromTour: true,
-    }));
-    tourCache[cityId] = spots;
-    return spots;
-  }catch(e){
-    tourCache[cityId] = [];
-    return [];
-  }
+  const [general, stays] = await Promise.all([
+    fetchOne(buildUrl({ rows:'18' })),
+    fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
+  ]);
+
+  const seen = new Set();
+  const merged = [...general, ...stays].filter(it=>{
+    if(!it.contentId || seen.has(it.contentId)) return false;
+    seen.add(it.contentId);
+    return true;
+  });
+
+  const spots = merged.map(it=>({
+    id: `tour_${it.contentId}`,
+    city: cityId,
+    name: it.name,
+    theme: TOUR_TYPE_THEME[it.contentTypeId] || 'nature',
+    weekday: true, weekend: true,
+    rating: null, reviews: null, popularity: 50,
+    image: it.image, address: it.address, tel: it.tel,
+    fromTour: true,
+  }));
+
+  tourCache[cityId] = spots;
+  return spots;
 }
 
 /* ---------------- 상태 ---------------- */
@@ -1315,7 +1334,7 @@ const TOUR_TYPES = [
   {id:'14', label:'문화시설',      theme:'culture'},
   {id:'15', label:'축제·공연·행사', theme:'culture'},
   {id:'28', label:'레포츠',        theme:'activity'},
-  {id:'32', label:'숙박(펜션·풀빌라)', theme:'family'},
+  {id:'32', label:'숙박(호텔·펜션·풀빌라)', theme:'stay'},
   {id:'38', label:'쇼핑',          theme:'night'},
   {id:'39', label:'음식점',        theme:'food'},
 ];
