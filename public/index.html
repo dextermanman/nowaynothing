@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>대한민국 지역 나들이 레이더</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
@@ -222,7 +221,38 @@ h1{
 .ranking-panel h2{display:flex;align-items:center;gap:8px;}
 .live-dot{width:7px;height:7px;background:var(--red);border-radius:50%;animation:pulse 1.6s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
-canvas#rankChart{max-height:360px;}
+
+.rank-block{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+.rank-head{display:flex;align-items:center;gap:7px;margin-bottom:2px;}
+.rank-head h3{font-size:13px;margin:0;color:var(--heading);letter-spacing:.02em;}
+
+.rank-item{
+  display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:9px;
+  padding:8px 9px;border-radius:10px;cursor:pointer;
+  border:1px solid transparent;transition:.14s;position:relative;
+}
+.rank-item:hover{background:var(--bg-sunken);border-color:var(--line);transform:translateX(2px);}
+.rank-num{
+  font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;
+  color:var(--ink-dim);text-align:center;
+}
+.rank-item.top .rank-num{color:var(--amber);font-size:13px;}
+.rank-body{min-width:0;}
+.rank-name{
+  font-size:12.5px;font-weight:700;color:var(--ink);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rank-meta{
+  font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-dim);
+  margin-top:3px;display:flex;align-items:center;gap:5px;
+}
+.rank-dot{width:6px;height:6px;border-radius:2px;flex:0 0 auto;}
+.rank-bar{width:38px;height:4px;background:var(--bg-sunken);border-radius:2px;overflow:hidden;}
+.rank-bar i{display:block;height:100%;border-radius:2px;}
+.rank-score{
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+  color:var(--ink-dim);min-width:20px;text-align:right;
+}
 
 .empty{color:var(--ink-dim);font-size:13px;padding:30px 0;text-align:center;}
 footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;font-family:'JetBrains Mono';}
@@ -254,6 +284,15 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <p class="hint">간략화된 스키매틱 맵 (실제 좌표 아님, 위치감만 참고)</p>
       <svg id="map-svg" viewBox="0 0 320 330"></svg>
       <div class="legend" id="legend"></div>
+
+      <div class="rank-block">
+        <div class="rank-head">
+          <span class="live-dot"></span>
+          <h3>전국 인기 TOP 10</h3>
+        </div>
+        <p class="hint" style="margin:0 0 10px;">추정 인기지수 기준 · 눌러서 바로 이동</p>
+        <div id="rankList"></div>
+      </div>
     </div>
 
     <div class="panel" id="rightPanel">
@@ -262,12 +301,6 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <div class="theme-chips" id="themeChips"></div>
       <div class="cards" id="cards"></div>
     </div>
-  </div>
-
-  <div class="panel ranking-panel">
-    <h2><span class="live-dot"></span>전국 인기지수 TOP 10</h2>
-    <p class="hint">테마·지역 무관, 추정 인기지수 기준 상위 10곳</p>
-    <canvas id="rankChart"></canvas>
   </div>
 
   <div class="panel ranking-panel" id="tourPanel" style="border-color:#4fae7a55;">
@@ -1544,30 +1577,63 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
-/* ---------------- 전국 랭킹 차트 ---------------- */
-function renderRankChart(){
-  const top10 = SPOTS.slice().sort((a,b)=>b.popularity-a.popularity).slice(0,10);
-  const ctx = document.getElementById('rankChart');
-  new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels: top10.map(s=>s.name),
-      datasets:[{
-        label:'추정 인기지수',
-        data: top10.map(s=>s.popularity),
-        backgroundColor: top10.map(s=>THEMES[s.theme].color),
-        borderRadius:6,
-      }]
-    },
-    options:{
-      indexAxis:'y',
-      responsive:true,
-      plugins:{ legend:{display:false} },
-      scales:{
-        x:{ min:0, max:100, grid:{color:'#24324a'}, ticks:{color:'#8b9bb4'} },
-        y:{ grid:{display:false}, ticks:{color:'#e8edf5', font:{weight:600} } }
-      }
-    }
+/* ---------------- 전국 인기 TOP 10 (지도 아래 카드) ---------------- */
+// 도시 id로 어느 지역(시·도)에 속하는지 역추적
+function regionOfCity(cityId){
+  for(const [rid, list] of Object.entries(CITIES)){
+    if(list.some(c=>c.id===cityId)) return rid;
+  }
+  return null;
+}
+
+function cityNameOf(cityId){
+  for(const list of Object.values(CITIES)){
+    const hit = list.find(c=>c.id===cityId);
+    if(hit) return hit.name;
+  }
+  return '';
+}
+
+function renderRankList(){
+  const box = document.getElementById('rankList');
+  if(!box) return;
+
+  const top10 = SPOTS.slice()
+    .filter(s=>typeof s.popularity === 'number')
+    .sort((a,b)=>b.popularity-a.popularity)
+    .slice(0,10);
+
+  box.innerHTML = top10.map((s,i)=>{
+    const t = THEMES[s.theme] || THEMES.nature;
+    return `
+    <div class="rank-item ${i<3?'top':''}" data-rank-city="${s.city}" data-rank-theme="${s.theme}" title="${escapeHtml(s.name)}">
+      <span class="rank-num">${i+1}</span>
+      <div class="rank-body">
+        <div class="rank-name">${escapeHtml(s.name)}</div>
+        <div class="rank-meta">
+          <i class="rank-dot" style="background:${t.color}"></i>
+          <span>${cityNameOf(s.city)}</span>
+          <span class="rank-bar"><i style="width:${s.popularity}%;background:${t.color}"></i></span>
+        </div>
+      </div>
+      <span class="rank-score">${s.popularity}</span>
+    </div>`;
+  }).join('');
+
+  // 누르면 해당 지역·도시로 바로 이동
+  box.querySelectorAll('[data-rank-city]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const cityId = el.dataset.rankCity;
+      const rid = regionOfCity(cityId);
+      if(!rid) return;
+      currentRegion = rid;
+      currentCity = cityId;
+      currentTheme = 'all';
+      const region = REGIONS.find(r=>r.id===rid);
+      document.getElementById('regionTitle').textContent = (region ? region.name : '') + ' 명소';
+      renderMap(); renderCityTabs(); renderThemeChips(); renderCards();
+      document.getElementById('rightPanel')?.scrollIntoView({behavior:'smooth', block:'start'});
+    });
   });
 }
 
@@ -1870,8 +1936,8 @@ try{ initGovPanel(); }catch(e){ console.warn('공공데이터 패널 초기화 �
     renderMap();
   }catch(e){ console.error('지도 렌더링 오류', e); }
   try{
-    renderRankChart();
-  }catch(e){ console.error('차트 렌더링 오류', e); }
+    renderRankList();
+  }catch(e){ console.error('랭킹 렌더링 오류', e); }
   document.getElementById('cards').innerHTML = '<div class="empty">왼쪽 지도에서 지역을 먼저 선택해주세요.</div>';
 })();
 </script>
