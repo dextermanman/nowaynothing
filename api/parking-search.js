@@ -65,24 +65,32 @@ async function callPublic(key, extra = {}) {
   }
 }
 
-// 네이버 지역검색으로 대체 조회
+// 네이버 지역검색으로 대체 조회 (실패 사유를 함께 반환)
 async function callNaver(query) {
   const id = process.env.NAVER_CLIENT_ID;
   const secret = process.env.NAVER_CLIENT_SECRET;
-  if (!id || !secret) return [];
+  if (!id || !secret) {
+    return { items: [], debug: { query, error: 'NAVER_CLIENT_ID/SECRET 환경변수 없음' } };
+  }
 
+  // 네이버 지역검색은 display 최댓값이 5입니다.
   const url =
-    'https://openapi.naver.com/v1/search/local.json?display=5&sort=comment&query=' +
+    'https://openapi.naver.com/v1/search/local.json?display=5&start=1&sort=random&query=' +
     encodeURIComponent(query);
 
   try {
     const r = await fetch(url, {
       headers: { 'X-Naver-Client-Id': id, 'X-Naver-Client-Secret': secret },
     });
-    if (!r.ok) return [];
-    const json = await r.json();
-    const clean = (s) => (s || '').replace(/<[^>]+>/g, '');
-    return (json.items || []).map((it) => ({
+    const text = await r.text();
+
+    if (!r.ok) {
+      return { items: [], debug: { query, status: r.status, body: text.slice(0, 200) } };
+    }
+
+    const json = JSON.parse(text);
+    const clean = (v) => (v || '').replace(/<[^>]+>/g, '');
+    const items = (json.items || []).map((it) => ({
       name: clean(it.title),
       type: null,
       kind: clean(it.category) || null,
@@ -95,8 +103,9 @@ async function callNaver(query) {
       weekdayClose: null,
       tel: null,
     }));
-  } catch {
-    return [];
+    return { items, debug: { query, total: json.total ?? null, got: items.length } };
+  } catch (e) {
+    return { items: [], debug: { query, error: String(e) } };
   }
 }
 
@@ -162,11 +171,12 @@ export default async function handler(req, res) {
   ];
 
   const results = await Promise.all(queries.map((q) => callNaver(q)));
+  const debug = results.map((r) => r.debug);
 
   const seen = new Set();
   const items = [];
-  for (const list of results) {
-    for (const it of list) {
+  for (const r of results) {
+    for (const it of r.items) {
       const key = (it.name || '') + '|' + (it.address || '');
       if (seen.has(key)) continue;
       seen.add(key);
@@ -179,5 +189,6 @@ export default async function handler(req, res) {
     note: '주차장 표준데이터는 오픈API가 아니라 지자체별 파일로 제공돼서, 네이버 지역검색 결과로 대체했어요. (요금·주차면수 정보는 없습니다)',
     matched: items.length,
     items: items.slice(0, limit),
+    debug,
   });
 }
