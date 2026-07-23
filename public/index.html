@@ -1238,7 +1238,8 @@ async function fetchParking(m){
   const sido = AREA_DO_NAME[m.area];
   if(!sido) return [];
   const qs = new URLSearchParams({ sido, limit:'12' });
-  if(m.sgg) qs.set('sigungu', m.sgg);
+  // 시군구가 없는 광역시는 시도명으로 검색
+  qs.set('sigungu', m.sgg || AREA_SIDO_FULL[m.area] || sido);
   try{
     const res = await fetch(`/api/parking-search?${qs.toString()}`);
     const data = await res.json().catch(()=>null);
