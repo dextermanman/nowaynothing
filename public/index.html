@@ -194,8 +194,6 @@ h1{
 .card-theme{font-size:10.5px;color:var(--tag-color,var(--route));font-weight:700;font-family:'JetBrains Mono';}
 .badges{display:flex;gap:5px;margin:9px 0;flex-wrap:wrap;}
 .badge{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700;font-family:'JetBrains Mono';}
-.badge.weekday{background:#e0554a22;color:var(--red);}
-.badge.weekend{background:#f2a65a22;color:var(--amber);}
 .badge.source-jyj{background:#e0554a22;color:#ff8a7a;}
 .badge.source-bbcs{background:#0d0d0d;color:#fff;border:1px solid #444;}
 
@@ -327,7 +325,7 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
     <div>
       <p class="brand-eyebrow">Korea Local Spot Radar</p>
       <h1>대한민국 지역 나들이 레이더</h1>
-      <p class="subtitle">지역을 선택하면 도시별 명소를 테마·요일 추천으로 확인하고, 커뮤니티 후기와 체크인을 남길 수 있어요.</p>
+      <p class="subtitle">지역을 선택하면 도시별 명소를 테마별로 확인하고, 커뮤니티 후기와 체크인을 남길 수 있어요.</p>
       <div class="method-tag"><span class="dot"></span>인기지수는 실시간 내비게이션 이동량이 아닌, 네이버 리뷰수·평점·구글 노출순위 기반 추정치이며, 맛집 일부는 정용진 회장 개인 추천(보도 기준) 및 흑백요리사 출연 셰프 식당(공개 정보 기준)을 반영했습니다</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
@@ -887,9 +885,6 @@ function getTags(spot){
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
-  if (spot.weekend && !spot.weekday) tags.push('#주말한정');
-  else if (spot.weekend) tags.push('#주말나들이');
-  if (spot.weekday && !spot.weekend) tags.push('#평일한적');
   if (spot.badge === 'jyj') tags.push('#정용진픽');
   if (spot.badge === 'bbcs') tags.push('#흑백요리사');
   return tags;
@@ -1350,7 +1345,6 @@ async function fetchCamping(m){
 }
 
 /* ---------------- 상태 ---------------- */
-let currentMode = 'all';   // 요일 필터는 UI에서 제거됨 (항상 전체 표시)
 let currentRegion = null;
 let currentCity = null;
 let currentTheme = 'all';
@@ -1476,8 +1470,6 @@ function spotCardHTML(s){
         </div>
       </div>
       <div class="badges">
-        ${s.weekday ? '<span class="badge weekday">평일 추천</span>' : ''}
-        ${s.weekend ? '<span class="badge weekend">주말 추천</span>' : ''}
         ${s.badge==='jyj' ? '<span class="badge source-jyj">🥩 정용진 추천</span>' : ''}
         ${s.badge==='bbcs' ? '<span class="badge source-bbcs">🔪 흑백요리사</span>' : ''}
         ${s.fromCamping ? '<span class="badge" style="background:#7aa86a22;color:#7aa86a;">🏕️ 고캠핑</span>' : (s.fromTour ? '<span class="badge" style="background:#4fae7a22;color:var(--jade);">🧭 관광공사</span>' : '')}
@@ -1530,8 +1522,6 @@ function applyFilters(list){
   // 소아과는 놀거리와 성격이 달라, 테마를 직접 골랐을 때만 보여줍니다.
   if(currentTheme === 'all') out = out.filter(s=>s.theme !== 'clinic' && s.theme !== 'parking');
   if(currentTheme !== 'all') out = out.filter(s=>s.theme===currentTheme);
-  if(currentMode === 'weekday') out = out.filter(s=>s.weekday);
-  if(currentMode === 'weekend') out = out.filter(s=>s.weekend);
   return out;
 }
 
