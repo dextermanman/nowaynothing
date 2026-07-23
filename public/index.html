@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1420">
+<meta name="description" content="전국 시·군·구 나들이 명소, 맛집, 캠핑, 숙소, 축제 정보를 한눈에">
 <title>대한민국 지역 나들이 레이더</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
 <style>
@@ -267,6 +270,58 @@ h1{
 }
 
 .empty{color:var(--ink-dim);font-size:13px;padding:30px 0;text-align:center;}
+
+/* ───────── 모바일 대응 ───────── */
+@media (max-width:640px){
+  .wrap{padding:16px 14px 40px;}
+
+  header{gap:14px;padding-bottom:14px;margin-bottom:16px;}
+  h1{font-size:25px;line-height:1.25;}
+  .subtitle{font-size:12.5px;}
+  .method-tag{font-size:10px;padding:6px 10px;line-height:1.5;align-items:flex-start;}
+  .method-tag .dot{margin-top:5px;flex:0 0 auto;}
+
+  /* 전체/평일/주말 + 테마 버튼을 가로 전체로 */
+  header > div:last-child{width:100%;justify-content:space-between;}
+  .mode-toggle{flex:1;}
+  .mode-toggle button{flex:1;padding:10px 8px;}
+
+  .layout{gap:14px;}
+  .panel{padding:14px;border-radius:14px;}
+
+  /* 카드 1열 + 이미지 살짝 낮게 */
+  .cards{grid-template-columns:1fr;gap:12px;}
+  .card img{height:170px;}
+
+  /* 입력·선택 요소를 손가락으로 누르기 쉽게 */
+  select, input[type="text"]{
+    width:100%;
+    font-size:16px;      /* iOS에서 자동 확대되는 것 방지 */
+    padding:11px 12px;
+  }
+  #addPanel > div, #govDataPanel > div, #tourPanel > div{flex-direction:column;align-items:stretch;}
+  .btn-mini{padding:11px 8px;font-size:12.5px;}
+
+  .city-tabs{gap:6px;}
+  .city-tab{padding:9px 13px;}
+  .theme-chips{gap:5px;}
+  .chip{padding:7px 11px;}
+
+  .review-form{flex-wrap:wrap;}
+  .review-form input[data-name]{max-width:100% !important;}
+  .review-form button{width:100%;padding:10px;}
+
+  .rank-item{padding:10px 8px;}
+  .rank-name{font-size:13px;}
+
+  footer{font-size:9.5px;line-height:1.6;}
+}
+
+/* 아주 좁은 기기 */
+@media (max-width:380px){
+  h1{font-size:22px;}
+  .card img{height:150px;}
+}
 footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;font-family:'JetBrains Mono';}
 </style>
 </head>
