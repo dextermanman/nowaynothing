@@ -1,24 +1,38 @@
 // api/tour-search.js
 // 한국관광공사 TourAPI(국문 관광정보 서비스) 프록시.
-// 전국 26만 건의 관광지·문화시설·축제·레포츠·숙박·쇼핑·음식점을 시도별로 조회합니다.
-// 사진(firstimage)까지 같이 와서 카드에 썸네일을 넣을 수 있어요.
+// 시도코드 + 시군구명만 주면 알아서 시군구코드를 찾아서 조회합니다.
 //
 // 사용 예:
-//   /api/tour-search?areaCode=31&contentTypeId=12          (경기도 관광지)
-//   /api/tour-search?areaCode=31&contentTypeId=39&keyword=칼국수 (경기도 음식점 중 칼국수)
+//   /api/tour-search?areaCode=31&sigunguName=화성시
+//   /api/tour-search?areaCode=31&contentTypeId=39&keyword=칼국수
 //
-// 필요 환경변수: DATA_GO_KR_KEY (병원/박물관 API와 동일한 키 하나로 사용)
+// 필요 환경변수: DATA_GO_KR_KEY
 
 const MOBILE_APP = 'SpotRadar';
 
-// TourAPI가 KorService2(신규) / KorService1(구버전) 두 갈래라, 순서대로 시도합니다.
 const BASES = [
   { base: 'https://apis.data.go.kr/B551011/KorService2', suffix: '2' },
   { base: 'http://apis.data.go.kr/B551011/KorService1', suffix: '1' },
 ];
 
-async function callTour(pathName, params, suffix) {
-  const url = `${pathName}?${params.toString()}`;
+// data.go.kr은 Encoding키/Decoding키 두 종류를 줍니다.
+// Encoding키(%2B 같은 문자 포함)를 그대로 쓰면 이중 인코딩돼 인증 실패하므로 먼저 디코드.
+function normalizeKey(k) {
+  if (!k) return k;
+  return k.includes('%') ? decodeURIComponent(k) : k;
+}
+
+function baseParams(key, extra = {}) {
+  return new URLSearchParams({
+    serviceKey: key,
+    MobileOS: 'ETC',
+    MobileApp: MOBILE_APP,
+    _type: 'json',
+    ...extra,
+  });
+}
+
+async function getJson(url) {
   const r = await fetch(url, { headers: { Accept: 'application/json' } });
   const text = await r.text();
   try {
@@ -28,15 +42,40 @@ async function callTour(pathName, params, suffix) {
   }
 }
 
+function listItems(json) {
+  let raw = json?.response?.body?.items?.item ?? [];
+  if (!Array.isArray(raw)) raw = raw ? [raw] : [];
+  return raw;
+}
+
+// 시군구명(예: "화성시") → 시군구코드 찾기
+async function resolveSigunguCode(base, suffix, key, areaCode, sigunguName) {
+  const params = baseParams(key, { numOfRows: '100', pageNo: '1', areaCode });
+  const res = await getJson(`${base}/areaCode${suffix}?${params.toString()}`);
+  if (!res.ok) return null;
+
+  const items = listItems(res.data);
+  const target = String(sigunguName).replace(/\s/g, '');
+
+  const hit =
+    items.find((i) => i.name && i.name.replace(/\s/g, '') === target) ||
+    items.find((i) => i.name && target.startsWith(i.name.replace(/\s/g, ''))) ||
+    items.find((i) => i.name && i.name.replace(/\s/g, '').startsWith(target));
+
+  return hit ? String(hit.code) : null;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+  // 관광 데이터는 자주 안 바뀌므로 캐시해서 응답 속도를 높입니다.
+  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
 
-  const key = process.env.DATA_GO_KR_KEY;
+  const key = normalizeKey(process.env.DATA_GO_KR_KEY);
   if (!key) {
     return res.status(500).json({ error: 'DATA_GO_KR_KEY 환경변수가 없습니다.' });
   }
 
-  const { areaCode, contentTypeId, keyword, page } = req.query;
+  const { areaCode, sigunguName, contentTypeId, keyword, page, rows } = req.query;
   if (!areaCode && !keyword) {
     return res.status(400).json({ error: 'areaCode 또는 keyword 중 하나는 필요합니다.' });
   }
@@ -44,45 +83,41 @@ export default async function handler(req, res) {
   let lastRaw = null;
 
   for (const { base, suffix } of BASES) {
-    const isKeywordSearch = !!(keyword && keyword.trim());
-    const op = isKeywordSearch ? `searchKeyword${suffix}` : `areaBasedList${suffix}`;
-
-    const params = new URLSearchParams({
-      serviceKey: key,
-      MobileOS: 'ETC',
-      MobileApp: MOBILE_APP,
-      _type: 'json',
-      numOfRows: '20',
-      pageNo: page || '1',
-      arrange: 'O', // 대표이미지가 있는 항목 우선(제목순)
-    });
-    if (areaCode) params.set('areaCode', areaCode);
-    if (contentTypeId) params.set('contentTypeId', contentTypeId);
-    if (isKeywordSearch) params.set('keyword', keyword.trim());
-
     try {
-      const result = await callTour(`${base}/${op}`, params, suffix);
+      const isKeywordSearch = !!(keyword && keyword.trim());
+      const op = isKeywordSearch ? `searchKeyword${suffix}` : `areaBasedList${suffix}`;
 
-      if (!result.ok) {
-        lastRaw = result.raw;
-        continue; // XML 에러면 다음 버전으로 재시도
+      const params = baseParams(key, {
+        numOfRows: rows || '18',
+        pageNo: page || '1',
+        arrange: 'O',
+      });
+      if (areaCode) params.set('areaCode', areaCode);
+      if (contentTypeId) params.set('contentTypeId', contentTypeId);
+      if (isKeywordSearch) params.set('keyword', keyword.trim());
+
+      // 시군구명이 있으면 코드로 변환해서 그 지역만 조회
+      let resolvedSigungu = null;
+      if (areaCode && sigunguName) {
+        resolvedSigungu = await resolveSigunguCode(base, suffix, key, areaCode, sigunguName);
+        if (resolvedSigungu) params.set('sigunguCode', resolvedSigungu);
       }
 
-      const body = result.data?.response?.body;
-      const header = result.data?.response?.header;
+      const result = await getJson(`${base}/${op}?${params.toString()}`);
+      if (!result.ok) {
+        lastRaw = result.raw;
+        continue;
+      }
 
-      // 인증키 미승인/오류 등
+      const header = result.data?.response?.header;
       if (header && header.resultCode && header.resultCode !== '0000') {
         lastRaw = `${header.resultCode} ${header.resultMsg || ''}`;
         continue;
       }
 
-      let raw = body?.items?.item ?? [];
-      if (!Array.isArray(raw)) raw = raw ? [raw] : [];
-
-      const items = raw.map((it) => ({
+      const items = listItems(result.data).map((it) => ({
         contentId: it.contentid,
-        contentTypeId: it.contenttypeid,
+        contentTypeId: String(it.contenttypeid || ''),
         name: it.title,
         address: [it.addr1, it.addr2].filter(Boolean).join(' ').trim() || null,
         tel: it.tel || null,
@@ -92,9 +127,11 @@ export default async function handler(req, res) {
       }));
 
       return res.status(200).json({
-        source: `TourAPI(${suffix === '2' ? 'KorService2' : 'KorService1'})`,
-        total: body?.totalCount ?? items.length,
-        page: Number(page || 1),
+        source: `TourAPI(KorService${suffix})`,
+        areaCode: areaCode || null,
+        sigunguName: sigunguName || null,
+        sigunguCode: resolvedSigungu,
+        total: result.data?.response?.body?.totalCount ?? items.length,
         items,
       });
     } catch (err) {
@@ -103,7 +140,8 @@ export default async function handler(req, res) {
   }
 
   return res.status(502).json({
-    error: 'TourAPI 호출에 실패했습니다. 공공데이터포털에서 "한국관광공사_국문 관광정보 서비스_GW" 활용신청이 승인됐는지 확인해주세요.',
-    detail: typeof lastRaw === 'string' ? lastRaw.slice(0, 300) : null,
+    error: 'TourAPI 호출 실패',
+    hint: 'data.go.kr에서 "한국관광공사_국문 관광정보 서비스_GW" 활용신청 승인 여부와, Vercel의 DATA_GO_KR_KEY가 Decoding키인지 확인해주세요.',
+    detail: typeof lastRaw === 'string' ? lastRaw.slice(0, 400) : null,
   });
 }
