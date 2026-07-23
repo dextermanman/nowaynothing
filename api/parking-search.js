@@ -152,12 +152,31 @@ export default async function handler(req, res) {
   }
 
   // ── 2단계: 네이버 지역검색 대체 ──
+  // 네이버 지역검색은 한 번에 5건까지만 주므로, 검색어를 나눠 호출한 뒤 합칩니다.
   const region = sigungu || sido;
-  const items = await callNaver(`${region} 주차장`);
+  const queries = [
+    `${region} 공영주차장`,
+    `${region} 주차장`,
+    `${region} 공공주차장`,
+    `${region} 주차타워`,
+  ];
+
+  const results = await Promise.all(queries.map((q) => callNaver(q)));
+
+  const seen = new Set();
+  const items = [];
+  for (const list of results) {
+    for (const it of list) {
+      const key = (it.name || '') + '|' + (it.address || '');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push(it);
+    }
+  }
 
   return res.status(200).json({
     source: 'naver',
-    note: '공공 주차장 데이터를 못 받아서 네이버 지역검색 결과로 대체했어요. (요금·면수 정보는 없습니다)',
+    note: '주차장 표준데이터는 오픈API가 아니라 지자체별 파일로 제공돼서, 네이버 지역검색 결과로 대체했어요. (요금·주차면수 정보는 없습니다)',
     matched: items.length,
     items: items.slice(0, limit),
   });
