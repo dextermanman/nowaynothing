@@ -124,6 +124,18 @@ h1{
 .layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
 @media (max-width:880px){.layout{grid-template-columns:1fr;}}
 
+/* 오른쪽 카드가 길어져도 지도와 TOP 10이 계속 보이도록 고정 */
+@media (min-width:881px){
+  #leftPanel{
+    position:sticky;
+    top:16px;
+    max-height:calc(100vh - 32px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  #leftPanel::-webkit-scrollbar{width:6px;}
+}
+
 .panel{
   background:var(--bg-panel);border:1px solid var(--line);border-radius:16px;padding:18px;
 }
@@ -279,7 +291,7 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
   </header>
 
   <div class="layout">
-    <div class="panel">
+    <div class="panel" id="leftPanel">
       <h2>지역 선택</h2>
       <p class="hint">간략화된 스키매틱 맵 (실제 좌표 아님, 위치감만 참고)</p>
       <svg id="map-svg" viewBox="0 0 320 330"></svg>
