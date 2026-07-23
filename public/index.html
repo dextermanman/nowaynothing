@@ -281,11 +281,6 @@ h1{
   .method-tag{font-size:10px;padding:6px 10px;line-height:1.5;align-items:flex-start;}
   .method-tag .dot{margin-top:5px;flex:0 0 auto;}
 
-  /* 전체/평일/주말 + 테마 버튼을 가로 전체로 */
-  header > div:last-child{width:100%;justify-content:space-between;}
-  .mode-toggle{flex:1;}
-  .mode-toggle button{flex:1;padding:10px 8px;}
-
   .layout{gap:14px;}
   .panel{padding:14px;border-radius:14px;}
 
@@ -336,12 +331,7 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <div class="method-tag"><span class="dot"></span>인기지수는 실시간 내비게이션 이동량이 아닌, 네이버 리뷰수·평점·구글 노출순위 기반 추정치이며, 맛집 일부는 정용진 회장 개인 추천(보도 기준) 및 흑백요리사 출연 셰프 식당(공개 정보 기준)을 반영했습니다</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
-      <div class="mode-toggle" id="modeToggle">
-        <button data-mode="all" class="active">전체</button>
-        <button data-mode="weekday">평일</button>
-        <button data-mode="weekend">주말</button>
-      </div>
-      <button id="themeToggle" class="btn-mini" style="padding:9px 14px;" title="다크/라이트 모드 전환">🌙</button>
+      <button id="themeToggle" class="btn-mini" style="padding:9px 14px;" title="화면 테마 전환">🌙</button>
     </div>
   </header>
 
@@ -1360,7 +1350,7 @@ async function fetchCamping(m){
 }
 
 /* ---------------- 상태 ---------------- */
-let currentMode = 'all';
+let currentMode = 'all';   // 요일 필터는 UI에서 제거됨 (항상 전체 표시)
 let currentRegion = null;
 let currentCity = null;
 let currentTheme = 'all';
@@ -1750,14 +1740,6 @@ function renderRankList(){
 }
 
 /* ---------------- 모드 토글 ---------------- */
-document.getElementById('modeToggle')?.addEventListener('click', (e)=>{
-  const btn = e.target.closest('button');
-  if(!btn) return;
-  document.querySelectorAll('#modeToggle button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  currentMode = btn.dataset.mode;
-  renderCards();
-});
 
 /* ---------------- 실시간 검색으로 명소 추가 (네이버 API + Supabase) ---------------- */
 function populateAddPanelDropdowns(){
