@@ -902,11 +902,12 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps, festivals] = await Promise.all([
+  const [general, stays, camps, festivals, museums] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
     fetchOne(buildUrl({ rows:'12', mode:'festival' })),    // 진행중·예정 축제
+    fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
   ]);
 
   const seen = new Set();
@@ -947,8 +948,36 @@ async function loadTourSpots(cityId){
     });
   });
 
+  // 박물관·미술관 합치기
+  museums.forEach(mu=>{
+    spots.push({
+      id: `museum_${(mu.name||'').replace(/\s/g,'')}_${cityId}`,
+      city: cityId,
+      name: mu.name,
+      theme: 'museum',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: null, address: mu.address, tel: mu.tel,
+      openHours: mu.open, closedInfo: mu.closed, feeInfo: mu.fee,
+      fromMuseum: true, fromTour: true,
+    });
+  });
+
   tourCache[cityId] = spots;
   return spots;
+}
+
+async function fetchMuseums(m){
+  const sido = AREA_DO_NAME[m.area];
+  if(!sido) return [];
+  const qs = new URLSearchParams({ sido, limit:'12' });
+  if(m.sgg) qs.set('sigungu', m.sgg.replace(/(시|군|구)$/, ''));
+  try{
+    const res = await fetch(`/api/museum-search?${qs.toString()}`);
+    const data = await res.json().catch(()=>null);
+    if(!data || data.error || !data.items) return [];
+    return data.items;
+  }catch(e){ return []; }
 }
 
 // 반려동물 동반 / 무장애 여행 정보는 전국 공통이라 한 번만 불러와서 재사용
@@ -1102,6 +1131,8 @@ function spotCardHTML(s){
         ${festivalBadge(s)}
         ${s.isPet ? '<span class="badge" style="background:#e8a04722;color:#e8a047;">🐶 반려동물 동반</span>' : ''}
         ${s.isBarrierFree ? '<span class="badge" style="background:#5b9bd522;color:#5b9bd5;">♿ 무장애</span>' : ''}
+        ${s.fromMuseum ? '<span class="badge" style="background:#c98fdb22;color:#c98fdb;">🏛️ 박물관DB</span>' : ''}
+        ${s.openHours ? `<span class="badge" style="background:#8b9bb422;color:var(--ink-dim);">🕐 ${escapeHtml(s.openHours)}</span>` : ''}
       </div>
       ${s.fromTour ? '' : `<div class="index-row">
         <div class="index-bar"><div class="index-fill" style="width:${s.popularity}%"></div></div>
