@@ -376,6 +376,7 @@ const THEMES = {
   public:   {label:'공공기관',    color:'#7fb3ec'},
   museum:   {label:'박물관·과학관', color:'#c98fdb'},
   stay:     {label:'숙소·풀빌라',   color:'#5b9bd5'},
+  camping:  {label:'캠핑·글램핑',   color:'#7aa86a'},
 };
 
 const REGIONS = [
@@ -832,6 +833,7 @@ function getTags(spot){
     public:   ['#국가운영', '#무료입장가능'],
     museum:   ['#아이랑박물관', '#체험학습'],
     stay:     ['#숙소추천', '#풀빌라', '#가족숙소'],
+    camping:  ['#캠핑', '#글램핑', '#차박'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -860,6 +862,13 @@ const CITY_TOUR = {
   jeonju:{area:'37',sgg:'전주시'}, gunsan:{area:'37',sgg:'군산시'},
   yeosu:{area:'38',sgg:'여수시'}, suncheon:{area:'38',sgg:'순천시'},
   jejucity:{area:'39',sgg:'제주시'}, seogwipo:{area:'39',sgg:'서귀포시'},
+};
+
+// 고캠핑 API는 도(道) 이름으로 거르므로 시도코드 → 도 이름 표가 필요합니다.
+const AREA_DO_NAME = {
+  '1':'서울', '2':'인천', '3':'대전', '4':'대구', '5':'광주', '6':'부산', '7':'울산', '8':'세종',
+  '31':'경기', '32':'강원', '33':'충청북', '34':'충청남', '35':'경상북', '36':'경상남',
+  '37':'전라북', '38':'전라남', '39':'제주',
 };
 
 // 관광공사 분류코드 → 이 대시보드 테마
@@ -891,9 +900,10 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays] = await Promise.all([
+  const [general, stays, camps] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
+    fetchCamping(m),
   ]);
 
   const seen = new Set();
@@ -914,8 +924,36 @@ async function loadTourSpots(cityId){
     fromTour: true,
   }));
 
+  // 캠핑장 합치기
+  camps.forEach(c=>{
+    spots.push({
+      id: `camp_${c.contentId}`,
+      city: cityId,
+      name: c.name,
+      theme: 'camping',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: c.image, address: c.address, tel: c.tel,
+      induty: c.induty,
+      fromTour: true, fromCamping: true,
+    });
+  });
+
   tourCache[cityId] = spots;
   return spots;
+}
+
+async function fetchCamping(m){
+  const doName = AREA_DO_NAME[m.area];
+  if(!doName) return [];
+  const qs = new URLSearchParams({ do: doName, limit: '12' });
+  if(m.sgg) qs.set('sigungu', m.sgg.replace(/(시|군|구)$/, ''));
+  try{
+    const res = await fetch(`/api/camping-search?${qs.toString()}`);
+    const data = await res.json().catch(()=>null);
+    if(!data || data.error || !data.items) return [];
+    return data.items;
+  }catch(e){ return []; }
 }
 
 /* ---------------- 상태 ---------------- */
@@ -1022,7 +1060,8 @@ function spotCardHTML(s){
         ${s.weekend ? '<span class="badge weekend">주말 추천</span>' : ''}
         ${s.badge==='jyj' ? '<span class="badge source-jyj">🥩 정용진 추천</span>' : ''}
         ${s.badge==='bbcs' ? '<span class="badge source-bbcs">🔪 흑백요리사</span>' : ''}
-        ${s.fromTour ? '<span class="badge" style="background:#4fae7a22;color:var(--jade);">🧭 관광공사</span>' : ''}
+        ${s.fromCamping ? '<span class="badge" style="background:#7aa86a22;color:#7aa86a;">🏕️ 고캠핑</span>' : (s.fromTour ? '<span class="badge" style="background:#4fae7a22;color:var(--jade);">🧭 관광공사</span>' : '')}
+        ${s.induty ? `<span class="badge" style="background:#5b9bd522;color:#5b9bd5;">${escapeHtml(s.induty)}</span>` : ''}
       </div>
       ${s.fromTour ? '' : `<div class="index-row">
         <div class="index-bar"><div class="index-fill" style="width:${s.popularity}%"></div></div>
