@@ -75,7 +75,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'DATA_GO_KR_KEY 환경변수가 없습니다.' });
   }
 
-  const { areaCode, sigunguName, contentTypeId, keyword, page, rows } = req.query;
+  const { areaCode, sigunguName, contentTypeId, keyword, page, rows, mode } = req.query;
   if (!areaCode && !keyword) {
     return res.status(400).json({ error: 'areaCode 또는 keyword 중 하나는 필요합니다.' });
   }
@@ -84,8 +84,11 @@ export default async function handler(req, res) {
 
   for (const { base, suffix } of BASES) {
     try {
-      const isKeywordSearch = !!(keyword && keyword.trim());
-      const op = isKeywordSearch ? `searchKeyword${suffix}` : `areaBasedList${suffix}`;
+      const isFestival = mode === 'festival';
+      const isKeywordSearch = !isFestival && !!(keyword && keyword.trim());
+      const op = isFestival
+        ? `searchFestival${suffix}`
+        : (isKeywordSearch ? `searchKeyword${suffix}` : `areaBasedList${suffix}`);
 
       const params = baseParams(key, {
         numOfRows: rows || '18',
@@ -93,8 +96,15 @@ export default async function handler(req, res) {
         arrange: 'O',
       });
       if (areaCode) params.set('areaCode', areaCode);
-      if (contentTypeId) params.set('contentTypeId', contentTypeId);
+      if (contentTypeId && !isFestival) params.set('contentTypeId', contentTypeId);
       if (isKeywordSearch) params.set('keyword', keyword.trim());
+
+      // 축제는 조회 시작일이 필수 — 오늘 날짜 기준으로 진행 중/예정 행사를 가져옵니다.
+      if (isFestival) {
+        const d = new Date();
+        const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+        params.set('eventStartDate', req.query.eventStartDate || ymd);
+      }
 
       // 시군구명이 있으면 코드로 변환해서 그 지역만 조회
       let resolvedSigungu = null;
@@ -124,6 +134,8 @@ export default async function handler(req, res) {
         image: it.firstimage || it.firstimage2 || null,
         lat: it.mapy ? Number(it.mapy) : null,
         lng: it.mapx ? Number(it.mapx) : null,
+        eventStart: it.eventstartdate || null,
+        eventEnd: it.eventenddate || null,
       }));
 
       return res.status(200).json({
