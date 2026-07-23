@@ -1,16 +1,16 @@
 // api/parking-search.js
-// 공공데이터포털 "전국주차장정보표준데이터" 프록시.
+// 주차장 조회 — 2단계로 시도합니다.
+//   1) 공공데이터 "전국주차장정보표준데이터" (요금·면수까지 상세)
+//   2) 실패하거나 결과가 없으면 네이버 지역검색으로 자동 대체 (이름·주소 위주)
 //
-// 전국 주차장이 3만 건이 넘어서 전체를 받아오면 너무 느립니다.
-// 그래서 (1) 관리기관명으로 먼저 걸러보고, (2) 안 되면 주소 기준으로
-// 제한된 페이지만 훑는 방식으로 처리하고, 결과는 하루 캐시합니다.
+// 덕분에 공공데이터 활용신청이 아직 승인 전이어도 주차장이 뜹니다.
 //
-// 사용: /api/parking-search?sido=경기&sigungu=화성
-// 필요 환경변수: DATA_GO_KR_KEY
+// 사용: /api/parking-search?sido=경기&sigungu=화성시
+// 환경변수: DATA_GO_KR_KEY (선택), NAVER_CLIENT_ID / NAVER_CLIENT_SECRET
 
 const ENDPOINT = 'https://api.data.go.kr/openapi/tn_pubr_public_prkplce_info_api';
-const MAX_PAGES = 6;      // 훑어볼 최대 페이지 수
-const ROWS = 1000;        // 페이지당 건수
+const ROWS = 1000;
+const MAX_PAGES = 3;
 
 function normalizeKey(k) {
   if (!k) return k;
@@ -18,33 +18,8 @@ function normalizeKey(k) {
 }
 
 const strip = (v) => String(v || '').replace(/\s/g, '');
-
-function coreName(v) {
-  return strip(v).replace(/(특별자치도|특별자치시|광역시|특별시|자치도|도|시|군|구)$/g, '');
-}
-
-async function callApi(key, extra = {}) {
-  const params = new URLSearchParams({
-    serviceKey: key,
-    pageNo: '1',
-    numOfRows: String(ROWS),
-    type: 'json',
-    ...extra,
-  });
-
-  const r = await fetch(`${ENDPOINT}?${params.toString()}`);
-  const text = await r.text();
-
-  try {
-    const json = JSON.parse(text);
-    let rows = json?.response?.body?.items || [];
-    if (!Array.isArray(rows)) rows = rows ? [rows] : [];
-    return { ok: true, rows, total: json?.response?.body?.totalCount || 0 };
-  } catch {
-    const m = text.match(/<returnAuthMsg>([\s\S]*?)<\/returnAuthMsg>/);
-    return { ok: false, raw: m ? m[1] : text.slice(0, 200) };
-  }
-}
+const coreName = (v) =>
+  strip(v).replace(/(특별자치도|특별자치시|광역시|특별시|자치도|도|시|군|구)$/g, '');
 
 function matches(item, sidoCore, sggCore) {
   const addr = strip(item.rdnmadr || item.lnmadr);
@@ -54,32 +29,80 @@ function matches(item, sidoCore, sggCore) {
   return okSido && okSgg;
 }
 
-function shape(it) {
+function shapePublic(it) {
   return {
     name: it.prkplceNm,
-    type: it.prkplceSe || null,          // 공영 / 민영
-    kind: it.prkplceType || null,        // 노상 / 노외 / 부설
+    type: it.prkplceSe || null,
+    kind: it.prkplceType || null,
     address: it.rdnmadr || it.lnmadr || null,
-    spaces: it.prkcmprt || null,         // 주차구획수
-    charge: it.parkingchrgeInfo || null, // 유료 / 무료
+    spaces: it.prkcmprt || null,
+    charge: it.parkingchrgeInfo || null,
     basicTime: it.basicTime || null,
     basicCharge: it.basicCharge || null,
     weekdayOpen: it.weekdayOperOpenHhmm || null,
     weekdayClose: it.weekdayOperColseHhmm || null,
     tel: it.phoneNumber || null,
-    lat: it.latitude ? Number(it.latitude) : null,
-    lng: it.longitude ? Number(it.longitude) : null,
   };
+}
+
+async function callPublic(key, extra = {}) {
+  const params = new URLSearchParams({
+    serviceKey: key,
+    pageNo: '1',
+    numOfRows: String(ROWS),
+    type: 'json',
+    ...extra,
+  });
+  const r = await fetch(`${ENDPOINT}?${params.toString()}`);
+  const text = await r.text();
+  try {
+    const json = JSON.parse(text);
+    let rows = json?.response?.body?.items || [];
+    if (!Array.isArray(rows)) rows = rows ? [rows] : [];
+    return { ok: true, rows };
+  } catch {
+    return { ok: false, raw: text.slice(0, 200) };
+  }
+}
+
+// 네이버 지역검색으로 대체 조회
+async function callNaver(query) {
+  const id = process.env.NAVER_CLIENT_ID;
+  const secret = process.env.NAVER_CLIENT_SECRET;
+  if (!id || !secret) return [];
+
+  const url =
+    'https://openapi.naver.com/v1/search/local.json?display=5&sort=comment&query=' +
+    encodeURIComponent(query);
+
+  try {
+    const r = await fetch(url, {
+      headers: { 'X-Naver-Client-Id': id, 'X-Naver-Client-Secret': secret },
+    });
+    if (!r.ok) return [];
+    const json = await r.json();
+    const clean = (s) => (s || '').replace(/<[^>]+>/g, '');
+    return (json.items || []).map((it) => ({
+      name: clean(it.title),
+      type: null,
+      kind: clean(it.category) || null,
+      address: it.roadAddress || it.address || null,
+      spaces: null,
+      charge: null,
+      basicTime: null,
+      basicCharge: null,
+      weekdayOpen: null,
+      weekdayClose: null,
+      tel: null,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
-
-  const key = normalizeKey(process.env.DATA_GO_KR_KEY);
-  if (!key) {
-    return res.status(500).json({ error: 'DATA_GO_KR_KEY 환경변수가 없습니다.' });
-  }
 
   const { sido, sigungu } = req.query;
   const limit = Number(req.query.limit || 12);
@@ -89,51 +112,53 @@ export default async function handler(req, res) {
 
   const sidoCore = coreName(sido);
   const sggCore = coreName(sigungu);
+  const key = normalizeKey(process.env.DATA_GO_KR_KEY);
 
-  try {
-    // 1차: 관리기관명으로 좁혀보기 (지자체가 운영하는 주차장이 대부분)
-    if (sggCore) {
-      const first = await callApi(key, { institutionNm: sigungu });
-      if (!first.ok) {
-        return res.status(502).json({
-          error: '공공데이터포털 응답 오류',
-          hint: '"전국주차장정보표준데이터" 활용신청 승인 여부를 확인해주세요.',
-          detail: first.raw,
-        });
+  // ── 1단계: 공공데이터 ──
+  if (key) {
+    try {
+      if (sigungu) {
+        const first = await callPublic(key, { institutionNm: sigungu });
+        if (first.ok) {
+          const hits = first.rows.filter((it) => matches(it, sidoCore, sggCore));
+          if (hits.length) {
+            return res.status(200).json({
+              source: 'public',
+              matched: hits.length,
+              items: hits.slice(0, limit).map(shapePublic),
+            });
+          }
+        }
       }
-      const hits = first.rows.filter((it) => matches(it, sidoCore, sggCore));
-      if (hits.length) {
+
+      const found = [];
+      for (let page = 1; page <= MAX_PAGES; page++) {
+        const r = await callPublic(key, { pageNo: String(page) });
+        if (!r.ok || !r.rows.length) break;
+        found.push(...r.rows.filter((it) => matches(it, sidoCore, sggCore)));
+        if (found.length >= limit) break;
+        if (r.rows.length < ROWS) break;
+      }
+      if (found.length) {
         return res.status(200).json({
-          sido: sido || null,
-          sigungu: sigungu || null,
-          strategy: 'institution',
-          matched: hits.length,
-          items: hits.slice(0, limit).map(shape),
+          source: 'public',
+          matched: found.length,
+          items: found.slice(0, limit).map(shapePublic),
         });
       }
+    } catch {
+      // 공공데이터 실패 시 조용히 네이버로 넘어감
     }
-
-    // 2차: 페이지를 나눠 훑으며 주소로 매칭 (충분히 모이면 조기 종료)
-    const found = [];
-    for (let page = 1; page <= MAX_PAGES; page++) {
-      const r = await callApi(key, { pageNo: String(page) });
-      if (!r.ok) break;
-      if (!r.rows.length) break;
-
-      found.push(...r.rows.filter((it) => matches(it, sidoCore, sggCore)));
-      if (found.length >= limit) break;
-      if (r.rows.length < ROWS) break;
-    }
-
-    return res.status(200).json({
-      sido: sido || null,
-      sigungu: sigungu || null,
-      strategy: 'scan',
-      matched: found.length,
-      notice: found.length === 0 ? '이 지역 주차장 정보를 찾지 못했어요.' : null,
-      items: found.slice(0, limit).map(shape),
-    });
-  } catch (err) {
-    return res.status(500).json({ error: '서버 오류', detail: String(err) });
   }
+
+  // ── 2단계: 네이버 지역검색 대체 ──
+  const region = sigungu || sido;
+  const items = await callNaver(`${region} 주차장`);
+
+  return res.status(200).json({
+    source: 'naver',
+    note: '공공 주차장 데이터를 못 받아서 네이버 지역검색 결과로 대체했어요. (요금·면수 정보는 없습니다)',
+    matched: items.length,
+    items: items.slice(0, limit),
+  });
 }
