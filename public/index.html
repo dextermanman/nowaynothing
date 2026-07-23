@@ -377,6 +377,7 @@ const THEMES = {
   museum:   {label:'박물관·과학관', color:'#c98fdb'},
   stay:     {label:'숙소·풀빌라',   color:'#5b9bd5'},
   camping:  {label:'캠핑·글램핑',   color:'#7aa86a'},
+  festival: {label:'축제·행사',     color:'#f2795a'},
 };
 
 const REGIONS = [
@@ -834,6 +835,7 @@ function getTags(spot){
     museum:   ['#아이랑박물관', '#체험학습'],
     stay:     ['#숙소추천', '#풀빌라', '#가족숙소'],
     camping:  ['#캠핑', '#글램핑', '#차박'],
+    festival: ['#축제', '#행사', '#이번주말'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -873,7 +875,7 @@ const AREA_DO_NAME = {
 
 // 관광공사 분류코드 → 이 대시보드 테마
 const TOUR_TYPE_THEME = {
-  '12':'nature', '14':'culture', '15':'culture', '25':'activity',
+  '12':'nature', '14':'culture', '15':'festival', '25':'activity',
   '28':'activity', '32':'stay', '38':'night', '39':'food',
 };
 
@@ -900,18 +902,21 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps] = await Promise.all([
+  const [general, stays, camps, festivals] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
+    fetchOne(buildUrl({ rows:'12', mode:'festival' })),    // 진행중·예정 축제
   ]);
 
   const seen = new Set();
-  const merged = [...general, ...stays].filter(it=>{
+  const merged = [...general, ...stays, ...festivals].filter(it=>{
     if(!it.contentId || seen.has(it.contentId)) return false;
     seen.add(it.contentId);
     return true;
   });
+
+  const flags = await loadTourFlags();
 
   const spots = merged.map(it=>({
     id: `tour_${it.contentId}`,
@@ -921,6 +926,9 @@ async function loadTourSpots(cityId){
     weekday: true, weekend: true,
     rating: null, reviews: null, popularity: 50,
     image: it.image, address: it.address, tel: it.tel,
+    eventStart: it.eventStart, eventEnd: it.eventEnd,
+    isPet: flags.pet.has(String(it.contentId)),
+    isBarrierFree: flags.barrierFree.has(String(it.contentId)),
     fromTour: true,
   }));
 
@@ -941,6 +949,23 @@ async function loadTourSpots(cityId){
 
   tourCache[cityId] = spots;
   return spots;
+}
+
+// 반려동물 동반 / 무장애 여행 정보는 전국 공통이라 한 번만 불러와서 재사용
+let flagsCache = null;
+async function loadTourFlags(){
+  if(flagsCache) return flagsCache;
+  try{
+    const res = await fetch('/api/tour-flags');
+    const data = await res.json().catch(()=>null);
+    flagsCache = {
+      pet: new Set((data && data.pet) || []),
+      barrierFree: new Set((data && data.barrierFree) || []),
+    };
+  }catch(e){
+    flagsCache = { pet:new Set(), barrierFree:new Set() };
+  }
+  return flagsCache;
 }
 
 async function fetchCamping(m){
@@ -1040,6 +1065,18 @@ function renderThemeChips(){
 }
 
 /* ---------------- 카드 ---------------- */
+// 축제 기간을 보기 좋게 표시하고, 지금 진행 중이면 강조합니다.
+function festivalBadge(s){
+  if(!s.eventStart) return '';
+  const fmt = (v)=> v && v.length===8 ? `${v.slice(4,6)}.${v.slice(6,8)}` : '';
+  const today = (()=>{ const d=new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; })();
+  const ongoing = s.eventStart <= today && (!s.eventEnd || today <= s.eventEnd);
+  const period = `${fmt(s.eventStart)}${s.eventEnd ? '~'+fmt(s.eventEnd) : ''}`;
+  return ongoing
+    ? `<span class="badge" style="background:#f2795a;color:#fff;">🔥 진행중 ${period}</span>`
+    : `<span class="badge" style="background:#f2795a22;color:#f2795a;">📅 ${period}</span>`;
+}
+
 function spotCardHTML(s){
   const t = THEMES[s.theme] || THEMES.nature;
   const metaLine = s.fromTour
@@ -1062,6 +1099,9 @@ function spotCardHTML(s){
         ${s.badge==='bbcs' ? '<span class="badge source-bbcs">🔪 흑백요리사</span>' : ''}
         ${s.fromCamping ? '<span class="badge" style="background:#7aa86a22;color:#7aa86a;">🏕️ 고캠핑</span>' : (s.fromTour ? '<span class="badge" style="background:#4fae7a22;color:var(--jade);">🧭 관광공사</span>' : '')}
         ${s.induty ? `<span class="badge" style="background:#5b9bd522;color:#5b9bd5;">${escapeHtml(s.induty)}</span>` : ''}
+        ${festivalBadge(s)}
+        ${s.isPet ? '<span class="badge" style="background:#e8a04722;color:#e8a047;">🐶 반려동물 동반</span>' : ''}
+        ${s.isBarrierFree ? '<span class="badge" style="background:#5b9bd522;color:#5b9bd5;">♿ 무장애</span>' : ''}
       </div>
       ${s.fromTour ? '' : `<div class="index-row">
         <div class="index-bar"><div class="index-fill" style="width:${s.popularity}%"></div></div>
@@ -1371,7 +1411,7 @@ const TOUR_AREAS = [
 const TOUR_TYPES = [
   {id:'12', label:'관광지',        theme:'nature'},
   {id:'14', label:'문화시설',      theme:'culture'},
-  {id:'15', label:'축제·공연·행사', theme:'culture'},
+  {id:'15', label:'축제·공연·행사', theme:'festival'},
   {id:'28', label:'레포츠',        theme:'activity'},
   {id:'32', label:'숙박(호텔·펜션·풀빌라)', theme:'stay'},
   {id:'38', label:'쇼핑',          theme:'night'},
