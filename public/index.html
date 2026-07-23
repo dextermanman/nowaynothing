@@ -424,6 +424,7 @@ const THEMES = {
   camping:  {label:'캠핑·글램핑',   color:'#7aa86a'},
   festival: {label:'축제·행사',     color:'#f2795a'},
   clinic:   {label:'소아과',        color:'#e05a7a'},
+  parking:  {label:'주차장',        color:'#8d9aa8'},
 };
 
 const REGIONS = [
@@ -837,6 +838,7 @@ function getTags(spot){
     camping:  ['#캠핑', '#글램핑', '#차박'],
     festival: ['#축제', '#행사', '#이번주말'],
     clinic:   ['#소아과', '#아이아플때'],
+    parking:  ['#주차장', '#주차정보'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -1133,13 +1135,14 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps, festivals, museums, clinics] = await Promise.all([
+  const [general, stays, camps, festivals, museums, clinics, parkings] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
     fetchOne(buildUrl({ rows:'12', mode:'festival' })),    // 진행중·예정 축제
     fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
     fetchHospitals(m),                                      // 소아청소년과 (국립중앙의료원)
+    fetchParking(m),                                        // 전국 주차장 표준데이터
   ]);
 
   const seen = new Set();
@@ -1210,8 +1213,38 @@ async function loadTourSpots(cityId){
     });
   });
 
+  // 주차장 합치기 (테마를 직접 선택했을 때만 노출)
+  parkings.forEach(pk=>{
+    spots.push({
+      id: `park_${(pk.name||'').replace(/\s/g,'')}_${cityId}`,
+      city: cityId,
+      name: pk.name,
+      theme: 'parking',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: null, address: pk.address, tel: pk.tel,
+      pkType: pk.type, pkKind: pk.kind, pkSpaces: pk.spaces,
+      pkCharge: pk.charge, pkBasicTime: pk.basicTime, pkBasicCharge: pk.basicCharge,
+      pkOpen: (pk.weekdayOpen && pk.weekdayClose) ? `${pk.weekdayOpen}~${pk.weekdayClose}` : null,
+      fromParking: true, fromTour: true,
+    });
+  });
+
   tourCache[cityId] = spots;
   return spots;
+}
+
+async function fetchParking(m){
+  const sido = AREA_DO_NAME[m.area];
+  if(!sido) return [];
+  const qs = new URLSearchParams({ sido, limit:'12' });
+  if(m.sgg) qs.set('sigungu', m.sgg);
+  try{
+    const res = await fetch(`/api/parking-search?${qs.toString()}`);
+    const data = await res.json().catch(()=>null);
+    if(!data || data.error || !data.items) return [];
+    return data.items;
+  }catch(e){ return []; }
 }
 
 async function fetchHospitals(m){
@@ -1407,6 +1440,7 @@ function spotCardHTML(s){
         ${s.isPet ? '<span class="badge" style="background:#e8a04722;color:#e8a047;">🐶 반려동물 동반</span>' : ''}
         ${s.isBarrierFree ? '<span class="badge" style="background:#5b9bd522;color:#5b9bd5;">♿ 무장애</span>' : ''}
         ${s.fromMuseum ? '<span class="badge" style="background:#c98fdb22;color:#c98fdb;">🏛️ 박물관DB</span>' : ''}
+        ${s.fromParking ? '<span class="badge" style="background:#8d9aa822;color:#8d9aa8;">🅿️ 주차장DB</span>' : ''}
         ${s.openHours ? `<span class="badge" style="background:#8b9bb422;color:var(--ink-dim);">🕐 ${escapeHtml(s.openHours)}</span>` : ''}
       </div>
       ${s.fromTour ? '' : `<div class="index-row">
@@ -1414,6 +1448,16 @@ function spotCardHTML(s){
         <span class="index-num">${s.popularity}</span>
       </div>`}
       ${metaLine}
+      ${s.fromParking ? `
+        <div class="tag-row">
+          ${s.pkCharge ? `<span class="hashtag">${escapeHtml(s.pkCharge)}</span>` : ''}
+          ${s.pkSpaces ? `<span class="hashtag">${escapeHtml(String(s.pkSpaces))}면</span>` : ''}
+          ${s.pkType ? `<span class="hashtag">${escapeHtml(s.pkType)}</span>` : ''}
+          ${s.pkKind ? `<span class="hashtag">${escapeHtml(s.pkKind)}</span>` : ''}
+          ${s.pkOpen ? `<span class="hashtag">🕐 ${escapeHtml(s.pkOpen)}</span>` : ''}
+        </div>
+        ${(s.pkBasicTime && s.pkBasicCharge) ? `<p class="card-meta" style="margin-top:6px;">기본 ${escapeHtml(String(s.pkBasicTime))}분 / ${escapeHtml(String(s.pkBasicCharge))}원</p>` : ''}
+      ` : ''}
       ${s.fromClinic ? `
         ${s.tel ? `<p class="card-meta" style="margin:6px 0;">📞 <a href="tel:${escapeHtml(s.tel)}" style="color:var(--route);font-weight:700;">${escapeHtml(s.tel)}</a></p>` : ''}
         <div class="tag-row">${(s.dutyHours||[]).map(h=>`<span class="hashtag">${escapeHtml(h)}</span>`).join('') || '<span class="hashtag">진료시간 미등록</span>'}</div>
@@ -1438,7 +1482,7 @@ function spotCardHTML(s){
 function applyFilters(list){
   let out = list;
   // 소아과는 놀거리와 성격이 달라, 테마를 직접 골랐을 때만 보여줍니다.
-  if(currentTheme === 'all') out = out.filter(s=>s.theme !== 'clinic');
+  if(currentTheme === 'all') out = out.filter(s=>s.theme !== 'clinic' && s.theme !== 'parking');
   if(currentTheme !== 'all') out = out.filter(s=>s.theme===currentTheme);
   if(currentMode === 'weekday') out = out.filter(s=>s.weekday);
   if(currentMode === 'weekend') out = out.filter(s=>s.weekend);
