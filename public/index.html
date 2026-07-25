@@ -364,6 +364,17 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
     <div id="cultureResults"></div>
   </div>
 
+  <div class="panel ranking-panel" id="toiletPanel" style="border-color:#8d9aa855;">
+    <h2>🚻 근처 공중화장실 찾기</h2>
+    <p class="hint">행정안전부 전국공중화장실표준데이터 (전국 3.3만여 곳)</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <select id="toiletSido" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
+      <input id="toiletSigungu" type="text" placeholder="시군구 (예: 화성시)" style="flex:1;min-width:160px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
+      <button id="toiletSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
+    </div>
+    <div id="toiletResults"></div>
+  </div>
+
   <div class="panel ranking-panel" id="pediatricPanel" style="border-color:#e0554a55;">
     <h2>🏥 우리 아이 소아과, 지금 문 연 곳 찾기</h2>
     <p class="hint">병원 영업시간은 이 대시보드 데이터가 아니라, 실시간으로 정확한 정부 공식 서비스로 바로 연결해드려요 (점심시간·휴진·야간진료 변동이 잦아 고정 정보로 넣으면 위험해요)</p>
@@ -1373,16 +1384,13 @@ function selectRegion(id){
   renderCityTabs();
   renderThemeChips();
   renderCards();
-  loadWeather(id);
 }
 
-/* ---------------- 날씨 위젯 (헤더) ---------------- */
-const WEATHER_DAY_LABEL = ['오늘', '내일'];
-
-async function loadWeather(regionId){
+/* ---------------- 날씨 위젯 (헤더, 현재 위치 기반) ---------------- */
+async function loadWeather(qs){
   const box = document.getElementById('weatherWidget');
   try{
-    const res = await fetch(`/api/weather-search?region=${regionId}`);
+    const res = await fetch(`/api/weather-search?${qs}`);
     const data = await res.json();
     if(!res.ok || !data.days || !data.days.length){
       box.innerHTML = '';
@@ -1398,6 +1406,22 @@ async function loadWeather(regionId){
   }catch(e){
     box.innerHTML = '';
   }
+}
+
+function loadWeatherByLocation(){
+  if(!navigator.geolocation){
+    loadWeather('region=r1');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      loadWeather(`lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+    },
+    ()=>{
+      loadWeather('region=r1'); // 위치 거부/실패 시 서울 기본값
+    },
+    { timeout: 8000, maximumAge: 600000 }
+  );
 }
 
 /* ---------------- 도시 탭 ---------------- */
@@ -2048,6 +2072,46 @@ async function addCultureSpotToCommunity(item, btn){
 
 try{ initCulturePanel(); }catch(e){ console.warn('공연정보 패널 초기화 실패', e); }
 
+/* ---------------- 공중화장실 검색 ---------------- */
+function initToiletPanel(){
+  const sidoSelect = document.getElementById('toiletSido');
+  if(!sidoSelect) return;
+  sidoSelect.innerHTML = SIDO_LIST.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sidoSelect.value = '경기도';
+  document.getElementById('toiletSearchBtn')?.addEventListener('click', searchToilets);
+}
+
+async function searchToilets(){
+  const sido = document.getElementById('toiletSido').value;
+  const sigungu = document.getElementById('toiletSigungu').value.trim();
+  const box = document.getElementById('toiletResults');
+  box.innerHTML = '<div class="empty">화장실 조회 중…</div>';
+
+  const qs = new URLSearchParams({ sido });
+  if(sigungu) qs.set('sigungu', sigungu);
+
+  try{
+    const res = await fetch(`/api/toilet-search?${qs.toString()}`);
+    const data = await res.json();
+    if(data.error){ box.innerHTML = `<div class="empty">오류: ${escapeHtml(data.error)}</div>`; return; }
+    if(!data.items || data.items.length === 0){ box.innerHTML = '<div class="empty">결과가 없어요. 시군구 이름을 확인해보세요 (예: 화성시).</div>'; return; }
+
+    box.innerHTML = data.items.map(item=>`
+      <div class="card" style="--tag-color:#8d9aa8;margin-bottom:10px;">
+        <p class="card-name">${escapeHtml(item.name || '이름 없음')}</p>
+        <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '')}</p>
+        ${item.open_time ? `<p class="card-meta">🕐 ${escapeHtml(item.open_time)}</p>` : ''}
+        ${item.phone ? `<p class="card-meta">📞 ${escapeHtml(item.phone)}</p>` : ''}
+        ${item.unisex ? `<span class="hashtag">남녀공용</span>` : ''}
+      </div>
+    `).join('');
+  }catch(e){
+    box.innerHTML = '<div class="empty">조회 중 오류가 발생했어요.</div>';
+  }
+}
+
+try{ initToiletPanel(); }catch(e){ console.warn('화장실 패널 초기화 실패', e); }
+
 /* ---------------- 초기화 ---------------- */
 (async function init(){
   try{
@@ -2060,7 +2124,7 @@ try{ initCulturePanel(); }catch(e){ console.warn('공연정보 패널 초기화 
   }catch(e){ console.error('지도 렌더링 오류', e); }
   document.getElementById('cards').innerHTML = '<div class="empty">왼쪽 지도에서 지역을 먼저 선택해주세요.</div>';
   try{
-    loadWeather('r1');
+    loadWeatherByLocation();
   }catch(e){ console.warn('날씨 위젯 로드 실패', e); }
 })();
 </script>

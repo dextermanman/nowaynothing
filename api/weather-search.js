@@ -123,13 +123,29 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'DATA_GO_KR_KEY 환경변수가 없습니다.' });
   }
 
-  const { region } = req.query;
-  const coord = REGION_COORDS[region];
-  if (!coord) {
-    return res.status(400).json({ error: `region 파라미터가 올바르지 않습니다. 예: /api/weather-search?region=r1 (가능한 값: ${Object.keys(REGION_COORDS).join(', ')})` });
+  const { region, lat, lon } = req.query;
+
+  let coordName;
+  let coordLat;
+  let coordLon;
+  if (lat && lon) {
+    coordName = '현재 위치';
+    coordLat = Number(lat);
+    coordLon = Number(lon);
+    if (Number.isNaN(coordLat) || Number.isNaN(coordLon)) {
+      return res.status(400).json({ error: 'lat/lon 파라미터가 올바르지 않습니다.' });
+    }
+  } else {
+    const coord = REGION_COORDS[region];
+    if (!coord) {
+      return res.status(400).json({ error: `region 또는 lat/lon 파라미터가 필요합니다. 예: /api/weather-search?lat=37.56&lon=126.97 (또는 region=r1, 가능한 값: ${Object.keys(REGION_COORDS).join(', ')})` });
+    }
+    coordName = coord.name;
+    coordLat = coord.lat;
+    coordLon = coord.lon;
   }
 
-  const { nx, ny } = toGrid(coord.lat, coord.lon);
+  const { nx, ny } = toGrid(coordLat, coordLon);
   const now = new Date();
   const today = ymd(kstParts(now));
   const tomorrow = ymd(kstParts(new Date(now.getTime() + 86400000)));
@@ -181,7 +197,7 @@ export default async function handler(req, res) {
       }
 
       return res.status(200).json({
-        region: coord.name,
+        region: coordName,
         nx,
         ny,
         baseDate: base_date,
