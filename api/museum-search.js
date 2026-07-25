@@ -45,31 +45,54 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'sido 파라미터가 필요합니다. 예: /api/museum-search?sido=경기' });
   }
 
-  const params = new URLSearchParams({
-    serviceKey: key,
-    pageNo: '1',
-    numOfRows: '2000',
-    type: 'json',
-  });
+  // 이 API는 numOfRows 최대 1000이라, 전국 약 1100건을 다 받으려면 페이지를 나눠 호출해야 한다.
+  const MAX_ROWS = 1000;
 
-  try {
+  async function fetchPage(pageNo) {
+    const params = new URLSearchParams({
+      serviceKey: key,
+      pageNo: String(pageNo),
+      numOfRows: String(MAX_ROWS),
+      type: 'json',
+    });
     const r = await fetch('https://api.data.go.kr/openapi/tn_pubr_public_museum_artgr_info_api?' + params.toString());
     const text = await r.text();
+    return JSON.parse(text);
+  }
 
+  try {
     let data;
     try {
-      data = JSON.parse(text);
+      data = await fetchPage(1);
     } catch {
-      const m = text.match(/<returnAuthMsg>([\s\S]*?)<\/returnAuthMsg>/);
       return res.status(502).json({
         error: '공공데이터포털 응답 오류',
         hint: '"전국박물관미술관정보표준데이터" 활용신청 승인 여부를 확인해주세요.',
-        detail: m ? m[1] : text.slice(0, 200),
+      });
+    }
+
+    const header = data?.response?.header;
+    if (header && header.resultCode !== '00') {
+      return res.status(502).json({
+        error: '공공데이터포털 응답 오류',
+        hint: '"전국박물관미술관정보표준데이터" 활용신청 승인 여부를 확인해주세요.',
+        detail: `${header.resultCode} ${header.resultMsg || ''}`,
       });
     }
 
     let rows = data?.response?.body?.items || [];
     if (!Array.isArray(rows)) rows = rows ? [rows] : [];
+
+    const totalCount = data?.response?.body?.totalCount || rows.length;
+    if (totalCount > MAX_ROWS) {
+      const extraPages = Math.ceil((totalCount - MAX_ROWS) / MAX_ROWS);
+      for (let p = 2; p <= extraPages + 1; p++) {
+        const more = await fetchPage(p);
+        let moreRows = more?.response?.body?.items || [];
+        if (!Array.isArray(moreRows)) moreRows = moreRows ? [moreRows] : [];
+        rows = rows.concat(moreRows);
+      }
+    }
 
     const filtered = rows.filter((it) => {
       const addr = strip(it.rdnmadr || it.lnmadr);

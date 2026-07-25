@@ -174,6 +174,17 @@ h1{
 }
 .city-tab.active{background:var(--route);color:#062018;border-color:var(--route);}
 
+.weather-widget{
+  display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;
+  background:var(--bg-sunken);border:1px solid var(--line);font-size:12.5px;font-weight:700;
+  white-space:nowrap;
+}
+.weather-widget:empty{display:none;}
+.weather-widget .ww-region{color:var(--ink-dim);font-weight:800;}
+.weather-widget .ww-max{color:#e0554a;}
+.weather-widget .ww-min{color:#5b9bd5;}
+.weather-widget .ww-pop{color:#5b9bd5;font-weight:800;}
+
 .theme-chips{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
 .chip{
   padding:6px 12px;border-radius:8px;font-size:11.5px;font-weight:700;cursor:pointer;
@@ -292,6 +303,7 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <div class="method-tag"><span class="dot"></span>인기지수는 실시간 내비게이션 이동량이 아닌, 네이버 리뷰수·평점·구글 노출순위 기반 추정치이며, 맛집 일부는 정용진 회장 개인 추천(보도 기준) 및 흑백요리사 출연 셰프 식당(공개 정보 기준)을 반영했습니다</div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
+      <div id="weatherWidget" class="weather-widget"></div>
       <button id="themeToggle" class="btn-mini" style="padding:9px 14px;" title="화면 테마 전환">🌙</button>
     </div>
   </header>
@@ -338,6 +350,18 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <button id="govSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
     </div>
     <div id="govResults"></div>
+  </div>
+
+  <div class="panel ranking-panel" id="culturePanel" style="border-color:#f2795a55;">
+    <h2>🎭 공연예술통합전산망(KOPIS) 공연·전시</h2>
+    <p class="hint">다가오는 3개월 공연·전시 정보를 조회해요. 마음에 드는 곳은 바로 커뮤니티에 추가할 수 있습니다.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <select id="cultureSido" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
+      <select id="cultureCity" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;" title="추가할 때 저장될 도시"></select>
+      <input id="cultureKeyword" type="text" placeholder="공연명 검색어 (선택)" style="flex:1;min-width:160px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
+      <button id="cultureSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
+    </div>
+    <div id="cultureResults"></div>
   </div>
 
   <div class="panel ranking-panel" id="pediatricPanel" style="border-color:#e0554a55;">
@@ -1349,6 +1373,31 @@ function selectRegion(id){
   renderCityTabs();
   renderThemeChips();
   renderCards();
+  loadWeather(id);
+}
+
+/* ---------------- 날씨 위젯 (헤더) ---------------- */
+const WEATHER_DAY_LABEL = ['오늘', '내일'];
+
+async function loadWeather(regionId){
+  const box = document.getElementById('weatherWidget');
+  try{
+    const res = await fetch(`/api/weather-search?region=${regionId}`);
+    const data = await res.json();
+    if(!res.ok || !data.days || !data.days.length){
+      box.innerHTML = '';
+      return;
+    }
+    const d = data.days[0];
+    box.innerHTML = `
+      <span class="ww-region">${escapeHtml(data.region)}</span>
+      <span>${d.label ? escapeHtml(d.label) : '-'}</span>
+      ${d.tmn!=null ? `<span class="ww-min">${d.tmn}°</span>` : ''}${d.tmx!=null ? `/<span class="ww-max">${d.tmx}°</span>` : ''}
+      ${d.pop!=null ? `<span class="ww-pop">☔${d.pop}%</span>` : ''}
+    `;
+  }catch(e){
+    box.innerHTML = '';
+  }
 }
 
 /* ---------------- 도시 탭 ---------------- */
@@ -1903,6 +1952,102 @@ async function searchGovData(){
 
 try{ initGovPanel(); }catch(e){ console.warn('공공데이터 패널 초기화 실패', e); }
 
+/* ---------------- 공연·전시 검색 (KOPIS) ---------------- */
+function initCulturePanel(){
+  const sidoSelect = document.getElementById('cultureSido');
+  const citySelect = document.getElementById('cultureCity');
+  if(!sidoSelect) return;
+
+  sidoSelect.innerHTML = SIDO_LIST.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sidoSelect.value = '경기도';
+
+  const allCities = [];
+  Object.entries(CITIES).forEach(([regionId, list])=>{
+    const region = REGIONS.find(r=>r.id===regionId);
+    list.forEach(c => allCities.push({ id:c.id, label:`${region ? region.name : ''} · ${c.name}` }));
+  });
+  citySelect.innerHTML = allCities.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+
+  document.getElementById('cultureSearchBtn')?.addEventListener('click', searchCulture);
+}
+
+async function searchCulture(){
+  const sido = document.getElementById('cultureSido').value;
+  const keyword = document.getElementById('cultureKeyword').value.trim();
+  const box = document.getElementById('cultureResults');
+  box.innerHTML = '<div class="empty">KOPIS 공연정보 조회 중…</div>';
+
+  const qs = new URLSearchParams({ sido });
+  if(keyword) qs.set('keyword', keyword);
+
+  try{
+    const res = await fetch(`/api/culture-search?${qs.toString()}`);
+    const data = await res.json();
+    if(data.error){
+      box.innerHTML = `<div class="empty" style="text-align:left;line-height:1.7;">
+        <b>오류:</b> ${escapeHtml(data.error)}<br>
+        ${data.hint ? `<span style="color:var(--amber)">${escapeHtml(data.hint)}</span><br>` : ''}
+        ${data.detail ? `<code style="font-size:11px;word-break:break-all;">${escapeHtml(data.detail)}</code>` : ''}
+      </div>`;
+      return;
+    }
+    if(!data.items || data.items.length === 0){ box.innerHTML = '<div class="empty">결과가 없어요. 검색어를 비우거나 지역을 바꿔보세요.</div>'; return; }
+
+    box.innerHTML = `<div class="cards">` + data.items.map((item, idx)=>{
+      const period = [item.start, item.end].filter(Boolean).join(' ~ ');
+      return `
+      <div class="card" style="--tag-color:#f2795a;">
+        ${item.poster ? `<img src="${item.poster}" alt="" loading="lazy" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:10px;">` : ''}
+        <p class="card-name">${escapeHtml(item.name || '')}</p>
+        <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.venue || '')}</p>
+        ${period ? `<p class="card-meta">📅 ${escapeHtml(period)}</p>` : ''}
+        ${item.genre ? `<span class="hashtag">${escapeHtml(item.genre)}</span>` : ''}
+        <div class="card-actions">
+          <button class="btn-mini" data-culture-idx="${idx}">➕ 커뮤니티에 추가</button>
+        </div>
+      </div>`;
+    }).join('') + `</div>`;
+
+    box.querySelectorAll('[data-culture-idx]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const item = data.items[Number(btn.dataset.cultureIdx)];
+        addCultureSpotToCommunity(item, btn);
+      });
+    });
+  }catch(e){
+    box.innerHTML = '<div class="empty">조회 중 오류가 발생했어요.</div>';
+  }
+}
+
+async function addCultureSpotToCommunity(item, btn){
+  if(!supabaseReady){
+    alert('Supabase 설정이 아직 안 되어 있어요.');
+    return;
+  }
+  const city = document.getElementById('cultureCity').value;
+  const id = `culture_${item.id || Date.now()}`;
+  const row = {
+    id, city, name: item.name, theme: 'festival',
+    weekday: true, weekend: true,
+    rating: null, reviews: null, popularity: 50,
+    badge: null, source: 'community',
+    address: item.venue, link: null,
+  };
+  try{
+    const { error } = await supabaseClient.from('spots').insert(row);
+    if(error) throw error;
+    btn.textContent = '✅ 추가 완료';
+    btn.disabled = true;
+    SPOTS.push(row);
+    if(currentRegion) renderCards();
+  }catch(e){
+    console.error('공연정보 추가 실패', e);
+    alert('추가에 실패했어요 (이미 등록된 곳일 수 있어요).');
+  }
+}
+
+try{ initCulturePanel(); }catch(e){ console.warn('공연정보 패널 초기화 실패', e); }
+
 /* ---------------- 초기화 ---------------- */
 (async function init(){
   try{
@@ -1914,6 +2059,9 @@ try{ initGovPanel(); }catch(e){ console.warn('공공데이터 패널 초기화 �
     renderMap();
   }catch(e){ console.error('지도 렌더링 오류', e); }
   document.getElementById('cards').innerHTML = '<div class="empty">왼쪽 지도에서 지역을 먼저 선택해주세요.</div>';
+  try{
+    loadWeather('r1');
+  }catch(e){ console.warn('날씨 위젯 로드 실패', e); }
 })();
 </script>
 </body>
