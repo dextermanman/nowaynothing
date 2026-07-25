@@ -166,6 +166,23 @@ h1{
 }
 .legend i{width:8px;height:8px;border-radius:2px;display:inline-block;}
 
+/* 지도 아래 작은 탭 (관광DB / 공공데이터 / 공연·전시 / 화장실) */
+.side-tab-bar{display:flex;flex-wrap:wrap;gap:4px;margin-top:18px;margin-bottom:12px;border-top:1px solid var(--line);padding-top:14px;}
+.side-tab-btn{
+  flex:1;min-width:68px;padding:7px 4px;border-radius:8px;border:1px solid transparent;
+  background:var(--bg-sunken);color:var(--ink-dim);font-size:10.5px;font-weight:700;cursor:pointer;
+  font-family:'JetBrains Mono';white-space:nowrap;
+}
+.side-tab-btn.active{background:var(--route);color:#062018;}
+.side-tab-content .stacked-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.side-tab-content .stacked-controls select,
+.side-tab-content .stacked-controls input,
+.side-tab-content .stacked-controls button{
+  width:100%;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);
+  border-radius:8px;padding:8px 10px;font-size:12.5px;
+}
+.side-tab-content .cards{grid-template-columns:1fr;}
+
 /* 우측 컨텐츠 */
 .city-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
 .city-tab{
@@ -314,6 +331,60 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <p class="hint">간략화된 스키매틱 맵 (실제 좌표 아님, 위치감만 참고)</p>
       <svg id="map-svg" viewBox="0 0 320 330"></svg>
       <div class="legend" id="legend"></div>
+
+      <div class="side-tab-bar" id="sideTabBar">
+        <button class="side-tab-btn active" data-tab="tour">🧭 관광DB</button>
+        <button class="side-tab-btn" data-tab="gov">🇰🇷 공공데이터</button>
+        <button class="side-tab-btn" data-tab="culture">🎭 공연·전시</button>
+        <button class="side-tab-btn" data-tab="toilet">🚻 화장실</button>
+      </div>
+
+      <div class="side-tab-content" data-tab-content="tour">
+        <p class="hint">전국 관광지·음식점·숙박·레포츠 (26만 건). 마음에 들면 커뮤니티에 추가 가능.</p>
+        <div class="stacked-controls">
+          <select id="tourArea"></select>
+          <select id="tourType"></select>
+          <select id="tourCity" title="추가할 때 저장될 도시"></select>
+          <input id="tourKeyword" type="text" placeholder="키워드 (선택, 예: 계곡·전망대)">
+          <button id="tourSearchBtn" class="btn-mini">검색</button>
+        </div>
+        <div id="tourResults"></div>
+      </div>
+
+      <div class="side-tab-content" data-tab-content="gov" hidden>
+        <p class="hint">소아과는 요일별 진료시간 포함 (신고 기준, 방문 전 전화 확인 필수)</p>
+        <div class="stacked-controls">
+          <select id="govType">
+            <option value="hospital">🏥 소아과 병원 (진료시간 포함)</option>
+            <option value="museum">🏛️ 박물관·미술관</option>
+          </select>
+          <select id="govSido"></select>
+          <input id="govSigungu" type="text" placeholder="시군구 (예: 화성시, 아산시 — 비워도 됨)">
+          <button id="govSearchBtn" class="btn-mini">검색</button>
+        </div>
+        <div id="govResults"></div>
+      </div>
+
+      <div class="side-tab-content" data-tab-content="culture" hidden>
+        <p class="hint">다가오는 3개월 공연·전시. 마음에 들면 커뮤니티에 추가 가능.</p>
+        <div class="stacked-controls">
+          <select id="cultureSido"></select>
+          <select id="cultureCity" title="추가할 때 저장될 도시"></select>
+          <input id="cultureKeyword" type="text" placeholder="공연명 검색어 (선택)">
+          <button id="cultureSearchBtn" class="btn-mini">검색</button>
+        </div>
+        <div id="cultureResults"></div>
+      </div>
+
+      <div class="side-tab-content" data-tab-content="toilet" hidden>
+        <p class="hint">전국 공중화장실 (3.3만여 곳)</p>
+        <div class="stacked-controls">
+          <select id="toiletSido"></select>
+          <input id="toiletSigungu" type="text" placeholder="시군구 (예: 화성시)">
+          <button id="toiletSearchBtn" class="btn-mini">검색</button>
+        </div>
+        <div id="toiletResults"></div>
+      </div>
     </div>
 
     <div class="panel" id="rightPanel">
@@ -322,57 +393,6 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <div class="theme-chips" id="themeChips"></div>
       <div class="cards" id="cards"></div>
     </div>
-  </div>
-
-  <div class="panel ranking-panel" id="tourPanel" style="border-color:#4fae7a55;">
-    <h2>🧭 한국관광공사 공식 관광DB (전국 26만 건)</h2>
-    <p class="hint">전국 시·도별 관광지·음식점·숙박·레포츠를 사진과 함께 조회해요. 마음에 드는 곳은 바로 커뮤니티에 추가할 수 있습니다.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <select id="tourArea" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
-      <select id="tourType" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
-      <select id="tourCity" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;" title="추가할 때 저장될 도시"></select>
-      <input id="tourKeyword" type="text" placeholder="키워드 (선택, 예: 계곡·전망대)" style="flex:1;min-width:160px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
-      <button id="tourSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
-    </div>
-    <div id="tourResults"></div>
-  </div>
-
-  <div class="panel ranking-panel" id="govDataPanel" style="border-color:#7fb3ec55;">
-    <h2>🇰🇷 나라 데이터로 전국 어디든 검색 (공공데이터포털)</h2>
-    <p class="hint">시드 데이터에 없는 시·군·구도 전부 조회돼요. 소아과는 국립중앙의료원 데이터라 요일별 진료시간까지 나옵니다 (단, 신고 기준이라 방문 전 전화 확인 필수!)</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <select id="govType" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;">
-        <option value="hospital">🏥 소아과 병원 (진료시간 포함)</option>
-        <option value="museum">🏛️ 박물관·미술관</option>
-      </select>
-      <select id="govSido" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
-      <input id="govSigungu" type="text" placeholder="시군구 (예: 화성시, 아산시 — 비워도 됨)" style="flex:1;min-width:180px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
-      <button id="govSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
-    </div>
-    <div id="govResults"></div>
-  </div>
-
-  <div class="panel ranking-panel" id="culturePanel" style="border-color:#f2795a55;">
-    <h2>🎭 공연예술통합전산망(KOPIS) 공연·전시</h2>
-    <p class="hint">다가오는 3개월 공연·전시 정보를 조회해요. 마음에 드는 곳은 바로 커뮤니티에 추가할 수 있습니다.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <select id="cultureSido" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
-      <select id="cultureCity" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;" title="추가할 때 저장될 도시"></select>
-      <input id="cultureKeyword" type="text" placeholder="공연명 검색어 (선택)" style="flex:1;min-width:160px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
-      <button id="cultureSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
-    </div>
-    <div id="cultureResults"></div>
-  </div>
-
-  <div class="panel ranking-panel" id="toiletPanel" style="border-color:#8d9aa855;">
-    <h2>🚻 근처 공중화장실 찾기</h2>
-    <p class="hint">행정안전부 전국공중화장실표준데이터 (전국 3.3만여 곳)</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <select id="toiletSido" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px;"></select>
-      <input id="toiletSigungu" type="text" placeholder="시군구 (예: 화성시)" style="flex:1;min-width:160px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;">
-      <button id="toiletSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
-    </div>
-    <div id="toiletResults"></div>
   </div>
 
   <div class="panel ranking-panel" id="pediatricPanel" style="border-color:#e0554a55;">
@@ -1337,6 +1357,22 @@ async function fetchCamping(m){
 let currentRegion = null;
 let currentCity = null;
 let currentTheme = 'all';
+
+/* ---------------- 지도 아래 탭 (관광DB/공공데이터/공연·전시/화장실) ---------------- */
+function initSideTabs(){
+  const bar = document.getElementById('sideTabBar');
+  if(!bar) return;
+  bar.querySelectorAll('.side-tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const target = btn.dataset.tab;
+      bar.querySelectorAll('.side-tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
+      document.querySelectorAll('.side-tab-content').forEach(el=>{
+        el.hidden = el.dataset.tabContent !== target;
+      });
+    });
+  });
+}
+try{ initSideTabs(); }catch(e){ console.warn('탭 초기화 실패', e); }
 
 /* ---------------- 지도 렌더 ---------------- */
 const svg = document.getElementById('map-svg');
