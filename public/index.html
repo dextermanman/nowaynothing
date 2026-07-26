@@ -126,8 +126,24 @@ h1{
 }
 .mode-toggle button.active{background:var(--route);color:#062018;}
 
-.layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
-@media (max-width:880px){.layout{grid-template-columns:1fr;}}
+/* 데스크톱: 지도+검색탭이 왼쪽 컬럼(위/아래), 카드가 오른쪽 컬럼(전체 높이) */
+.layout{
+  display:grid;gap:20px;align-items:start;
+  grid-template-columns:340px 1fr;
+  grid-template-rows:min-content 1fr;
+  grid-template-areas:"map cards" "tools cards";
+}
+#leftPanel{grid-area:map;}
+#rightPanel{grid-area:cards;}
+#toolsPanel{grid-area:tools;}
+
+/* 모바일: 지도 → 카드(검색 결과) → 검색탭 순으로, 결과가 검색 UI보다 먼저 보이게 */
+@media (max-width:880px){
+  .layout{
+    grid-template-columns:1fr;
+    grid-template-areas:"map" "cards" "tools";
+  }
+}
 
 /* 오른쪽 카드가 길어져도 지도가 계속 보이도록 고정 */
 @media (min-width:881px){
@@ -335,7 +351,16 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
       <p class="hint">간략화된 스키매틱 맵 (실제 좌표 아님, 위치감만 참고)</p>
       <svg id="map-svg" viewBox="0 0 320 330"></svg>
       <div class="legend" id="legend"></div>
+    </div>
 
+    <div class="panel" id="rightPanel">
+      <h2 id="regionTitle">지역을 선택해주세요</h2>
+      <div class="city-tabs" id="cityTabs"></div>
+      <div class="theme-chips" id="themeChips"></div>
+      <div class="cards" id="cards"></div>
+    </div>
+
+    <div class="panel" id="toolsPanel">
       <div class="side-tab-bar" id="sideTabBar">
         <button class="side-tab-btn active" data-tab="tour">🧭 관광DB</button>
         <button class="side-tab-btn" data-tab="gov">🇰🇷 공공데이터</button>
@@ -399,13 +424,6 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
         </div>
         <div id="youtubeResults"></div>
       </div>
-    </div>
-
-    <div class="panel" id="rightPanel">
-      <h2 id="regionTitle">지역을 선택해주세요</h2>
-      <div class="city-tabs" id="cityTabs"></div>
-      <div class="theme-chips" id="themeChips"></div>
-      <div class="cards" id="cards"></div>
     </div>
   </div>
 
