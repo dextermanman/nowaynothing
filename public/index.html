@@ -290,7 +290,6 @@ h1{
     font-size:16px;      /* iOS에서 자동 확대되는 것 방지 */
     padding:11px 12px;
   }
-  #addPanel > div, #govDataPanel > div, #tourPanel > div{flex-direction:column;align-items:stretch;}
   .btn-mini{padding:11px 8px;font-size:12.5px;}
 
   .city-tabs{gap:6px;}
@@ -413,22 +412,6 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
         💬 아이안심톡<br><span style="font-size:10px;color:var(--ink-dim);">소아 응급 의료진 24시간 온라인 상담</span>
       </a>
     </div>
-  </div>
-
-  <div class="panel ranking-panel" id="addPanel">
-    <h2>🔎 실시간 검색으로 명소 추가</h2>
-    <p class="hint">네이버 지역검색·블로그 후기 API로 실시간 조회 → 마음에 들면 커뮤니티 DB에 바로 추가돼요 (모두에게 공유됩니다)</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <select id="addSearchType" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:9px 12px;">
-        <option value="local">📍 장소 검색</option>
-        <option value="blog">✍️ 블로그 후기 검색</option>
-      </select>
-      <select id="addCity" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:9px 12px;"></select>
-      <select id="addTheme" style="background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:9px 12px;"></select>
-      <input id="addQuery" type="text" placeholder="검색어 (예: 동탄 스타벅스, 화성 맛집)" style="flex:1;min-width:180px;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:9px 12px;">
-      <button id="addSearchBtn" class="btn-mini" style="flex:0 0 auto;padding:8px 16px;">검색</button>
-    </div>
-    <div id="addResults"></div>
   </div>
 
   <footer>DATA SOURCE: NAVER PLACE · GOOGLE SEARCH RANKING (PROXY ESTIMATE) · NAVER LOCAL SEARCH API (LIVE) — LIVE CHECK-IN/REVIEW: SUPABASE</footer>
@@ -1737,100 +1720,6 @@ function escapeHtml(str){
 }
 
 /* ---------------- 모드 토글 ---------------- */
-
-/* ---------------- 실시간 검색으로 명소 추가 (네이버 API + Supabase) ---------------- */
-function populateAddPanelDropdowns(){
-  const citySelect = document.getElementById('addCity');
-  const themeSelect = document.getElementById('addTheme');
-  const allCities = [];
-  Object.entries(CITIES).forEach(([regionId, list])=>{
-    list.forEach(c => allCities.push({ id:c.id, label:`${REGIONS.find(r=>r.id===regionId).name} · ${c.name}` }));
-  });
-  citySelect.innerHTML = allCities.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
-  themeSelect.innerHTML = Object.entries(THEMES).map(([key,t])=>`<option value="${key}">${t.label}</option>`).join('');
-}
-
-async function searchAndAdd(){
-  const query = document.getElementById('addQuery').value.trim();
-  const searchType = document.getElementById('addSearchType').value; // 'local' | 'blog'
-  const resultsBox = document.getElementById('addResults');
-  if(!query){ resultsBox.innerHTML = '<div class="empty">검색어를 입력해주세요.</div>'; return; }
-  resultsBox.innerHTML = '<div class="empty">검색 중…</div>';
-  try{
-    const res = await fetch(`/api/naver-search?query=${encodeURIComponent(query)}&type=${searchType}`);
-    const data = await res.json();
-    if(data.error){ resultsBox.innerHTML = `<div class="empty">오류: ${escapeHtml(data.error)}</div>`; return; }
-    if(!data.items || data.items.length === 0){ resultsBox.innerHTML = '<div class="empty">검색 결과가 없어요.</div>'; return; }
-
-    if(searchType === 'blog'){
-      // 블로그 후기는 정보 열람용 (커뮤니티 DB 추가 대상 아님, 원문 링크로 연결)
-      resultsBox.innerHTML = data.items.map(item=>{
-        const dateFmt = item.date && item.date.length===8 ? `${item.date.slice(0,4)}.${item.date.slice(4,6)}.${item.date.slice(6,8)}` : '';
-        return `
-        <div class="card" style="margin-bottom:10px;">
-          <p class="card-name">${escapeHtml(item.title)}</p>
-          <p class="card-meta" style="margin:4px 0 8px;">${escapeHtml(item.blogger || '')} ${dateFmt ? '· '+dateFmt : ''}</p>
-          <p class="hint" style="margin-bottom:8px;">${escapeHtml(item.description)}</p>
-          <a href="${item.link}" target="_blank" rel="noopener" class="btn-mini" style="display:inline-block;text-decoration:none;">원문 보기 →</a>
-        </div>`;
-      }).join('');
-      return;
-    }
-
-    resultsBox.innerHTML = data.items.map((item, idx)=>`
-      <div class="card" style="margin-bottom:10px;">
-        <p class="card-name">${escapeHtml(item.name)}</p>
-        <p class="card-meta" style="margin:4px 0 8px;">${escapeHtml(item.category || '')} · ${escapeHtml(item.address || '')}</p>
-        <button class="btn-mini" data-add-idx="${idx}">➕ 커뮤니티에 추가</button>
-      </div>
-    `).join('');
-
-    resultsBox.querySelectorAll('[data-add-idx]').forEach(btn=>{
-      btn.addEventListener('click', ()=> addSpotToCommunity(data.items[Number(btn.dataset.addIdx)], btn));
-    });
-  }catch(e){
-    resultsBox.innerHTML = '<div class="empty">검색 중 오류가 발생했어요.</div>';
-  }
-}
-
-async function addSpotToCommunity(item, btn){
-  if(!supabaseReady){
-    alert('Supabase 설정이 아직 안 되어 있어요. index.html 상단의 SUPABASE_URL / SUPABASE_ANON_KEY를 채워주세요.');
-    return;
-  }
-  const city = document.getElementById('addCity').value;
-  const theme = document.getElementById('addTheme').value;
-  const id = `community_${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
-
-  const row = {
-    id, city, name: item.name, theme,
-    weekday: true, weekend: true,
-    rating: null, reviews: null, popularity: 50,
-    badge: null, source: 'community',
-    address: item.address, link: item.link,
-  };
-
-  try{
-    const { error } = await supabaseClient.from('spots').insert(row);
-    if(error) throw error;
-    btn.textContent = '✅ 추가 완료';
-    btn.disabled = true;
-    // 지금 화면에도 바로 반영
-    SPOTS.push(row);
-    if(currentRegion) renderCards();
-  }catch(e){
-    console.error('명소 추가 실패', e);
-    alert('추가에 실패했어요. Supabase 테이블/정책 설정을 확인해주세요.');
-  }
-}
-
-try{
-  document.getElementById('addSearchBtn')?.addEventListener('click', searchAndAdd);
-  populateAddPanelDropdowns();
-}catch(e){
-  console.warn('실시간 검색 패널 초기화 실패', e);
-}
-
 /* ---------------- 한국관광공사 TourAPI ---------------- */
 const TOUR_AREAS = [
   {code:'1', name:'서울'}, {code:'2', name:'인천'}, {code:'3', name:'대전'},
