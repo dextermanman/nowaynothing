@@ -1267,7 +1267,7 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps, festivals, museums, clinics, parkings] = await Promise.all([
+  const [general, stays, camps, festivals, museums, clinics, parkings, cafes] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
@@ -1275,6 +1275,7 @@ async function loadTourSpots(cityId){
     fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
     fetchHospitals(m),                                      // 소아청소년과 (국립중앙의료원)
     fetchParking(m),                                        // 전국 주차장 표준데이터
+    fetchOne(buildUrl({ rows:'12', contentTypeId:'39', cat1:'A05', cat2:'A0502', cat3:'A05020900' })), // 음식점 중 카페/전통찻집만
   ]);
 
   const seen = new Set();
@@ -1359,6 +1360,22 @@ async function loadTourSpots(cityId){
       pkCharge: pk.charge, pkBasicTime: pk.basicTime, pkBasicCharge: pk.basicCharge,
       pkOpen: (pk.weekdayOpen && pk.weekdayClose) ? `${pk.weekdayOpen}~${pk.weekdayClose}` : null,
       fromParking: true, fromTour: true,
+    });
+  });
+
+  // 카페·디저트 합치기 (관광공사 음식점 중 카페/전통찻집 세부분류만)
+  cafes.forEach(c=>{
+    if(!c.contentId || seen.has(c.contentId)) return;
+    seen.add(c.contentId);
+    spots.push({
+      id: `cafe_${c.contentId}`,
+      city: cityId,
+      name: c.name,
+      theme: 'cafe',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: c.image, address: c.address, tel: c.tel,
+      fromTour: true,
     });
   });
 
