@@ -1562,6 +1562,11 @@ function renderThemeChips(){
 function bookingSearchUrl(name){
   return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(`${name} 예약`);
 }
+// 음식점은 캐치테이블에 입점한 곳만 앱 내 예약이 되고, 식당별 정확한 캐치테이블 링크를 알아낼 공개 API가 없어서
+// "이름 + 캐치테이블 예약"으로 네이버 검색을 열어줍니다 (입점된 곳은 검색 결과에 캐치테이블 예약 버튼이 바로 떠요).
+function catchTableSearchUrl(name){
+  return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(`${name} 캐치테이블 예약`);
+}
 
 // 축제 기간을 보기 좋게 표시하고, 지금 진행 중이면 강조합니다.
 function festivalBadge(s){
@@ -1624,6 +1629,7 @@ function spotCardHTML(s){
       ` : ''}
       <div class="tag-row">${getTags(s).map(tg=>`<span class="hashtag">${tg}</span>`).join('')}</div>
       ${s.theme === 'stay' ? `<a href="${bookingSearchUrl(s.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 가능한 곳 보기</a>` : ''}
+      ${s.theme === 'food' ? `<a href="${catchTableSearchUrl(s.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 찾기</a>` : ''}
       <div class="card-actions">
         <button class="btn-mini" data-checkin="${s.id}">✅ 다녀왔어요 (<span class="checkin-count" data-count="${s.id}">-</span>)</button>
         <button class="btn-mini" data-toggle="${s.id}">💬 후기 보기</button>
@@ -1871,6 +1877,8 @@ async function searchTour(){
           <p class="card-name">${escapeHtml(item.name || '')}</p>
           <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '주소 정보 없음')}</p>
           ${item.tel ? `<p class="card-meta">📞 ${escapeHtml(item.tel)}</p>` : ''}
+          ${theme === 'stay' ? `<a href="${bookingSearchUrl(item.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 가능한 곳 보기</a>` : ''}
+          ${theme === 'food' ? `<a href="${catchTableSearchUrl(item.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 찾기</a>` : ''}
           <div class="card-actions">
             <button class="btn-mini" data-tour-idx="${idx}">➕ 커뮤니티에 추가</button>
           </div>
