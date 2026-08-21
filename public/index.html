@@ -1558,14 +1558,19 @@ function renderThemeChips(){
 }
 
 /* ---------------- 카드 ---------------- */
-// 숙소·풀빌라는 자체 예약 시스템이 없어서, 네이버에서 가격·후기·예약 링크를 바로 비교할 수 있도록 검색으로 연결합니다.
-function bookingSearchUrl(name){
-  return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(`${name} 예약`);
+// 식당·숙소별 정확한 캐치테이블/부킹 딥링크를 알아낼 공개 API가 없어서, 이름(+지역)으로
+// 네이버 지도의 장소 상세 화면으로 바로 연결합니다. 일반 웹검색과 달리 그 업체의 플레이스 카드가
+// 곧장 뜨고, 캐치테이블·네이버예약·웨이팅에 입점된 곳이면 그 카드 안에 예약 버튼이 함께 보여요.
+function naverMapLink(name, address){
+  const hint = address ? String(address).trim().split(/\s+/).slice(0, 2).join(' ') : '';
+  const q = hint ? `${name} ${hint}` : name;
+  return 'https://map.naver.com/p/search/' + encodeURIComponent(q);
 }
-// 음식점은 캐치테이블에 입점한 곳만 앱 내 예약이 되고, 식당별 정확한 캐치테이블 링크를 알아낼 공개 API가 없어서
-// "이름 + 캐치테이블 예약"으로 네이버 검색을 열어줍니다 (입점된 곳은 검색 결과에 캐치테이블 예약 버튼이 바로 떠요).
-function catchTableSearchUrl(name){
-  return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(`${name} 캐치테이블 예약`);
+function bookingSearchUrl(name, address){
+  return naverMapLink(name, address);
+}
+function catchTableSearchUrl(name, address){
+  return naverMapLink(name, address);
 }
 
 // 축제 기간을 보기 좋게 표시하고, 지금 진행 중이면 강조합니다.
@@ -1628,8 +1633,8 @@ function spotCardHTML(s){
         <p class="hint" style="margin:8px 0 0;color:var(--amber);font-size:11px;">⚠️ 신고 기준 정보예요. 방문 전 꼭 전화로 확인하세요.</p>
       ` : ''}
       <div class="tag-row">${getTags(s).map(tg=>`<span class="hashtag">${tg}</span>`).join('')}</div>
-      ${s.theme === 'stay' ? `<a href="${bookingSearchUrl(s.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 가능한 곳 보기</a>` : ''}
-      ${s.theme === 'food' ? `<a href="${catchTableSearchUrl(s.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 찾기</a>` : ''}
+      ${s.theme === 'stay' ? `<a href="${bookingSearchUrl(s.name, s.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 정보 보기</a>` : ''}
+      ${s.theme === 'food' ? `<a href="${catchTableSearchUrl(s.name, s.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 보기</a>` : ''}
       <div class="card-actions">
         <button class="btn-mini" data-checkin="${s.id}">✅ 다녀왔어요 (<span class="checkin-count" data-count="${s.id}">-</span>)</button>
         <button class="btn-mini" data-toggle="${s.id}">💬 후기 보기</button>
@@ -1877,8 +1882,8 @@ async function searchTour(){
           <p class="card-name">${escapeHtml(item.name || '')}</p>
           <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '주소 정보 없음')}</p>
           ${item.tel ? `<p class="card-meta">📞 ${escapeHtml(item.tel)}</p>` : ''}
-          ${theme === 'stay' ? `<a href="${bookingSearchUrl(item.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 가능한 곳 보기</a>` : ''}
-          ${theme === 'food' ? `<a href="${catchTableSearchUrl(item.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 찾기</a>` : ''}
+          ${theme === 'stay' ? `<a href="${bookingSearchUrl(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 정보 보기</a>` : ''}
+          ${theme === 'food' ? `<a href="${catchTableSearchUrl(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 보기</a>` : ''}
           <div class="card-actions">
             <button class="btn-mini" data-tour-idx="${idx}">➕ 커뮤니티에 추가</button>
           </div>
@@ -1976,7 +1981,7 @@ async function searchStay(){
           <p class="card-name">${escapeHtml(item.name || '')}</p>
           <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '주소 정보 없음')}</p>
           ${item.tel ? `<p class="card-meta">📞 ${escapeHtml(item.tel)}</p>` : ''}
-          <a href="${bookingSearchUrl(item.name)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 가능한 곳 보기</a>
+          <a href="${bookingSearchUrl(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 정보 보기</a>
           <div class="card-actions">
             <button class="btn-mini" data-stay-idx="${idx}">➕ 커뮤니티에 추가</button>
           </div>
@@ -2005,7 +2010,7 @@ async function addStaySpotToCommunity(item, btn){
     weekday: true, weekend: true,
     rating: null, reviews: null, popularity: 50,
     badge: null, source: 'community',
-    address: item.address, link: bookingSearchUrl(item.name),
+    address: item.address, link: bookingSearchUrl(item.name, item.address),
   };
   try{
     const { error } = await supabaseClient.from('spots').insert(row);
