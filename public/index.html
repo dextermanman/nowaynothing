@@ -30,6 +30,8 @@
 }
 
 *{box-sizing:border-box;}
+::selection{background:var(--route);color:#062018;}
+:focus-visible{outline:2px solid var(--route);outline-offset:2px;border-radius:6px;}
 body{
   margin:0;
   background: radial-gradient(ellipse at 20% 0%, #17171a 0%, var(--bg) 55%);
@@ -38,6 +40,7 @@ body{
   min-height:100vh;
   transition: background .2s, color .2s;
   -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
 }
 
 html[data-theme="light"]{
@@ -94,37 +97,38 @@ html[data-theme="cute"] .mode-toggle button.active{ color:#fff; }
 ::-webkit-scrollbar{width:8px;height:8px;}
 ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
 
-.wrap{max-width:1240px;margin:0 auto;padding:40px 24px 70px;}
+.wrap{max-width:1280px;margin:0 auto;padding:48px 24px 76px;}
 
 header{
   display:flex;justify-content:space-between;align-items:flex-end;
   gap:20px;flex-wrap:wrap;
   border-bottom:1px solid var(--line);
-  padding-bottom:28px;margin-bottom:32px;
+  padding-bottom:32px;margin-bottom:36px;
 }
 .brand-eyebrow{
   font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;
-  color:var(--route);text-transform:uppercase;margin:0 0 10px;
+  color:var(--route);text-transform:uppercase;margin:0 0 12px;
 }
 h1{
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Noto Sans KR',sans-serif;
-  font-size:40px;font-weight:800;margin:0;letter-spacing:-.02em;line-height:1.15;
+  font-size:42px;font-weight:700;margin:0;letter-spacing:-.03em;line-height:1.1;
   color:var(--heading);
 }
-.subtitle{color:var(--ink-dim);font-size:14px;margin-top:10px;max-width:560px;line-height:1.6;}
+.subtitle{color:var(--ink-dim);font-size:14.5px;margin-top:12px;max-width:560px;line-height:1.65;font-weight:400;}
 .method-tag{
-  font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);
-  border:1px solid var(--line);border-radius:20px;padding:6px 14px;display:inline-flex;
-  align-items:center;gap:6px;margin-top:14px;background:var(--bg-sunken);
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:11.5px;color:var(--ink-dim);
+  border:none;border-radius:14px;padding:8px 14px;display:inline-flex;
+  align-items:flex-start;gap:7px;margin-top:16px;background:var(--bg-sunken);line-height:1.5;max-width:640px;
 }
-.method-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);}
+.method-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);margin-top:6px;flex:0 0 auto;}
 
-.mode-toggle{display:flex;gap:6px;background:var(--bg-sunken);border:1px solid var(--line);border-radius:14px;padding:4px;}
+.mode-toggle{display:flex;gap:4px;background:var(--bg-sunken);border:1px solid var(--line);border-radius:999px;padding:4px;}
 .mode-toggle button{
   border:none;background:transparent;color:var(--ink-dim);font-family:inherit;
-  font-weight:600;font-size:13px;padding:9px 16px;border-radius:11px;cursor:pointer;transition:.2s var(--ease);
+  font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;cursor:pointer;transition:.2s var(--ease);
 }
 .mode-toggle button.active{background:var(--route);color:#062018;}
+.mode-toggle button:active,.btn-mini:active,.chip:active,.city-tab:active,.side-tab-btn:active{transform:scale(.96);}
 
 /* 데스크톱: 지도+검색탭이 왼쪽 컬럼(위/아래), 카드가 오른쪽 컬럼(전체 높이) */
 .layout{
@@ -158,11 +162,12 @@ h1{
 }
 
 .panel{
-  background:var(--bg-panel);border:1px solid var(--line);border-radius:20px;padding:20px;
-  box-shadow:0 1px 2px rgba(0,0,0,.24), 0 8px 24px rgba(0,0,0,.18);
+  background:var(--bg-panel);border:1px solid var(--line);border-radius:22px;padding:22px;
+  box-shadow:0 1px 1px rgba(0,0,0,.2), 0 10px 30px rgba(0,0,0,.16);
+  transition:box-shadow .3s var(--ease);
 }
-.panel h2{font-size:14px;margin:0 0 4px;color:var(--heading);font-weight:700;}
-.panel .hint{font-size:11.5px;color:var(--ink-dim);margin:0 0 14px;}
+.panel h2{font-size:15px;margin:0 0 4px;color:var(--heading);font-weight:700;letter-spacing:-.01em;}
+.panel .hint{font-size:11.5px;color:var(--ink-dim);margin:0 0 14px;line-height:1.5;}
 
 /* 지도 */
 #map-svg{width:100%;height:auto;overflow:visible;}
@@ -186,13 +191,13 @@ h1{
 .legend i{width:8px;height:8px;border-radius:2px;display:inline-block;}
 
 /* 지도 아래 작은 탭 (관광DB / 공공데이터 / 공연·전시 / 화장실) */
-.side-tab-bar{display:flex;flex-wrap:wrap;gap:4px;margin-top:18px;margin-bottom:12px;border-top:1px solid var(--line);padding-top:16px;}
+.side-tab-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:20px;margin-bottom:14px;background:var(--bg-sunken);border-radius:12px;padding:3px;}
 .side-tab-btn{
-  flex:1;min-width:68px;padding:7px 4px;border-radius:10px;border:1px solid transparent;
-  background:var(--bg-sunken);color:var(--ink-dim);font-size:10.5px;font-weight:600;cursor:pointer;
+  padding:8px 4px;border-radius:9px;border:none;
+  background:transparent;color:var(--ink-dim);font-size:10.5px;font-weight:600;cursor:pointer;
   font-family:inherit;white-space:nowrap;transition:.2s var(--ease);
 }
-.side-tab-btn.active{background:var(--route);color:#062018;}
+.side-tab-btn.active{background:var(--bg-card);color:var(--heading);box-shadow:0 1px 4px rgba(0,0,0,.2);}
 .side-tab-content .stacked-controls{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
 .side-tab-content .stacked-controls select,
 .side-tab-content .stacked-controls input,
@@ -200,14 +205,18 @@ h1{
   width:100%;background:var(--bg-sunken);border:1px solid var(--line);color:var(--ink);
   border-radius:12px;padding:9px 12px;font-size:12.5px;transition:.2s var(--ease);
 }
+.side-tab-content .stacked-controls select:focus,
+.side-tab-content .stacked-controls input:focus{border-color:var(--route);}
+.side-tab-content .stacked-controls button{background:var(--route);color:#062018;font-weight:700;border:none;cursor:pointer;}
 .side-tab-content .cards{grid-template-columns:1fr;}
 
 /* 우측 컨텐츠 */
 .city-tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
 .city-tab{
-  padding:8px 16px;border-radius:20px;border:1px solid var(--line);background:var(--bg-card);
+  padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--bg-card);
   color:var(--ink-dim);font-size:13px;font-weight:600;cursor:pointer;transition:.2s var(--ease);
 }
+.city-tab:hover{border-color:var(--route);color:var(--ink);}
 .city-tab.active{background:var(--route);color:#062018;border-color:var(--route);}
 
 .weather-widget{
@@ -221,62 +230,65 @@ h1{
 .weather-widget .ww-min{color:#5b9bd5;}
 .weather-widget .ww-pop{color:#5b9bd5;font-weight:800;}
 
-.theme-chips{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.theme-chips{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
 .chip{
-  padding:6px 13px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;
+  padding:6px 13px;border-radius:999px;font-size:11.5px;font-weight:600;cursor:pointer;
   border:1px solid transparent;color:#0d1420;opacity:.55;transition:.2s var(--ease);
 }
+.chip:hover{opacity:.8;}
 .chip.active{opacity:1;box-shadow:0 0 0 2px currentColor inset;}
 
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(264px,1fr));gap:16px;}
 .card{
-  background:var(--bg-card);border:1px solid var(--line);border-radius:18px;padding:16px;
-  position:relative;overflow:hidden;transition:transform .25s var(--ease), box-shadow .25s var(--ease);
+  background:var(--bg-card);border:1px solid var(--line);border-radius:20px;padding:18px;
+  position:relative;overflow:hidden;transition:transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
 }
-.card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.28);}
+.card:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(0,0,0,.22);border-color:color-mix(in srgb, var(--tag-color, var(--route)) 45%, var(--line));}
 .card-link{display:block;color:inherit;text-decoration:none;}
-.card::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tag-color,var(--route));
-}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
-.card-name{font-size:15.5px;font-weight:700;color:var(--heading);margin:0 0 4px;}
-.card-theme{font-size:10.5px;color:var(--tag-color,var(--route));font-weight:700;font-family:'JetBrains Mono';}
-.badges{display:flex;gap:5px;margin:9px 0;flex-wrap:wrap;}
-.badge{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700;font-family:'JetBrains Mono';}
+.card-name{font-size:15.5px;font-weight:700;color:var(--heading);margin:0 0 6px;letter-spacing:-.01em;line-height:1.35;}
+.card-theme{
+  font-size:10px;color:var(--tag-color,var(--route));font-weight:700;font-family:'JetBrains Mono';
+  display:inline-flex;padding:3px 9px;border-radius:999px;background:color-mix(in srgb, var(--tag-color, var(--route)) 16%, transparent);
+}
+.badges{display:flex;gap:5px;margin:10px 0;flex-wrap:wrap;}
+.badge{font-size:10px;padding:3px 9px;border-radius:999px;font-weight:700;font-family:'JetBrains Mono';}
 .badge.source-jyj{background:#e0554a22;color:#ff8a7a;}
 .badge.source-bbcs{background:#0d0d0d;color:#fff;border:1px solid #444;}
 
 .index-row{display:flex;align-items:center;gap:8px;margin:10px 0 6px;}
-.index-bar{flex:1;height:6px;background:#0d1725;border-radius:3px;overflow:hidden;}
+.index-bar{flex:1;height:5px;background:var(--bg-sunken);border-radius:3px;overflow:hidden;}
 .index-fill{height:100%;background:linear-gradient(90deg,var(--route),var(--jade));border-radius:3px;}
 .index-num{font-family:'JetBrains Mono';font-size:11px;color:var(--ink-dim);min-width:30px;text-align:right;}
 
 .card-meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ink-dim);font-family:'JetBrains Mono';margin-top:2px;}
 
 .tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
-.hashtag{font-size:10.5px;color:#8b9bb4;background:var(--bg-sunken);border:1px solid var(--line);border-radius:6px;padding:3px 7px;font-family:'JetBrains Mono';}
+.hashtag{font-size:10.5px;color:#8b9bb4;background:var(--bg-sunken);border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-family:'JetBrains Mono';}
 
-.card-actions{display:flex;gap:6px;margin-top:12px;}
+.card-actions{display:flex;gap:6px;margin-top:14px;}
 .btn-mini{
   flex:1;border:1px solid var(--line);background:var(--bg-sunken);color:var(--ink);
-  border-radius:20px;padding:8px 6px;font-size:11.5px;font-weight:600;cursor:pointer;transition:.2s var(--ease);
+  border-radius:999px;padding:9px 6px;font-size:11.5px;font-weight:600;cursor:pointer;transition:.2s var(--ease);
 }
 .btn-mini:hover{border-color:var(--route);color:var(--route);}
 .btn-mini.checked{background:var(--route);color:#062018;border-color:var(--route);}
 
 .reviews{display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;}
 .reviews.open{display:block;}
-.review-item{font-size:12px;color:var(--ink-dim);padding:7px 0;border-bottom:1px solid #1c2740;}
+.review-item{font-size:12px;color:var(--ink-dim);padding:7px 0;border-bottom:1px solid var(--line);}
 .review-item b{color:var(--ink);}
 .review-form{display:flex;gap:6px;margin-top:8px;}
 .review-form input{
-  flex:1;background:var(--bg-sunken);border:1px solid var(--line);border-radius:7px;color:var(--ink);
-  padding:7px 9px;font-size:12px;font-family:'Noto Sans KR';
+  flex:1;background:var(--bg-sunken);border:1px solid var(--line);border-radius:999px;color:var(--ink);
+  padding:8px 12px;font-size:12px;font-family:'Noto Sans KR';transition:.2s var(--ease);
 }
+.review-form input:focus{border-color:var(--route);}
 .review-form button{
-  background:var(--route);border:none;color:#062018;font-weight:700;border-radius:7px;
-  padding:0 12px;cursor:pointer;font-size:12px;
+  background:var(--route);border:none;color:#062018;font-weight:700;border-radius:999px;
+  padding:0 14px;cursor:pointer;font-size:12px;transition:.2s var(--ease);
 }
+.review-form button:active{transform:scale(.96);}
 
 /* 랭킹 섹션 */
 .ranking-panel{margin-top:22px;}
@@ -855,6 +867,22 @@ const SEED_SPOTS = [
   {id:'jeonjumuseum', city:'jeonju', name:'국립전주박물관', theme:'museum', weekday:true, weekend:true, rating:4.4, reviews:'6천', popularity:52},
   {id:'chuncheonmuseum', city:'chuncheon', name:'국립춘천박물관', theme:'museum', weekday:true, weekend:true, rating:4.4, reviews:'5천', popularity:48},
   {id:'jejufolkmuseum', city:'jejucity', name:'제주민속자연사박물관', theme:'museum', weekday:true, weekend:true, rating:4.4, reviews:'8천', popularity:55},
+
+  // 최근 화제 · 신규 핫플레이스 (2021~2025년 개장/급부상)
+  {id:'thehyundaiseoul', city:'seoul', name:'더현대 서울', theme:'night', weekday:true, weekend:true, rating:4.6, reviews:'4.5만', popularity:91},
+  {id:'seongsucafe', city:'c1_성동구', name:'성수동 카페거리(에스팩토리·대림창고)', theme:'night', weekday:true, weekend:true, rating:4.5, reviews:'2.8만', popularity:84},
+  {id:'lgartcenter', city:'c1_강서구', name:'LG아트센터 서울(마곡)', theme:'culture', weekday:true, weekend:true, rating:4.6, reviews:'3천', popularity:55},
+  {id:'inspireresort', city:'c2_중구', name:'인스파이어 리조트·아레나(영종도)', theme:'activity', weekday:true, weekend:true, rating:4.4, reviews:'1.1만', popularity:83},
+  {id:'starfieldcheongna', city:'c2_서구', name:'스타필드 청라', theme:'night', weekday:true, weekend:true, rating:4.5, reviews:'9천', popularity:81},
+  {id:'lotteworldbusan', city:'c6_기장군', name:'롯데월드 어드벤처 부산(오시리아)', theme:'activity', weekday:true, weekend:true, rating:4.4, reviews:'2.6만', popularity:79},
+  {id:'waveon', city:'c6_기장군', name:'웨이브온 커피(오시리아 오션뷰)', theme:'food', weekday:true, weekend:true, rating:4.3, reviews:'1.2만', popularity:65},
+  {id:'daegukansong', city:'daegu', name:'대구간송미술관', theme:'museum', weekday:true, weekend:true, rating:4.5, reviews:'4천', popularity:58},
+  {id:'museumsan', city:'c32_원주시', name:'뮤지엄 산(원주)', theme:'museum', weekday:true, weekend:true, rating:4.7, reviews:'1.9만', popularity:74},
+  {id:'starfieldhanam', city:'c31_하남시', name:'스타필드 하남', theme:'night', weekday:true, weekend:true, rating:4.5, reviews:'3.4만', popularity:82},
+  {id:'gwangmyeongcave', city:'c31_광명시', name:'광명동굴', theme:'activity', weekday:true, weekend:true, rating:4.3, reviews:'1.5만', popularity:61},
+  {id:'dumulmeori', city:'c31_양평군', name:'두물머리(양평)', theme:'nature', weekday:true, weekend:true, rating:4.5, reviews:'1.3만', popularity:64},
+  {id:'oedobotania', city:'c36_거제시', name:'외도 보타니아', theme:'nature', weekday:true, weekend:true, rating:4.6, reviews:'1.4만', popularity:67},
+  {id:'germanvillage', city:'c36_남해군', name:'남해 독일마을', theme:'culture', weekday:true, weekend:true, rating:4.4, reviews:'9천', popularity:58},
 ];
 
 /* ---------------- Supabase 설정 ---------------- */
