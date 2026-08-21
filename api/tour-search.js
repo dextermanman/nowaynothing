@@ -75,7 +75,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'DATA_GO_KR_KEY 환경변수가 없습니다.' });
   }
 
-  const { areaCode, sigunguName, contentTypeId, keyword, page, rows, mode } = req.query;
+  const { areaCode, sigunguName, contentTypeId, keyword, page, rows, mode, cat1, cat2, cat3 } = req.query;
   if (!areaCode && !keyword) {
     return res.status(400).json({ error: 'areaCode 또는 keyword 중 하나는 필요합니다.' });
   }
@@ -98,6 +98,10 @@ export default async function handler(req, res) {
       if (areaCode) params.set('areaCode', areaCode);
       if (contentTypeId && !isFestival) params.set('contentTypeId', contentTypeId);
       if (isKeywordSearch) params.set('keyword', keyword.trim());
+      // 세부 카테고리(cat1>cat2>cat3)로 좁혀서 검색 — 예: 음식점 중 카페만, 관광지 중 사찰만
+      if (cat1 && !isFestival) params.set('cat1', cat1);
+      if (cat2 && !isFestival) params.set('cat2', cat2);
+      if (cat3 && !isFestival) params.set('cat3', cat3);
 
       // 축제는 조회 시작일이 필수 — 오늘 날짜 기준으로 진행 중/예정 행사를 가져옵니다.
       if (isFestival) {

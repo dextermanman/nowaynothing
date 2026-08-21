@@ -514,6 +514,9 @@ const THEMES = {
   festival: {label:'축제·행사',     color:'#de8268'},
   clinic:   {label:'소아과',        color:'#ce7188'},
   parking:  {label:'주차장',        color:'#8d9aa8'},
+  cafe:      {label:'카페·디저트',   color:'#c9a27a'},
+  hotspring: {label:'온천·스파',     color:'#e0a45c'},
+  temple:    {label:'사찰·템플스테이', color:'#a3b57d'},
 };
 
 const REGIONS = [
@@ -892,6 +895,14 @@ const SEED_SPOTS = [
   {id:'dumulmeori', city:'c31_양평군', name:'두물머리(양평)', theme:'nature', weekday:true, weekend:true, rating:4.5, reviews:'1.3만', popularity:64},
   {id:'oedobotania', city:'c36_거제시', name:'외도 보타니아', theme:'nature', weekday:true, weekend:true, rating:4.6, reviews:'1.4만', popularity:67},
   {id:'germanvillage', city:'c36_남해군', name:'남해 독일마을', theme:'culture', weekday:true, weekend:true, rating:4.4, reviews:'9천', popularity:58},
+
+  // 카페·디저트 / 온천·스파 / 사찰·템플스테이 (신규 테마 시작 명소)
+  {id:'terarosa', city:'gangneung', name:'테라로사 커피공장', theme:'cafe', weekday:true, weekend:true, rating:4.5, reviews:'2.1만', popularity:73},
+  {id:'myeongwolschool', city:'jejucity', name:'명월국민학교(폐교카페)', theme:'cafe', weekday:true, weekend:true, rating:4.4, reviews:'1.3만', popularity:66},
+  {id:'yuseongspa', city:'daejeon', name:'유성온천 거리', theme:'hotspring', weekday:true, weekend:true, rating:4.2, reviews:'8천', popularity:55},
+  {id:'bugokhawaii', city:'c36_창녕군', name:'부곡하와이', theme:'hotspring', weekday:true, weekend:true, rating:4.1, reviews:'1.0만', popularity:52},
+  {id:'haeinsa', city:'c36_합천군', name:'해인사', theme:'temple', weekday:true, weekend:true, rating:4.7, reviews:'2.3만', popularity:69},
+  {id:'tongdosa', city:'c36_양산시', name:'통도사', theme:'temple', weekday:true, weekend:true, rating:4.7, reviews:'1.8만', popularity:65},
 ];
 
 /* ---------------- Supabase 설정 ---------------- */
@@ -944,6 +955,9 @@ function getTags(spot){
     festival: ['#축제', '#행사', '#이번주말'],
     clinic:   ['#소아과', '#아이아플때'],
     parking:  ['#주차장', '#주차정보'],
+    cafe:      ['#카페', '#디저트', '#인생샷카페'],
+    hotspring: ['#온천', '#스파', '#힐링여행'],
+    temple:    ['#사찰', '#템플스테이', '#고요한여행'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -1847,14 +1861,19 @@ const TOUR_AREAS = [
 ];
 
 // TourAPI 분류 → 이 대시보드의 테마로 매핑
+// cat1/cat2/cat3: TourAPI 세부 분류 코드로 같은 contentTypeId 안에서 더 좁게 필터링
+// (예: 음식점(39) 중 카페/전통찻집(A05020900)만, 관광지(12) 중 사찰(A02010800)만)
 const TOUR_TYPES = [
-  {id:'12', label:'관광지',        theme:'nature'},
-  {id:'14', label:'문화시설',      theme:'culture'},
-  {id:'15', label:'축제·공연·행사', theme:'festival'},
-  {id:'28', label:'레포츠',        theme:'activity'},
-  {id:'32', label:'숙박(호텔·펜션·풀빌라)', theme:'stay'},
-  {id:'38', label:'쇼핑',          theme:'night'},
-  {id:'39', label:'음식점',        theme:'food'},
+  {key:'12',          id:'12', label:'관광지',        theme:'nature'},
+  {key:'14',          id:'14', label:'문화시설',      theme:'culture'},
+  {key:'15',          id:'15', label:'축제·공연·행사', theme:'festival'},
+  {key:'28',          id:'28', label:'레포츠',        theme:'activity'},
+  {key:'32',          id:'32', label:'숙박(호텔·펜션·풀빌라)', theme:'stay'},
+  {key:'38',          id:'38', label:'쇼핑',          theme:'night'},
+  {key:'39',          id:'39', label:'음식점',        theme:'food'},
+  {key:'39cafe',      id:'39', label:'카페·디저트',    theme:'cafe', cat1:'A05', cat2:'A0502', cat3:'A05020900'},
+  {key:'12hotspring', id:'12', label:'온천·스파',      theme:'hotspring', cat1:'A02', cat2:'A0202', cat3:'A02020300'},
+  {key:'12temple',    id:'12', label:'사찰·템플스테이', theme:'temple', cat1:'A02', cat2:'A0201', cat3:'A02010800'},
 ];
 
 function initTourPanel(){
@@ -1865,7 +1884,7 @@ function initTourPanel(){
 
   areaSel.innerHTML = TOUR_AREAS.map(a=>`<option value="${a.code}">${a.name}</option>`).join('');
   areaSel.value = '31';
-  typeSel.innerHTML = TOUR_TYPES.map(t=>`<option value="${t.id}">${t.label}</option>`).join('');
+  typeSel.innerHTML = TOUR_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('');
 
   const allCities = [];
   Object.entries(CITIES).forEach(([regionId, list])=>{
@@ -1879,13 +1898,17 @@ function initTourPanel(){
 
 async function searchTour(){
   const areaCode = document.getElementById('tourArea').value;
-  const contentTypeId = document.getElementById('tourType').value;
+  const typeKey = document.getElementById('tourType').value;
+  const typeDef = TOUR_TYPES.find(t=>t.key===typeKey) || TOUR_TYPES[0];
   const keyword = document.getElementById('tourKeyword').value.trim();
   const box = document.getElementById('tourResults');
   box.innerHTML = '<div class="empty">관광공사 데이터 조회 중…</div>';
 
-  const qs = new URLSearchParams({ areaCode, contentTypeId });
+  const qs = new URLSearchParams({ areaCode, contentTypeId: typeDef.id });
   if(keyword) qs.set('keyword', keyword);
+  if(typeDef.cat1) qs.set('cat1', typeDef.cat1);
+  if(typeDef.cat2) qs.set('cat2', typeDef.cat2);
+  if(typeDef.cat3) qs.set('cat3', typeDef.cat3);
 
   try{
     const res = await fetch(`/api/tour-search?${qs.toString()}`);
@@ -1905,8 +1928,7 @@ async function searchTour(){
     }
     if(!data.items || data.items.length === 0){ box.innerHTML = '<div class="empty">결과가 없어요. 키워드를 비우거나 분류를 바꿔보세요.</div>'; return; }
 
-    const mapped = TOUR_TYPES.find(t=>t.id===contentTypeId);
-    const theme = mapped ? mapped.theme : 'nature';
+    const theme = typeDef.theme;
 
     box.innerHTML = `<p class="hint" style="margin-bottom:10px;">총 ${data.total}건 중 20건 · 출처: ${escapeHtml(data.source||'TourAPI')}</p>`
       + `<div class="cards">` + data.items.map((item, idx)=>`
