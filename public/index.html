@@ -1267,7 +1267,7 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps, festivals, museums, clinics, parkings, cafes, hotsprings, temples] = await Promise.all([
+  const [general, stays, camps, festivals, museums, clinics, parkings, cafes, hotsprings, temples, foods] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
@@ -1278,6 +1278,7 @@ async function loadTourSpots(cityId){
     fetchOne(buildUrl({ rows:'100', contentTypeId:'39', cat1:'A05', cat2:'A0502', cat3:'A05020900' })), // 음식점 중 카페/전통찻집만 (카페는 워낙 많아서 시군구 단위면 사실상 전량)
     fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0202', cat3:'A02020300' })), // 관광지 중 온천/욕장/스파만
     fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0201', cat3:'A02010800' })), // 관광지 중 사찰만
+    fetchOne(buildUrl({ rows:'40', contentTypeId:'39' })), // 음식점 전체(카페 포함) — 카페는 아래서 seen으로 걸러냄
   ]);
 
   const seen = new Set();
@@ -1409,6 +1410,22 @@ async function loadTourSpots(cityId){
       weekday: true, weekend: true,
       rating: null, reviews: null, popularity: 50,
       image: t.image, address: t.address, tel: t.tel,
+      fromTour: true,
+    });
+  });
+
+  // 음식점 합치기 (카페는 위에서 이미 seen에 담겼으니 자동으로 걸러짐 → 카페 아닌 식당만 남음)
+  foods.forEach(f=>{
+    if(!f.contentId || seen.has(f.contentId)) return;
+    seen.add(f.contentId);
+    spots.push({
+      id: `food_${f.contentId}`,
+      city: cityId,
+      name: f.name,
+      theme: 'food',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: f.image, address: f.address, tel: f.tel,
       fromTour: true,
     });
   });
