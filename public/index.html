@@ -1275,7 +1275,7 @@ async function loadTourSpots(cityId){
     fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
     fetchHospitals(m),                                      // 소아청소년과 (국립중앙의료원)
     fetchParking(m),                                        // 전국 주차장 표준데이터
-    fetchOne(buildUrl({ rows:'30', contentTypeId:'39', cat1:'A05', cat2:'A0502', cat3:'A05020900' })), // 음식점 중 카페/전통찻집만 (카페는 워낙 많아서 넉넉히)
+    fetchOne(buildUrl({ rows:'100', contentTypeId:'39', cat1:'A05', cat2:'A0502', cat3:'A05020900' })), // 음식점 중 카페/전통찻집만 (카페는 워낙 많아서 시군구 단위면 사실상 전량)
     fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0202', cat3:'A02020300' })), // 관광지 중 온천/욕장/스파만
     fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0201', cat3:'A02010800' })), // 관광지 중 사찰만
   ]);
@@ -1971,7 +1971,7 @@ async function searchTour(){
   const box = document.getElementById('tourResults');
   box.innerHTML = '<div class="empty">관광공사 데이터 조회 중…</div>';
 
-  const qs = new URLSearchParams({ areaCode, contentTypeId: typeDef.id });
+  const qs = new URLSearchParams({ areaCode, contentTypeId: typeDef.id, rows: '50' });
   if(keyword) qs.set('keyword', keyword);
   if(typeDef.cat1) qs.set('cat1', typeDef.cat1);
   if(typeDef.cat2) qs.set('cat2', typeDef.cat2);
@@ -1997,7 +1997,7 @@ async function searchTour(){
 
     const theme = typeDef.theme;
 
-    box.innerHTML = `<p class="hint" style="margin-bottom:10px;">총 ${data.total}건 중 20건 · 출처: ${escapeHtml(data.source||'TourAPI')}</p>`
+    box.innerHTML = `<p class="hint" style="margin-bottom:10px;">총 ${data.total}건 중 ${data.items.length}건 · 출처: ${escapeHtml(data.source||'TourAPI')}</p>`
       + `<div class="cards">` + data.items.map((item, idx)=>`
         <div class="card" style="--tag-color:${THEMES[theme].color}">
           ${item.image ? `<img src="${item.image}" alt="" loading="lazy" style="width:100%;height:130px;object-fit:cover;border-radius:10px;margin-bottom:10px;">` : ''}
