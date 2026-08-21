@@ -1275,7 +1275,7 @@ async function loadTourSpots(cityId){
     fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
     fetchHospitals(m),                                      // 소아청소년과 (국립중앙의료원)
     fetchParking(m),                                        // 전국 주차장 표준데이터
-    fetchOne(buildUrl({ rows:'12', contentTypeId:'39', cat1:'A05', cat2:'A0502', cat3:'A05020900' })), // 음식점 중 카페/전통찻집만
+    fetchOne(buildUrl({ rows:'30', contentTypeId:'39', cat1:'A05', cat2:'A0502', cat3:'A05020900' })), // 음식점 중 카페/전통찻집만 (카페는 워낙 많아서 넉넉히)
     fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0202', cat3:'A02020300' })), // 관광지 중 온천/욕장/스파만
     fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0201', cat3:'A02010800' })), // 관광지 중 사찰만
   ]);
