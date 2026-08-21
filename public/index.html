@@ -1267,7 +1267,7 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps, festivals, museums, clinics, parkings, cafes] = await Promise.all([
+  const [general, stays, camps, festivals, museums, clinics, parkings, cafes, hotsprings, temples] = await Promise.all([
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
@@ -1276,6 +1276,8 @@ async function loadTourSpots(cityId){
     fetchHospitals(m),                                      // 소아청소년과 (국립중앙의료원)
     fetchParking(m),                                        // 전국 주차장 표준데이터
     fetchOne(buildUrl({ rows:'12', contentTypeId:'39', cat1:'A05', cat2:'A0502', cat3:'A05020900' })), // 음식점 중 카페/전통찻집만
+    fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0202', cat3:'A02020300' })), // 관광지 중 온천/욕장/스파만
+    fetchOne(buildUrl({ rows:'12', contentTypeId:'12', cat1:'A02', cat2:'A0201', cat3:'A02010800' })), // 관광지 중 사찰만
   ]);
 
   const seen = new Set();
@@ -1375,6 +1377,38 @@ async function loadTourSpots(cityId){
       weekday: true, weekend: true,
       rating: null, reviews: null, popularity: 50,
       image: c.image, address: c.address, tel: c.tel,
+      fromTour: true,
+    });
+  });
+
+  // 온천·스파 합치기 (관광공사 관광지 중 온천/욕장/스파 세부분류만)
+  hotsprings.forEach(h=>{
+    if(!h.contentId || seen.has(h.contentId)) return;
+    seen.add(h.contentId);
+    spots.push({
+      id: `hotspring_${h.contentId}`,
+      city: cityId,
+      name: h.name,
+      theme: 'hotspring',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: h.image, address: h.address, tel: h.tel,
+      fromTour: true,
+    });
+  });
+
+  // 사찰·템플스테이 합치기 (관광공사 관광지 중 사찰 세부분류만)
+  temples.forEach(t=>{
+    if(!t.contentId || seen.has(t.contentId)) return;
+    seen.add(t.contentId);
+    spots.push({
+      id: `temple_${t.contentId}`,
+      city: cityId,
+      name: t.name,
+      theme: 'temple',
+      weekday: true, weekend: true,
+      rating: null, reviews: null, popularity: 50,
+      image: t.image, address: t.address, tel: t.tel,
       fromTour: true,
     });
   });
