@@ -8,7 +8,7 @@
 <title>대한민국 지역 나들이 레이더</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
 
 :root{
   --bg: #000000;
@@ -106,21 +106,20 @@ header{
   padding-bottom:32px;margin-bottom:36px;
 }
 .brand-eyebrow{
-  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;
-  color:var(--route);text-transform:uppercase;margin:0 0 12px;
+  font-size:12.5px;letter-spacing:.02em;font-weight:600;
+  color:var(--route);margin:0 0 10px;
 }
 h1{
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Noto Sans KR',sans-serif;
-  font-size:42px;font-weight:700;margin:0;letter-spacing:-.03em;line-height:1.1;
+  font-size:40px;font-weight:700;margin:0;letter-spacing:-.03em;line-height:1.1;
   color:var(--heading);
 }
-.subtitle{color:var(--ink-dim);font-size:14.5px;margin-top:12px;max-width:560px;line-height:1.65;font-weight:400;}
+.subtitle{color:var(--ink-dim);font-size:14.5px;margin-top:10px;max-width:560px;line-height:1.65;font-weight:400;}
 .method-tag{
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:11.5px;color:var(--ink-dim);
-  border:none;border-radius:14px;padding:8px 14px;display:inline-flex;
-  align-items:flex-start;gap:7px;margin-top:16px;background:var(--bg-sunken);line-height:1.5;max-width:640px;
+  font-size:11.5px;color:var(--ink-dim);
+  padding:0;display:block;
+  margin-top:14px;line-height:1.6;max-width:600px;opacity:.75;
 }
-.method-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);margin-top:6px;flex:0 0 auto;}
+.method-tag .dot{display:none;}
 
 .mode-toggle{display:flex;gap:4px;background:var(--bg-sunken);border:1px solid var(--line);border-radius:999px;padding:4px;}
 .mode-toggle button{
@@ -181,12 +180,11 @@ h1{
   font-family:'Noto Sans KR';font-size:12.5px;font-weight:700;fill:var(--heading);
   pointer-events:none;text-anchor:middle;
 }
-.region-sub{font-family:'JetBrains Mono';font-size:9px;fill:#0d1420cc;text-anchor:middle;pointer-events:none;}
+.region-sub{font-family:'Noto Sans KR';font-size:9px;fill:#0d1420cc;text-anchor:middle;pointer-events:none;}
 
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
 .legend span{
   font-size:10.5px;color:var(--ink-dim);display:flex;align-items:center;gap:5px;
-  font-family:'JetBrains Mono';
 }
 .legend i{width:8px;height:8px;border-radius:2px;display:inline-block;}
 
@@ -248,23 +246,23 @@ h1{
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
 .card-name{font-size:15.5px;font-weight:700;color:var(--heading);margin:0 0 6px;letter-spacing:-.01em;line-height:1.35;}
 .card-theme{
-  font-size:10px;color:var(--tag-color,var(--route));font-weight:700;font-family:'JetBrains Mono';
-  display:inline-flex;padding:3px 9px;border-radius:999px;background:color-mix(in srgb, var(--tag-color, var(--route)) 16%, transparent);
+  font-size:10.5px;color:var(--tag-color,var(--route));font-weight:600;
+  display:inline-flex;padding:3px 9px;border-radius:999px;background:color-mix(in srgb, var(--tag-color, var(--route)) 14%, transparent);
 }
 .badges{display:flex;gap:5px;margin:10px 0;flex-wrap:wrap;}
-.badge{font-size:10px;padding:3px 9px;border-radius:999px;font-weight:700;font-family:'JetBrains Mono';}
-.badge.source-jyj{background:#e0554a22;color:#ff8a7a;}
-.badge.source-bbcs{background:#0d0d0d;color:#fff;border:1px solid #444;}
+.badge{font-size:10.5px;padding:3px 9px;border-radius:999px;font-weight:600;}
+.badge.source-jyj{background:color-mix(in srgb, var(--red) 16%, transparent);color:var(--red);}
+.badge.source-bbcs{background:var(--bg-sunken);color:var(--ink);border:1px solid var(--line);}
 
 .index-row{display:flex;align-items:center;gap:8px;margin:10px 0 6px;}
 .index-bar{flex:1;height:5px;background:var(--bg-sunken);border-radius:3px;overflow:hidden;}
 .index-fill{height:100%;background:linear-gradient(90deg,var(--route),var(--jade));border-radius:3px;}
-.index-num{font-family:'JetBrains Mono';font-size:11px;color:var(--ink-dim);min-width:30px;text-align:right;}
+.index-num{font-size:11px;color:var(--ink-dim);font-weight:600;min-width:30px;text-align:right;}
 
-.card-meta{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--ink-dim);font-family:'JetBrains Mono';margin-top:2px;}
+.card-meta{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--ink-dim);margin-top:2px;}
 
 .tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}
-.hashtag{font-size:10.5px;color:#8b9bb4;background:var(--bg-sunken);border:1px solid var(--line);border-radius:999px;padding:3px 9px;font-family:'JetBrains Mono';}
+.hashtag{font-size:11px;color:var(--ink-dim);background:var(--bg-sunken);border:1px solid var(--line);border-radius:999px;padding:3px 9px;}
 
 .card-actions{display:flex;gap:6px;margin-top:14px;}
 .btn-mini{
@@ -303,8 +301,7 @@ h1{
   header{gap:14px;padding-bottom:14px;margin-bottom:16px;}
   h1{font-size:25px;line-height:1.25;}
   .subtitle{font-size:12.5px;}
-  .method-tag{font-size:10px;padding:6px 10px;line-height:1.5;align-items:flex-start;}
-  .method-tag .dot{margin-top:5px;flex:0 0 auto;}
+  .method-tag{font-size:10.5px;line-height:1.55;}
 
   .layout{gap:14px;}
   .panel{padding:14px;border-radius:14px;}
@@ -338,7 +335,7 @@ h1{
   h1{font-size:22px;}
   .card img{height:150px;}
 }
-footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;font-family:'JetBrains Mono';}
+footer{text-align:center;color:var(--ink-dim);font-size:11.5px;margin-top:30px;opacity:.7;}
 </style>
 </head>
 <body>
@@ -439,7 +436,7 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
     </div>
   </div>
 
-  <div class="panel ranking-panel" id="pediatricPanel" style="border-color:#e0554a55;">
+  <div class="panel ranking-panel" id="pediatricPanel" style="border-color:color-mix(in srgb, var(--red) 35%, var(--line));">
     <h2>🏥 우리 아이 소아과, 지금 문 연 곳 찾기</h2>
     <p class="hint">병원 영업시간은 이 대시보드 데이터가 아니라, 실시간으로 정확한 정부 공식 서비스로 바로 연결해드려요 (점심시간·휴진·야간진료 변동이 잦아 고정 정보로 넣으면 위험해요)</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
@@ -455,7 +452,7 @@ footer{text-align:center;color:var(--ink-dim);font-size:11px;margin-top:30px;fon
     </div>
   </div>
 
-  <footer>DATA SOURCE: NAVER PLACE · GOOGLE SEARCH RANKING (PROXY ESTIMATE) · NAVER LOCAL SEARCH API (LIVE) — LIVE CHECK-IN/REVIEW: SUPABASE</footer>
+  <footer>데이터 출처: 네이버 플레이스 · 구글 검색 순위(추정치) · 네이버 지역 검색 API(실시간) — 후기·체크인은 Supabase에 실시간 저장됩니다</footer>
 </div>
 
 <script>
@@ -492,39 +489,39 @@ document.getElementById('themeToggle')?.addEventListener('click', ()=>{
 
 /* ---------------- 데이터 ---------------- */
 const THEMES = {
-  nature:   {label:'자연',        color:'#4fae7a'},
-  culture:  {label:'문화·역사',   color:'#e8c766'},
-  food:     {label:'맛집',        color:'#e0554a'},
-  activity: {label:'액티비티',    color:'#2dd4bf'},
-  night:    {label:'쇼핑·야경',   color:'#9b8cf2'},
-  family:   {label:'키즈·풀빌라', color:'#ec7fb0'},
-  public:   {label:'공공기관',    color:'#7fb3ec'},
-  museum:   {label:'박물관·과학관', color:'#c98fdb'},
-  stay:     {label:'숙소·풀빌라',   color:'#5b9bd5'},
-  camping:  {label:'캠핑·글램핑',   color:'#7aa86a'},
-  festival: {label:'축제·행사',     color:'#f2795a'},
-  clinic:   {label:'소아과',        color:'#e05a7a'},
+  nature:   {label:'자연',        color:'#6fae86'},
+  culture:  {label:'문화·역사',   color:'#d9c07a'},
+  food:     {label:'맛집',        color:'#d97b6f'},
+  activity: {label:'액티비티',    color:'#4fc2b0'},
+  night:    {label:'쇼핑·야경',   color:'#a99bdd'},
+  family:   {label:'키즈·풀빌라', color:'#dd93b6'},
+  public:   {label:'공공기관',    color:'#8db4de'},
+  museum:   {label:'박물관·과학관', color:'#bb9bce'},
+  stay:     {label:'숙소·풀빌라',   color:'#77a0cc'},
+  camping:  {label:'캠핑·글램핑',   color:'#85a478'},
+  festival: {label:'축제·행사',     color:'#de8268'},
+  clinic:   {label:'소아과',        color:'#ce7188'},
   parking:  {label:'주차장',        color:'#8d9aa8'},
 };
 
 const REGIONS = [
-  { id:'r2', name:'인천', sub:'10개 지역', x:8, y:10, w:70, h:52, color:'#2dd4bf' },
-  { id:'r1', name:'서울', sub:'25개 지역', x:86, y:10, w:70, h:52, color:'#e0554a' },
-  { id:'r31', name:'경기', sub:'31개 지역', x:164, y:10, w:70, h:52, color:'#9b8cf2' },
-  { id:'r32', name:'강원', sub:'18개 지역', x:242, y:10, w:70, h:52, color:'#4fae7a' },
-  { id:'r34', name:'충남', sub:'15개 지역', x:8, y:70, w:70, h:52, color:'#e8c766' },
-  { id:'r3', name:'대전', sub:'5개 지역', x:86, y:70, w:70, h:52, color:'#f2a65a' },
-  { id:'r8', name:'세종', sub:'1개 지역', x:164, y:70, w:70, h:52, color:'#7fb3ec' },
-  { id:'r33', name:'충북', sub:'11개 지역', x:242, y:70, w:70, h:52, color:'#e8c766' },
-  { id:'r37', name:'전북', sub:'14개 지역', x:8, y:130, w:70, h:52, color:'#e0554a' },
-  { id:'r35', name:'경북', sub:'22개 지역', x:86, y:130, w:70, h:52, color:'#9b8cf2' },
-  { id:'r4', name:'대구', sub:'9개 지역', x:164, y:130, w:70, h:52, color:'#2dd4bf' },
-  { id:'r7', name:'울산', sub:'5개 지역', x:242, y:130, w:70, h:52, color:'#f2a65a' },
-  { id:'r5', name:'광주', sub:'5개 지역', x:8, y:190, w:70, h:52, color:'#4fae7a' },
-  { id:'r38', name:'전남', sub:'22개 지역', x:86, y:190, w:70, h:52, color:'#4fae7a' },
-  { id:'r36', name:'경남', sub:'18개 지역', x:164, y:190, w:70, h:52, color:'#e0554a' },
-  { id:'r6', name:'부산', sub:'16개 지역', x:242, y:190, w:70, h:52, color:'#2dd4bf' },
-  { id:'r39', name:'제주', sub:'2개 지역', x:8, y:250, w:304, h:52, color:'#f2a65a' },
+  { id:'r2', name:'인천', sub:'10개 지역', x:8, y:10, w:70, h:52, color:'#4fc2b0' },
+  { id:'r1', name:'서울', sub:'25개 지역', x:86, y:10, w:70, h:52, color:'#d97b6f' },
+  { id:'r31', name:'경기', sub:'31개 지역', x:164, y:10, w:70, h:52, color:'#a99bdd' },
+  { id:'r32', name:'강원', sub:'18개 지역', x:242, y:10, w:70, h:52, color:'#6fae86' },
+  { id:'r34', name:'충남', sub:'15개 지역', x:8, y:70, w:70, h:52, color:'#d9c07a' },
+  { id:'r3', name:'대전', sub:'5개 지역', x:86, y:70, w:70, h:52, color:'#dba873' },
+  { id:'r8', name:'세종', sub:'1개 지역', x:164, y:70, w:70, h:52, color:'#8db4de' },
+  { id:'r33', name:'충북', sub:'11개 지역', x:242, y:70, w:70, h:52, color:'#d9c07a' },
+  { id:'r37', name:'전북', sub:'14개 지역', x:8, y:130, w:70, h:52, color:'#d97b6f' },
+  { id:'r35', name:'경북', sub:'22개 지역', x:86, y:130, w:70, h:52, color:'#a99bdd' },
+  { id:'r4', name:'대구', sub:'9개 지역', x:164, y:130, w:70, h:52, color:'#4fc2b0' },
+  { id:'r7', name:'울산', sub:'5개 지역', x:242, y:130, w:70, h:52, color:'#dba873' },
+  { id:'r5', name:'광주', sub:'5개 지역', x:8, y:190, w:70, h:52, color:'#6fae86' },
+  { id:'r38', name:'전남', sub:'22개 지역', x:86, y:190, w:70, h:52, color:'#6fae86' },
+  { id:'r36', name:'경남', sub:'18개 지역', x:164, y:190, w:70, h:52, color:'#d97b6f' },
+  { id:'r6', name:'부산', sub:'16개 지역', x:242, y:190, w:70, h:52, color:'#4fc2b0' },
+  { id:'r39', name:'제주', sub:'2개 지역', x:8, y:250, w:304, h:52, color:'#dba873' },
 ];
 
 const CITIES = {
