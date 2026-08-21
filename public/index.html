@@ -1558,19 +1558,51 @@ function renderThemeChips(){
 }
 
 /* ---------------- 카드 ---------------- */
-// 식당·숙소별 정확한 캐치테이블/부킹 딥링크를 알아낼 공개 API가 없어서, 이름(+지역)으로
-// 네이버 지도의 장소 상세 화면으로 바로 연결합니다. 일반 웹검색과 달리 그 업체의 플레이스 카드가
-// 곧장 뜨고, 캐치테이블·네이버예약·웨이팅에 입점된 곳이면 그 카드 안에 예약 버튼이 함께 보여요.
+// 모든 명소 카드에서 "네이버 지도에서 보기"로 위치를 바로 확인할 수 있는 링크입니다.
 function naverMapLink(name, address){
   const hint = address ? String(address).trim().split(/\s+/).slice(0, 2).join(' ') : '';
   const q = hint ? `${name} ${hint}` : name;
   return 'https://map.naver.com/p/search/' + encodeURIComponent(q);
 }
+// 예전엔 이 함수들이 지도 검색으로만 연결됐는데, 이제 클릭 시 openReservationLink()가
+// /api/place-search로 그 업체가 네이버에 등록해둔 실제 링크(캐치테이블·테이블링·자체 홈페이지 등)를
+// 먼저 찾아보고, 없으면 이 지도 검색으로 대신 이동합니다.
 function bookingSearchUrl(name, address){
   return naverMapLink(name, address);
 }
 function catchTableSearchUrl(name, address){
   return naverMapLink(name, address);
+}
+
+// 식당·숙소는 업체마다 예약 플랫폼(캐치테이블/테이블링/네이버예약/자체 홈페이지)이 달라서,
+// 통일된 예약 API가 없습니다. 대신 네이버 지역검색에 그 업체가 등록해둔 실제 링크를 찾아서 열어주고,
+// 등록된 링크가 없으면 네이버 지도 검색으로 대체합니다.
+// 팝업 차단을 피하려고 클릭과 동시에 빈 탭을 먼저 열고, fetch가 끝나면 그 탭의 주소를 바꿉니다.
+async function openReservationLink(name, address, fallbackUrl){
+  const win = window.open('', '_blank');
+  if(win) win.opener = null;
+  try{
+    const hint = address ? String(address).trim().split(/\s+/).slice(0, 2).join(' ') : '';
+    const query = hint ? `${name} ${hint}` : name;
+    const res = await fetch(`/api/place-search?query=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    const top = data?.items?.find(it => it.link);
+    const url = top ? top.link : fallbackUrl;
+    if(win && !win.closed) win.location.href = url;
+    else window.open(url, '_blank');
+  }catch(e){
+    if(win && !win.closed) win.location.href = fallbackUrl;
+    else window.open(fallbackUrl, '_blank');
+  }
+}
+
+// data-reserve 버튼을 가진 범위에 예약 링크 클릭 핸들러를 걸어줍니다.
+function wireReserveButtons(scope){
+  (scope || document).querySelectorAll('[data-reserve]').forEach(btn=>{
+    if(btn.dataset.reserveBound) return;
+    btn.dataset.reserveBound = '1';
+    btn.addEventListener('click', ()=> openReservationLink(btn.dataset.name, btn.dataset.address, btn.dataset.fallback));
+  });
 }
 
 // 축제 기간을 보기 좋게 표시하고, 지금 진행 중이면 강조합니다.
@@ -1633,8 +1665,8 @@ function spotCardHTML(s){
         <p class="hint" style="margin:8px 0 0;color:var(--amber);font-size:11px;">⚠️ 신고 기준 정보예요. 방문 전 꼭 전화로 확인하세요.</p>
       ` : ''}
       <div class="tag-row">${getTags(s).map(tg=>`<span class="hashtag">${tg}</span>`).join('')}</div>
-      ${s.theme === 'stay' ? `<a href="${bookingSearchUrl(s.name, s.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 정보 보기</a>` : ''}
-      ${s.theme === 'food' ? `<a href="${catchTableSearchUrl(s.name, s.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 보기</a>` : ''}
+      ${(s.theme === 'stay' || s.theme === 'food') ? `<button type="button" class="btn-mini" data-reserve data-name="${escapeHtml(s.name)}" data-address="${escapeHtml(s.address||'')}" data-fallback="${escapeHtml(s.theme==='stay' ? bookingSearchUrl(s.name, s.address) : catchTableSearchUrl(s.name, s.address))}" style="display:block;width:100%;text-align:center;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">${s.theme==='stay' ? '📅' : '🍽️'} 예약 페이지 열기</button>` : ''}
+      <a href="${naverMapLink(s.name, s.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;width:100%;text-align:center;text-decoration:none;margin-top:8px;">🗺️ 네이버 지도에서 보기</a>
       <div class="card-actions">
         <button class="btn-mini" data-checkin="${s.id}">✅ 다녀왔어요 (<span class="checkin-count" data-count="${s.id}">-</span>)</button>
         <button class="btn-mini" data-toggle="${s.id}">💬 후기 보기</button>
@@ -1672,6 +1704,7 @@ function bindCardEvents(scope, spots){
     if(btn.dataset.bound) return; btn.dataset.bound='1';
     btn.addEventListener('click', ()=> submitReview(btn.dataset.submit));
   });
+  wireReserveButtons(scope);
 }
 
 let renderSeq = 0;
@@ -1882,8 +1915,8 @@ async function searchTour(){
           <p class="card-name">${escapeHtml(item.name || '')}</p>
           <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '주소 정보 없음')}</p>
           ${item.tel ? `<p class="card-meta">📞 ${escapeHtml(item.tel)}</p>` : ''}
-          ${theme === 'stay' ? `<a href="${bookingSearchUrl(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 정보 보기</a>` : ''}
-          ${theme === 'food' ? `<a href="${catchTableSearchUrl(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">🍽️ 캐치테이블 예약 보기</a>` : ''}
+          ${(theme === 'stay' || theme === 'food') ? `<button type="button" class="btn-mini" data-reserve data-name="${escapeHtml(item.name)}" data-address="${escapeHtml(item.address||'')}" data-fallback="${escapeHtml(theme==='stay' ? bookingSearchUrl(item.name, item.address) : catchTableSearchUrl(item.name, item.address))}" style="display:block;width:100%;text-align:center;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">${theme==='stay' ? '📅' : '🍽️'} 예약 페이지 열기</button>` : ''}
+          <a href="${naverMapLink(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;width:100%;text-align:center;text-decoration:none;margin-top:8px;">🗺️ 네이버 지도에서 보기</a>
           <div class="card-actions">
             <button class="btn-mini" data-tour-idx="${idx}">➕ 커뮤니티에 추가</button>
           </div>
@@ -1895,6 +1928,7 @@ async function searchTour(){
         addTourSpotToCommunity(item, theme, btn);
       });
     });
+    wireReserveButtons(box);
   }catch(e){
     box.innerHTML = '<div class="empty">조회 중 오류가 발생했어요.</div>';
   }
@@ -1981,7 +2015,8 @@ async function searchStay(){
           <p class="card-name">${escapeHtml(item.name || '')}</p>
           <p class="card-meta" style="margin:4px 0;">${escapeHtml(item.address || '주소 정보 없음')}</p>
           ${item.tel ? `<p class="card-meta">📞 ${escapeHtml(item.tel)}</p>` : ''}
-          <a href="${bookingSearchUrl(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;text-align:center;text-decoration:none;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 정보 보기</a>
+          <button type="button" class="btn-mini" data-reserve data-name="${escapeHtml(item.name)}" data-address="${escapeHtml(item.address||'')}" data-fallback="${escapeHtml(bookingSearchUrl(item.name, item.address))}" style="display:block;width:100%;text-align:center;background:var(--route);color:#062018;border-color:var(--route);font-weight:700;margin-top:10px;">📅 예약 페이지 열기</button>
+          <a href="${naverMapLink(item.name, item.address)}" target="_blank" rel="noopener" class="btn-mini" style="display:block;width:100%;text-align:center;text-decoration:none;margin-top:8px;">🗺️ 네이버 지도에서 보기</a>
           <div class="card-actions">
             <button class="btn-mini" data-stay-idx="${idx}">➕ 커뮤니티에 추가</button>
           </div>
@@ -1993,6 +2028,7 @@ async function searchStay(){
         addStaySpotToCommunity(item, btn);
       });
     });
+    wireReserveButtons(box);
   }catch(e){
     box.innerHTML = '<div class="empty">조회 중 오류가 발생했어요.</div>';
   }
