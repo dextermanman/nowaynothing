@@ -76,7 +76,8 @@ export default async function handler(req, res) {
   }
 
   const { areaCode, sigunguName, contentTypeId, keyword, page, rows, mode, cat1, cat2, cat3 } = req.query;
-  if (!areaCode && !keyword) {
+  // 축제는 전국 단위 조회도 허용 (이번 달 축제 모아보기용)
+  if (!areaCode && !keyword && mode !== 'festival') {
     return res.status(400).json({ error: 'areaCode 또는 keyword 중 하나는 필요합니다.' });
   }
 
@@ -93,7 +94,7 @@ export default async function handler(req, res) {
       const params = baseParams(key, {
         numOfRows: rows || '18',
         pageNo: page || '1',
-        arrange: 'O',
+        arrange: req.query.arrange || 'O',
       });
       if (areaCode) params.set('areaCode', areaCode);
       if (contentTypeId && !isFestival) params.set('contentTypeId', contentTypeId);
