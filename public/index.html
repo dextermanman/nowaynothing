@@ -3477,7 +3477,11 @@ async function loadPicks(){
     box.innerHTML = `<div class="empty">${course ? '이 지역엔 등록된 추천 코스가 아직 없어요. ‘추천 여행지’를 눌러보세요.' : '추천 여행지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.'}</div>`;
     return;
   }
-  const areaName = (addr)=> String(addr || '').split(/\s+/)[0].replace(/(특별자치도|특별자치시|특별시|광역시|도)$/, '');
+  const SHORT = { 경상북:'경북', 경상남:'경남', 충청북:'충북', 충청남:'충남', 전라북:'전북', 전라남:'전남', 전남광주통합:'광주·전남' };
+  const areaName = (addr)=>{
+    const head = String(addr || '').split(/\s+/)[0].replace(/(특별자치도|특별자치시|특별시|광역시|도)$/, '');
+    return SHORT[head] || head;
+  };
   box.innerHTML = items.map(it=>{
     const spot = { id:`tour_${it.contentId}`, name:it.name, theme: course ? 'activity' : 'nature', address:it.address, image:it.image };
     SPOT_INDEX[spot.id] = spot;
@@ -3649,7 +3653,7 @@ const I18N = {
   '추천':'Picks', '추천 여행지':'Top picks', '추천 코스':'Suggested routes', '이번 주 추천 여행지':'This week’s picks', '다른 곳 보기':'Shuffle',
   '한국관광공사에 등록된 관광지와 여행코스에서 매주 새로 골라드려요. 내 지역을 고르면 그 지역 위주로 바뀌어요.':'Fresh picks every week from the Korea Tourism Organization’s attractions and routes. Choose a region to focus on it.',
   '코스 자세히 보기':'See route', '이 지역엔 등록된 추천 코스가 아직 없어요. ‘추천 여행지’를 눌러보세요.':'No suggested routes for this region yet. Try “Top picks”.',
-  '추천 여행지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.':'Couldn’t load picks. Please try again shortly.', '추천 여행지 ›':'Top picks ›',
+  '추천 여행지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.':'Couldn’t load picks. Please try again shortly.', '광주·전남':'Gwangju · Jeonnam',
   // 랜덤 뽑기
   '랜덤 나들이 뽑기':'Random trip picker', '닫기':'Close', '오늘의 랜덤 나들이':'Today’s random trip', '두구두구…':'Drumroll…',
   '다시 굴리기':'Roll again', '가보자고!':'Let’s go!',
