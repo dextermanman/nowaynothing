@@ -229,7 +229,7 @@ svg{flex:none;}
 .wrap{max-width:1200px;margin:0 auto;padding:0 24px 72px;}
 
 /* ───────── 히어로 ───────── */
-.hero{position:relative;text-align:center;padding:96px 0 64px;isolation:isolate;}
+.hero{position:relative;text-align:center;padding:84px 0 40px;isolation:isolate;}
 .hero-glow{
   position:absolute;inset:-60px -20vw auto;height:560px;z-index:-1;pointer-events:none;
   background:
@@ -271,7 +271,9 @@ h1{
 .btn-lg.brand:hover{filter:brightness(1.06);}
 .btn-lg.ghost{background:var(--fill);color:var(--ink);}
 .btn-lg.ghost:hover{background:var(--fill-strong);}
-.quick-regions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:44px auto 0;max-width:760px;}
+.quick-caption{font-size:13px;color:var(--ink-dim);margin:44px 0 0;}
+.quick-regions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:14px auto 0;max-width:760px;}
+.quick-regions button.active{background:var(--ink);color:var(--bg-panel);}
 .quick-regions button{
   border:none;background:var(--bg-panel);color:var(--ink);font-size:14px;font-weight:500;
   padding:9px 17px;border-radius:999px;cursor:pointer;box-shadow:var(--shadow);
@@ -288,7 +290,7 @@ h1{
 .stats span{font-size:12.5px;color:var(--ink-dim);}
 
 /* ───────── 섹션 ───────── */
-.section{padding-top:80px;}
+.section{padding-top:72px;}
 .section-head{margin-bottom:24px;max-width:720px;}
 .kicker{
   font-size:13px;font-weight:700;letter-spacing:.06em;margin:0 0 8px;
@@ -639,7 +641,8 @@ footer .brand-mark svg{width:13px;height:13px;}
   .subtitle{font-size:16.5px;}
   .eyebrow-pill{font-size:12px;}
   .btn-lg{height:46px;font-size:15px;padding:0 20px;}
-  .quick-regions{gap:6px;margin-top:32px;}
+  .quick-regions{gap:6px;margin-top:12px;}
+  .quick-caption{margin-top:32px;font-size:12.5px;}
   .quick-regions button{padding:8px 14px;font-size:13px;}
   .stats{margin-top:36px;padding-top:22px;}
   .stats b{font-size:22px;}
@@ -690,11 +693,11 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
   <div class="topnav-inner">
     <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-logo"/></svg></span>가보자고</a>
     <div class="nav-links" id="navLinks">
-      <a href="#explore" data-spy="explore">지역 탐색</a>
-      <a href="#food" data-spy="food">맛집</a>
       <a href="#festival" data-spy="festival">축제</a>
-      <a href="#search" data-spy="search">검색</a>
+      <a href="#food" data-spy="food">맛집</a>
+      <a href="#explore" data-spy="explore">지역 탐색</a>
       <a href="#saved" data-spy="saved">저장함 <span class="nav-count" data-saved-count></span></a>
+      <a href="#search" data-spy="search">검색</a>
       <a href="#kids" data-spy="kids">아이와 함께</a>
     </div>
     <div class="nav-actions">
@@ -707,21 +710,21 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
   </div>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#explore">지역 탐색 <span>›</span></a>
-  <a href="#food">맛집 <span>›</span></a>
   <a href="#festival">축제 <span>›</span></a>
-  <a href="#search">검색 <span>›</span></a>
+  <a href="#food">맛집 <span>›</span></a>
+  <a href="#explore">지역 탐색 <span>›</span></a>
   <a href="#saved">저장함 <span>›</span></a>
+  <a href="#search">검색 <span>›</span></a>
   <a href="#kids">아이와 함께 <span>›</span></a>
   <a href="#about">안내 <span>›</span></a>
 </div>
 
 <nav class="tabbar" aria-label="바로가기">
-  <a href="#explore" data-spy="explore"><svg><use href="#i-map"/></svg>탐색</a>
-  <a href="#food" data-spy="food"><svg><use href="#i-food"/></svg>맛집</a>
   <a href="#festival" data-spy="festival"><svg><use href="#i-party"/></svg>축제</a>
-  <a href="#search" data-spy="search"><svg><use href="#i-search"/></svg>검색</a>
+  <a href="#food" data-spy="food"><svg><use href="#i-food"/></svg>맛집</a>
+  <a href="#explore" data-spy="explore"><svg><use href="#i-map"/></svg>탐색</a>
   <a href="#saved" data-spy="saved"><svg><use href="#i-heart"/></svg>저장<span class="nav-count" data-saved-count></span></a>
+  <a href="#search" data-spy="search"><svg><use href="#i-search"/></svg>검색</a>
 </nav>
 
 <div class="wrap">
@@ -732,9 +735,10 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     <h1>심심하면,<br><span class="grad">가보자고.</span></h1>
     <p class="subtitle">전국 229개 시·군·구의 명소, 맛집, 축제, 숙소를 한 번에. 고르기 어렵다면 주사위에 맡겨보세요.</p>
     <div class="hero-cta">
-      <a class="btn-lg primary" href="#explore">지역 둘러보기</a>
+      <a class="btn-lg primary" href="#festival">지금 열리는 축제</a>
       <button class="btn-lg brand" type="button" data-random><svg><use href="#i-dice"/></svg>아무 데나 골라줘</button>
     </div>
+    <p class="quick-caption">내 지역을 고르면 축제·맛집·명소를 그 지역으로 맞춰드려요</p>
     <div class="quick-regions" id="quickRegions"></div>
     <div class="stats">
       <div><b>17</b><span>시·도</span></div>
@@ -744,25 +748,22 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     </div>
   </header>
 
-  <section class="section reveal" id="explore">
+  <section class="section reveal" id="festival">
     <div class="section-head">
-      <p class="kicker" style="--k:var(--route)">EXPLORE</p>
-      <h2 class="section-title">어디로 가볼까요?</h2>
-      <p class="section-desc">지역을 고르면 도시별 명소를 자연·맛집·카페·캠핑 등 테마별로 볼 수 있어요.</p>
+      <p class="kicker" style="--k:var(--brand-3)">FESTIVAL</p>
+      <h2 class="section-title">지금 열리는 축제</h2>
+      <p class="section-desc">한국관광공사에 등록된 전국 축제·행사를 진행 중인 것부터 보여드려요.</p>
     </div>
-    <div class="layout">
-      <div class="panel" id="leftPanel">
-        <div class="map-head"><b>지역 선택</b><span>17개 시·도</span></div>
-        <svg id="map-svg" viewBox="0 0 320 330" role="group" aria-label="지역 선택 지도"></svg>
-      </div>
-
-      <div class="panel" id="rightPanel">
-        <h2 id="regionTitle">지역을 선택해주세요</h2>
-        <div class="city-tabs" id="cityTabs"></div>
-        <div class="theme-chips" id="themeChips"></div>
-        <div class="cards" id="cards"></div>
+    <div class="festival-bar">
+      <select id="festivalArea" aria-label="지역"></select>
+      <div class="segmented" id="festivalMode">
+        <button type="button" class="active" data-mode="live">진행 중</button>
+        <button type="button" data-mode="soon">곧 열려요</button>
+        <button type="button" data-mode="all">전체</button>
       </div>
     </div>
+    <div class="cards" id="festivalResults"></div>
+    <div class="more-row" id="festivalMore"></div>
   </section>
 
   <section class="section reveal" id="food">
@@ -787,22 +788,34 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     </div>
   </section>
 
-  <section class="section reveal" id="festival">
+  <section class="section reveal" id="explore">
     <div class="section-head">
-      <p class="kicker" style="--k:var(--brand-3)">FESTIVAL</p>
-      <h2 class="section-title">지금 열리는 축제</h2>
-      <p class="section-desc">한국관광공사에 등록된 전국 축제·행사를 진행 중인 것부터 보여드려요.</p>
+      <p class="kicker" style="--k:var(--route)">EXPLORE</p>
+      <h2 class="section-title">어디로 가볼까요?</h2>
+      <p class="section-desc">지역을 고르면 도시별 명소를 자연·맛집·카페·캠핑 등 테마별로 볼 수 있어요.</p>
     </div>
-    <div class="festival-bar">
-      <select id="festivalArea" aria-label="지역"></select>
-      <div class="segmented" id="festivalMode">
-        <button type="button" class="active" data-mode="live">진행 중</button>
-        <button type="button" data-mode="soon">곧 열려요</button>
-        <button type="button" data-mode="all">전체</button>
+    <div class="layout">
+      <div class="panel" id="leftPanel">
+        <div class="map-head"><b>지역 선택</b><span>17개 시·도</span></div>
+        <svg id="map-svg" viewBox="0 0 320 330" role="group" aria-label="지역 선택 지도"></svg>
+      </div>
+
+      <div class="panel" id="rightPanel">
+        <h2 id="regionTitle">지역을 선택해주세요</h2>
+        <div class="city-tabs" id="cityTabs"></div>
+        <div class="theme-chips" id="themeChips"></div>
+        <div class="cards" id="cards"></div>
       </div>
     </div>
-    <div class="cards" id="festivalResults"></div>
-    <div class="more-row" id="festivalMore"></div>
+  </section>
+
+  <section class="section reveal" id="saved">
+    <div class="section-head">
+      <p class="kicker" style="--k:var(--red)">SAVED</p>
+      <h2 class="section-title">가고 싶은 곳</h2>
+      <p class="section-desc">명소·맛집·축제 어디서든 하트를 누르면 여기 모여요. 이 기기에만 저장돼요.</p>
+    </div>
+    <div class="cards" id="savedList"></div>
   </section>
 
   <section class="section reveal" id="search">
@@ -888,15 +901,6 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
         <div id="youtubeResults"></div>
       </div>
     </div>
-  </section>
-
-  <section class="section reveal" id="saved">
-    <div class="section-head">
-      <p class="kicker" style="--k:var(--red)">SAVED</p>
-      <h2 class="section-title">가고 싶은 곳</h2>
-      <p class="section-desc">명소·맛집·축제 어디서든 하트를 누르면 여기 모여요. 이 기기에만 저장돼요.</p>
-    </div>
-    <div class="cards" id="savedList"></div>
   </section>
 
   <section class="section reveal" id="kids">
@@ -2100,10 +2104,10 @@ function selectRegion(id){
 function renderQuickRegions(){
   const box = document.getElementById('quickRegions');
   if(!box) return;
-  box.innerHTML = REGIONS.map(r=>`<button type="button" data-region="${r.id}">${r.name}</button>`).join('');
+  box.innerHTML = REGIONS.map(r=>`<button type="button" data-region="${r.id}" class="${r.id===homeRegion?'active':''}">${r.name}</button>`).join('');
   box.querySelectorAll('[data-region]').forEach(b=> b.addEventListener('click', ()=>{
-    selectRegion(b.dataset.region);
-    document.getElementById(window.innerWidth <= 880 ? 'rightPanel' : 'explore').scrollIntoView({behavior:'smooth'});
+    applyHomeRegion(b.dataset.region);
+    document.getElementById('festival').scrollIntoView({behavior:'smooth'});
   }));
 }
 
@@ -3031,17 +3035,22 @@ const CUISINES = [
 const foodState = { region:'r1', city:'seoul', kind:'all', shown:20, items:[] };
 let foodSeq = 0;
 
+function fillFoodSelects(){
+  const regionSel = document.getElementById('foodRegion');
+  const citySel = document.getElementById('foodCity');
+  if(!regionSel || !citySel) return;
+  regionSel.value = foodState.region;
+  const list = CITIES[foodState.region] || [];
+  citySel.innerHTML = list.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  citySel.value = foodState.city;
+}
+
 function initFoodSection(){
   const regionSel = document.getElementById('foodRegion');
   const citySel = document.getElementById('foodCity');
   if(!regionSel) return;
   regionSel.innerHTML = REGIONS.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
-  regionSel.value = foodState.region;
-  const fillCities = ()=>{
-    const list = CITIES[foodState.region] || [];
-    citySel.innerHTML = list.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
-    citySel.value = foodState.city;
-  };
+  const fillCities = fillFoodSelects;
   fillCities();
   regionSel.addEventListener('change', ()=>{
     foodState.region = regionSel.value;
@@ -3064,7 +3073,9 @@ function initFoodSection(){
   renderChefPicks();
 }
 
+let foodStarted = false;
 async function loadFood(){
+  foodStarted = true;
   const box = document.getElementById('foodResults');
   const meta = document.getElementById('foodMeta');
   const more = document.getElementById('foodMore');
@@ -3371,6 +3382,32 @@ function initNavEffects(){
   ['food','festival'].forEach(id=>{ const el = document.getElementById(id); if(el) lazy.observe(el); });
 }
 
+const HOME_KEY = 'spot-radar-home';
+let homeRegion = null;
+function applyHomeRegion(regionId, {remember = true} = {}){
+  if(!REGIONS.some(r=>r.id === regionId)) return;
+  homeRegion = regionId;
+  if(remember){ try{ localStorage.setItem(HOME_KEY, regionId); }catch(e){} }
+  const firstCity = (CITIES[regionId] || [])[0];
+
+  // 축제: 같은 시·도로
+  const area = firstCity && CITY_TOUR[firstCity.id] ? CITY_TOUR[firstCity.id].area : '';
+  festState.area = area;
+  festState.shown = 12;
+  const festSel = document.getElementById('festivalArea');
+  if(festSel) festSel.value = area;
+  renderFestivals();
+
+  // 맛집: 같은 시·도의 첫 시·군·구로
+  foodState.region = regionId;
+  foodState.city = firstCity ? firstCity.id : null;
+  fillFoodSelects();
+  if(foodStarted) loadFood();
+
+  // 지역 탐색
+  selectRegion(regionId);
+}
+
 function initFeatures(){
   initFoodSection();
   initFestivalSection();
@@ -3382,6 +3419,10 @@ function initFeatures(){
   sheet?.querySelector('[data-close]')?.addEventListener('click', ()=> sheet.close());
   sheet?.addEventListener('click', (e)=>{ if(e.target === sheet) sheet.close(); });
   if(!('IntersectionObserver' in window)){ loadFood(); loadFestivals(); }
+
+  let saved = null;
+  try{ saved = localStorage.getItem(HOME_KEY); }catch(e){}
+  if(saved) applyHomeRegion(saved, {remember:false});
 }
 
 /* ---------------- 초기화 ---------------- */
