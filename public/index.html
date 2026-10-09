@@ -1791,7 +1791,7 @@ async function loadTourSpots(cityId){
     fetchOne(buildUrl({ rows:'18' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
-    fetchOne(buildUrl({ rows:'12', mode:'festival' })),    // 진행중·예정 축제
+    festivalsForCity(m),                                    // 진행중·예정 축제 (전국 목록에서 주소로 거름)
     fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
     fetchHospitals(m),                                      // 소아청소년과 (국립중앙의료원)
     fetchParking(m),                                        // 전국 주차장 표준데이터
@@ -3142,11 +3142,28 @@ let festSeq = 0;
 function ymd(d){ return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; }
 function ymdToDate(v){ return new Date(+v.slice(0,4), +v.slice(4,6)-1, +v.slice(6,8)); }
 
+// 시·도 코드 → 주소 앞부분 (예: '경기도 수원시…', '전북특별자치도 전주시…')
+const FEST_AREA_PREFIX = {
+  '1':['서울'], '2':['인천'], '3':['대전'], '4':['대구'], '5':['광주'], '6':['부산'], '7':['울산'], '8':['세종'],
+  '31':['경기'], '32':['강원'], '33':['충북','충청북도'], '34':['충남','충청남도'],
+  '35':['경북','경상북도'], '36':['경남','경상남도'], '37':['전북','전라북도'], '38':['전남','전라남도'], '39':['제주'],
+};
+function festivalInArea(address, code){
+  const [head = '', second = ''] = String(address || '').trim().split(/\s+/);
+  // 광주·전남 통합 주소('전남광주통합특별시 북구…')는 다음 단어로 구분: ○○구 = 광주, ○○시/군 = 전남
+  if(head.startsWith('전남광주')){
+    if(code === '5') return second.endsWith('구');
+    if(code === '38') return !second.endsWith('구');
+    return false;
+  }
+  return (FEST_AREA_PREFIX[code] || []).some(p=> head.startsWith(p));
+}
+
 function initFestivalSection(){
   const sel = document.getElementById('festivalArea');
   if(!sel) return;
   sel.innerHTML = '<option value="">전국</option>' + TOUR_AREAS.map(a=>`<option value="${a.code}">${a.name}</option>`).join('');
-  sel.addEventListener('change', ()=>{ festState.area = sel.value; loadFestivals(); });
+  sel.addEventListener('change', ()=>{ festState.area = sel.value; festState.shown = 12; renderFestivals(); });
   const seg = document.getElementById('festivalMode');
   seg.querySelectorAll('[data-mode]').forEach(b=> b.addEventListener('click', ()=>{
     festState.mode = b.dataset.mode;
@@ -3156,22 +3173,40 @@ function initFestivalSection(){
   }));
 }
 
+// 관광공사 새 API(KorService2)는 축제 조회에 지역코드를 넣으면 0건이 와서,
+// 전국 축제를 한 번만 받아두고 주소로 지역을 거릅니다 (축제 섹션·지역 탐색 공용).
+let nationalFestivalsPromise = null;
+function fetchNationalFestivals(){
+  if(nationalFestivalsPromise) return nationalFestivalsPromise;
+  // 이미 시작해서 진행 중인 축제도 잡으려고 두 달 전 시작분부터 받아옵니다.
+  const from = new Date(); from.setDate(from.getDate() - 60);
+  const qs = new URLSearchParams({ mode:'festival', rows:'500', eventStartDate: ymd(from) });
+  nationalFestivalsPromise = fetch(`/api/tour-search?${qs.toString()}`)
+    .then(res=> res.json())
+    .then(data=> (data && data.items) || [])
+    .catch(()=> []);
+  nationalFestivalsPromise.then(list=>{ if(!list.length) nationalFestivalsPromise = null; }); // 실패하면 다음에 다시 시도
+  return nationalFestivalsPromise;
+}
+// 지역 탐색용: 그 도시에서 아직 안 끝난 축제만 (시작 빠른 순)
+async function festivalsForCity(m){
+  const today = ymd(new Date());
+  const list = await fetchNationalFestivals();
+  return list
+    .filter(f=> f.eventStart && (!f.eventEnd || f.eventEnd >= today))
+    .filter(f=> festivalInArea(f.address, m.area))
+    .filter(f=> !m.sgg || String(f.address || '').split(/\s+/).slice(1, 3).some(w=> w.replace(/\s/g,'') === m.sgg.replace(/\s/g,'')))
+    .sort((a,b)=> a.eventStart.localeCompare(b.eventStart))
+    .slice(0, 12);
+}
+
 async function loadFestivals(){
   const box = document.getElementById('festivalResults');
   const seq = ++festSeq;
   festState.shown = 12;
   box.innerHTML = Array.from({length:6}, ()=>'<div class="skeleton" style="aspect-ratio:4/5"></div>').join('');
   document.getElementById('festivalMore').innerHTML = '';
-  // 이미 시작해서 진행 중인 축제도 잡으려고 두 달 전 시작분부터 받아옵니다.
-  const from = new Date(); from.setDate(from.getDate() - 60);
-  const qs = new URLSearchParams({ mode:'festival', rows:'500', eventStartDate: ymd(from) });
-  if(festState.area) qs.set('areaCode', festState.area);
-  let items = [];
-  try{
-    const res = await fetch(`/api/tour-search?${qs.toString()}`);
-    const data = await res.json().catch(()=>null);
-    if(data && data.items) items = data.items;
-  }catch(e){}
+  const items = await fetchNationalFestivals();
   if(seq !== festSeq) return;
   festState.items = items;
   renderFestivals();
@@ -3184,6 +3219,7 @@ function renderFestivals(){
   const today = ymd(new Date());
   const todayDate = ymdToDate(today);
   let list = festState.items.filter(f=> f.eventStart && (!f.eventEnd || f.eventEnd >= today));
+  if(festState.area) list = list.filter(f=> festivalInArea(f.address, festState.area));
   if(festState.mode === 'live') list = list.filter(f=> f.eventStart <= today);
   if(festState.mode === 'soon') list = list.filter(f=> f.eventStart > today);
   list.sort((a,b)=> festState.mode === 'live'
