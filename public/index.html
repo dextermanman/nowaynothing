@@ -12,6 +12,16 @@
 <title>가보자고 — 전국 나들이·맛집·축제</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" crossorigin="anonymous"></script>
+<script>
+  // 언어: ?lang= → 저장된 선택 → 브라우저 언어 순
+  window.LANG = (function(){
+    var q = new URLSearchParams(location.search).get('lang');
+    if(q === 'en' || q === 'ko'){ try{ localStorage.setItem('spot-radar-lang', q); }catch(e){} return q; }
+    try{ var s = localStorage.getItem('spot-radar-lang'); if(s === 'en' || s === 'ko') return s; }catch(e){}
+    return /^ko/i.test(navigator.language || '') ? 'ko' : 'en';
+  })();
+  if(window.LANG === 'en'){ document.documentElement.lang = 'en'; document.documentElement.classList.add('i18n-pending'); }
+</script>
 <style>
 /* ───────── 디자인 토큰 (기본: 라이트, 시스템 다크모드 자동 대응) ───────── */
 :root{
@@ -94,6 +104,14 @@
 }
 
 *{box-sizing:border-box;}
+html.i18n-pending body{opacity:0;}
+.lang-btn{
+  height:36px;padding:0 12px;border-radius:999px;border:none;cursor:pointer;
+  background:var(--fill);color:var(--ink);font-size:12.5px;font-weight:700;letter-spacing:.02em;
+  transition:background .2s var(--ease), transform .2s var(--ease);
+}
+.lang-btn:hover{background:var(--fill-strong);}
+.lang-btn:active{transform:scale(.94);}
 html{scroll-behavior:smooth;scroll-padding-top:72px;overflow-x:clip;}
 ::selection{background:var(--route-glow);}
 :focus-visible{outline:2px solid var(--route);outline-offset:2px;border-radius:8px;}
@@ -544,6 +562,8 @@ select:focus, input[type="text"]:focus{border-color:var(--route);box-shadow:0 0 
 .festival-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:20px;}
 .festival-bar select{width:auto;min-width:160px;}
 .festival-bar .segmented{flex:0 0 auto;}
+.shuffle-btn{height:38px;font-size:13.5px;padding:0 16px;margin-left:auto;}
+.shuffle-btn svg{width:16px;height:16px;}
 .fest-card{padding:0;}
 .fest-card .poster{position:relative;aspect-ratio:4/3;background:var(--bg-sunken);overflow:hidden;}
 .fest-card .poster img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease);}
@@ -693,15 +713,16 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
   <div class="topnav-inner">
     <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-logo"/></svg></span>가보자고</a>
     <div class="nav-links" id="navLinks">
+      <a href="#picks" data-spy="picks">추천</a>
       <a href="#festival" data-spy="festival">축제</a>
       <a href="#food" data-spy="food">맛집</a>
       <a href="#explore" data-spy="explore">지역 탐색</a>
       <a href="#saved" data-spy="saved">저장함 <span class="nav-count" data-saved-count></span></a>
       <a href="#search" data-spy="search">검색</a>
-      <a href="#kids" data-spy="kids">아이와 함께</a>
     </div>
     <div class="nav-actions">
       <button class="dice-btn" type="button" data-random title="아무 데나 골라줘"><svg><use href="#i-dice"/></svg><span class="dice-label">어디 가지?</span></button>
+      <button id="langToggle" class="lang-btn" type="button" data-no-i18n>EN</button>
       <button id="themeToggle" class="icon-btn" type="button" aria-label="화면 테마 전환" title="화면 테마 전환"></button>
       <button id="menuToggle" class="icon-btn menu-btn" type="button" aria-label="메뉴 열기" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 9h14M5 15h14"/></svg>
@@ -710,6 +731,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
   </div>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
+  <a href="#picks">추천 여행지 <span>›</span></a>
   <a href="#festival">축제 <span>›</span></a>
   <a href="#food">맛집 <span>›</span></a>
   <a href="#explore">지역 탐색 <span>›</span></a>
@@ -720,11 +742,11 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
 </div>
 
 <nav class="tabbar" aria-label="바로가기">
+  <a href="#picks" data-spy="picks"><svg><use href="#i-logo"/></svg>추천</a>
   <a href="#festival" data-spy="festival"><svg><use href="#i-party"/></svg>축제</a>
   <a href="#food" data-spy="food"><svg><use href="#i-food"/></svg>맛집</a>
   <a href="#explore" data-spy="explore"><svg><use href="#i-map"/></svg>탐색</a>
   <a href="#saved" data-spy="saved"><svg><use href="#i-heart"/></svg>저장<span class="nav-count" data-saved-count></span></a>
-  <a href="#search" data-spy="search"><svg><use href="#i-search"/></svg>검색</a>
 </nav>
 
 <div class="wrap">
@@ -747,6 +769,22 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
       <div><b>매일</b><span>맛집 순위 갱신</span></div>
     </div>
   </header>
+
+  <section class="section reveal" id="picks">
+    <div class="section-head">
+      <p class="kicker" style="--k:#34c759">PICKS</p>
+      <h2 class="section-title">이번 주 추천 여행지</h2>
+      <p class="section-desc">한국관광공사에 등록된 관광지와 여행코스에서 매주 새로 골라드려요. 내 지역을 고르면 그 지역 위주로 바뀌어요.</p>
+    </div>
+    <div class="festival-bar">
+      <div class="segmented" id="recMode">
+        <button type="button" class="active" data-mode="week">추천 여행지</button>
+        <button type="button" data-mode="course">추천 코스</button>
+      </div>
+      <button type="button" class="btn-lg ghost shuffle-btn" id="recShuffle"><svg><use href="#i-dice"/></svg>다른 곳 보기</button>
+    </div>
+    <div class="cards" id="recResults"></div>
+  </section>
 
   <section class="section reveal" id="festival">
     <div class="section-head">
@@ -956,7 +994,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
 
 <footer>
   <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-logo"/></svg></span>가보자고</a>
-  <span>방문 전 운영 정보를 꼭 확인하세요 · <a href="#about" style="color:inherit">안내</a></span>
+  <span><a href="#kids" style="color:inherit">아이와 함께</a> · <a href="#about" style="color:inherit">안내</a> · 방문 전 운영 정보를 꼭 확인하세요</span>
 </footer>
 
 <dialog class="sheet" id="randomSheet" aria-label="랜덤 나들이 뽑기">
@@ -3377,9 +3415,93 @@ function initNavEffects(){
       lazy.unobserve(e.target);
       if(e.target.id === 'food') loadFood();
       if(e.target.id === 'festival') loadFestivals();
+      if(e.target.id === 'picks') loadPicks();
     });
   }, { rootMargin:'400px 0px' });
-  ['food','festival'].forEach(id=>{ const el = document.getElementById(id); if(el) lazy.observe(el); });
+  ['picks','food','festival'].forEach(id=>{ const el = document.getElementById(id); if(el) lazy.observe(el); });
+}
+
+/* ---------------- 이번 주 추천 여행지 (관광공사 관광지·여행코스에서 매주 골라줌) ---------------- */
+const recState = { mode:'week', bump:0 };
+let recSeq = 0;
+function weekNumber(){
+  const d = new Date();
+  const jan1 = new Date(d.getFullYear(), 0, 1);
+  return d.getFullYear() * 100 + Math.ceil(((d - jan1) / 86400000 + jan1.getDay() + 1) / 7);
+}
+function seededRandom(seed){
+  return ()=>{
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seededShuffle(list, rand){
+  const a = [...list];
+  for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+function homeAreaCode(){
+  const first = homeRegion && (CITIES[homeRegion] || [])[0];
+  return first && CITY_TOUR[first.id] ? CITY_TOUR[first.id].area : '';
+}
+function initPicksSection(){
+  const seg = document.getElementById('recMode');
+  if(!seg) return;
+  seg.querySelectorAll('[data-mode]').forEach(b=> b.addEventListener('click', ()=>{
+    recState.mode = b.dataset.mode;
+    seg.querySelectorAll('button').forEach(x=> x.classList.toggle('active', x === b));
+    loadPicks();
+  }));
+  document.getElementById('recShuffle')?.addEventListener('click', ()=>{ recState.bump++; loadPicks(); });
+}
+async function loadPicks(){
+  const box = document.getElementById('recResults');
+  if(!box) return;
+  const seq = ++recSeq;
+  box.innerHTML = Array.from({length:4}, ()=>'<div class="skeleton" style="aspect-ratio:4/5"></div>').join('');
+  const course = recState.mode === 'course';
+  const rand = seededRandom(weekNumber() * 7 + recState.bump * 101 + (course ? 3 : 0));
+  const home = homeAreaCode();
+  // 내 지역이 있으면 그 지역만, 없으면 이번 주 몫으로 몇 개 시·도를 골라 섞습니다 (코스는 수가 적어 전국)
+  const codes = TOUR_AREAS.map(a=> a.code);
+  const areas = home ? [home] : (course ? codes : seededShuffle(codes, rand).slice(0, 4));
+  const lists = await Promise.all(areas.map(a=>{
+    const qs = new URLSearchParams({ areaCode:a, contentTypeId: course ? '25' : '12', rows: home ? '60' : (course ? '10' : '30'), arrange:'Q' });
+    return fetch(`/api/tour-search?${qs.toString()}`).then(r=> r.json()).then(d=> (d && d.items) || []).catch(()=> []);
+  }));
+  if(seq !== recSeq) return;
+  const items = seededShuffle(lists.flat().filter(i=> i.image), rand).slice(0, 8);
+  if(!items.length){
+    box.innerHTML = `<div class="empty">${course ? '이 지역엔 등록된 추천 코스가 아직 없어요. ‘추천 여행지’를 눌러보세요.' : '추천 여행지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.'}</div>`;
+    return;
+  }
+  const areaName = (addr)=> String(addr || '').split(/\s+/)[0].replace(/(특별자치도|특별자치시|특별시|광역시|도)$/, '');
+  box.innerHTML = items.map(it=>{
+    const spot = { id:`tour_${it.contentId}`, name:it.name, theme: course ? 'activity' : 'nature', address:it.address, image:it.image };
+    SPOT_INDEX[spot.id] = spot;
+    const link = course
+      ? `https://search.naver.com/search.naver?query=${encodeURIComponent(it.name)}`
+      : naverMapLink(it.name, it.address);
+    const region = areaName(it.address);
+    return `
+    <div class="card fest-card">
+      <div class="poster">
+        <img src="${it.image}" alt="" loading="lazy">
+        ${region ? `<span class="dday">${escapeHtml(region)}</span>` : ''}
+        <button type="button" class="save-btn ${isSaved(spot.id)?'on':''}" data-save="${spot.id}" aria-label="저장">${ICON_HEART}</button>
+      </div>
+      <div class="fest-body">
+        <p class="fest-date">${course ? '추천 코스' : '추천 여행지'}</p>
+        <p class="card-name">${escapeHtml(it.name)}</p>
+        ${it.address ? `<p class="card-meta">${escapeHtml(shortAddress(it.address) || it.address)}</p>` : ''}
+        <div class="card-spacer"></div>
+        <a href="${link}" target="_blank" rel="noopener" class="btn-mini block">${course ? '코스 자세히 보기' : '지도에서 보기'}</a>
+      </div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-save]').forEach(b=> b.addEventListener('click', ()=> toggleSave(b.dataset.save)));
 }
 
 const HOME_KEY = 'spot-radar-home';
@@ -3404,6 +3526,9 @@ function applyHomeRegion(regionId, {remember = true} = {}){
   fillFoodSelects();
   if(foodStarted) loadFood();
 
+  // 추천 여행지
+  if(document.getElementById('recResults')?.childElementCount) loadPicks();
+
   // 지역 탐색
   selectRegion(regionId);
 }
@@ -3411,6 +3536,7 @@ function applyHomeRegion(regionId, {remember = true} = {}){
 function initFeatures(){
   initFoodSection();
   initFestivalSection();
+  initPicksSection();
   initNavEffects();
   document.querySelectorAll('[data-random]').forEach(b=> b.addEventListener('click', openRandom));
   document.getElementById('rerollBtn')?.addEventListener('click', rollRandom);
@@ -3424,6 +3550,270 @@ function initFeatures(){
   try{ saved = localStorage.getItem(HOME_KEY); }catch(e){}
   if(saved) applyHomeRegion(saved, {remember:false});
 }
+
+/* ---------------- English 모드 (화면에 그려지는 한국어 문구를 사전으로 바꿔치기) ----------------
+   템플릿을 일일이 고치지 않고, 렌더된 텍스트를 감시해서 번역합니다.
+   가게 이름·주소는 지도 앱·택시에서 그대로 쓸 수 있게 한국어로 둡니다. */
+const I18N = {
+  // 브랜드·내비
+  '가보자고':'Gabojago', '축제':'Festivals', '맛집':'Food', '지역 탐색':'Explore', '저장함':'Saved', '검색':'Search',
+  '아이와 함께':'With kids', '아무 데나 골라줘':'Surprise me', '어디 가지?':'Where to?', '화면 테마 전환':'Toggle theme',
+  '메뉴 열기':'Open menu', '안내':'About', '바로가기':'Shortcuts', '탐색':'Explore', '저장':'Save', '저장 해제':'Remove',
+  // 히어로
+  'NEW':'NEW', '전국 맛집 순위 · 이번 달 축제 업데이트':'Food rankings & this month’s festivals, updated daily',
+  '심심하면,':'Bored?', '가보자고.':'Let’s go.',
+  '전국 229개 시·군·구의 명소, 맛집, 축제, 숙소를 한 번에. 고르기 어렵다면 주사위에 맡겨보세요.':
+    'Sights, food, festivals and stays across all 229 cities and districts of Korea. Can’t decide? Roll the dice.',
+  '지금 열리는 축제':'Festivals on now', '내 지역을 고르면 축제·맛집·명소를 그 지역으로 맞춰드려요':'Pick a region and we’ll tailor festivals, food and sights to it',
+  '시·도':'provinces', '시·군·구':'cities & districts', '26만+':'260K+', '관광 정보':'travel listings', '매일':'Daily', '맛집 순위 갱신':'food ranking refresh',
+  // 축제
+  '한국관광공사에 등록된 전국 축제·행사를 진행 중인 것부터 보여드려요.':'Festivals and events nationwide from the Korea Tourism Organization, starting with what’s on now.',
+  '지역':'Region', '진행 중':'On now', '곧 열려요':'Coming up', '전체':'All', '전국':'Nationwide', '지도에서 보기':'View on map',
+  '오늘 마감':'Ends today', '예정된 축제가 아직 없어요.':'No upcoming festivals yet.',
+  '지금 열리는 축제가 없어요. ‘곧 열려요’를 눌러보세요.':'Nothing on right now. Try “Coming up”.',
+  // 맛집
+  '오늘 뭐 먹지?':'What to eat today?',
+  '네이버 리뷰가 많은 순으로 동네 맛집을 매일 모아요. 여러 메뉴 검색에 동시에 걸린 집일수록 위로 올라가요.':
+    'Local favorites ranked daily by Naver review count. Places that show up across several cuisine searches rank higher.',
+  '셰프·미식가 픽':'Chef & foodie picks', '정용진 픽':'Chung Yong-jin’s pick', '흑백요리사':'Culinary Class Wars',
+  '맛집 순위 불러오는 중…':'Loading rankings…', '네이버 리뷰 많은 순':'by Naver review count',
+  '맛집 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.':'Couldn’t load restaurants. Please try again shortly.',
+  '한식':'Korean', '고기':'BBQ', '국밥·탕':'Soups', '해산물':'Seafood', '면':'Noodles', '중식':'Chinese', '일식':'Japanese',
+  '양식':'Western', '분식':'Street food', '카페':'Cafés', '빵집':'Bakeries', '술집':'Bars', '지도':'Map',
+  // 지역 탐색
+  '어디로 가볼까요?':'Where shall we go?', '지역을 고르면 도시별 명소를 자연·맛집·카페·캠핑 등 테마별로 볼 수 있어요.':'Pick a region to browse sights by theme — nature, food, cafés, camping and more.',
+  '지역 선택':'Choose a region', '17개 시·도':'17 provinces', '지역 선택 지도':'Region map', '지역을 선택해주세요':'Choose a region',
+  '도시 선택':'Choose a city', '지도에서 지역을 먼저 선택해주세요.':'Choose a region on the map first.',
+  '명소·맛집 더 불러오는 중…':'Loading more places…', '조건에 맞는 명소가 없어요. 필터를 바꿔보세요.':'No places match. Try another filter.',
+  '자연':'Nature', '문화·역사':'Culture & history', '액티비티':'Activities', '쇼핑·야경':'Shopping & night views', '키즈·풀빌라':'Kids & pool villas',
+  '공공기관':'Public sites', '박물관·과학관':'Museums & science', '숙소·풀빌라':'Stays & villas', '캠핑·글램핑':'Camping & glamping',
+  '축제·행사':'Festivals & events', '소아과':'Pediatrics', '주차장':'Parking', '카페·디저트':'Cafés & desserts', '온천·스파':'Hot springs & spas',
+  '사찰·템플스테이':'Temples & templestay',
+  '고캠핑':'GoCamping', '관광공사':'KTO', '리뷰 많은 집':'Most reviewed', '반려동물 동반':'Pet-friendly', '무장애':'Barrier-free', '박물관':'Museum',
+  '진료시간 미등록':'Hours not listed', '⚠️ 신고 기준 정보예요. 방문 전 꼭 전화로 확인하세요.':'⚠️ Based on official filings — call before visiting.',
+  '예약하기':'Book', '다녀왔어요':'Been here', '후기':'Reviews', '불러오는 중…':'Loading…', '닉네임':'Name', '한 줄 후기 남기기':'Leave a short review', '등록':'Post',
+  '아직 후기가 없어요. 첫 후기를 남겨보세요!':'No reviews yet — be the first!', '후기를 불러오지 못했어요.':'Couldn’t load reviews.', '익명':'Anonymous',
+  '네이버 지도':'Naver Map', '주소 정보 없음':'No address',
+  // 해시태그
+  '#자연':'#nature', '#힐링스팟':'#healing', '#전통':'#tradition', '#역사탐방':'#history', '#맛집':'#foodie', '#인스타맛집':'#instafood',
+  '#액티비티':'#activity', '#체험코스':'#handson', '#야경맛집':'#nightview', '#인생샷':'#photospot', '#아이랑가기좋은':'#familyfriendly',
+  '#키즈스팟':'#kids', '#국가운영':'#public', '#무료입장가능':'#freeentry', '#아이랑박물관':'#kidsmuseum', '#체험학습':'#learning',
+  '#숙소추천':'#staypick', '#풀빌라':'#poolvilla', '#가족숙소':'#familystay', '#캠핑':'#camping', '#글램핑':'#glamping', '#차박':'#carcamping',
+  '#축제':'#festival', '#행사':'#event', '#이번주말':'#thisweekend', '#소아과':'#pediatrics', '#아이아플때':'#sickkid', '#주차장':'#parking',
+  '#주차정보':'#parkinginfo', '#카페':'#cafe', '#디저트':'#dessert', '#인생샷카페':'#photocafe', '#온천':'#hotspring', '#스파':'#spa',
+  '#힐링여행':'#healingtrip', '#사찰':'#temple', '#템플스테이':'#templestay', '#고요한여행':'#quiettrip', '#핫플레이스':'#hotspot',
+  '#정용진픽':'#chungpick', '#흑백요리사':'#culinaryclasswars',
+  // 저장함
+  '가고 싶은 곳':'Places to go', '명소·맛집·축제 어디서든 하트를 누르면 여기 모여요. 이 기기에만 저장돼요.':'Tap the heart on any place, restaurant or festival to collect it here. Saved on this device only.',
+  '아직 담아둔 곳이 없어요':'Nothing saved yet', '명소·맛집·축제 카드의 하트를 눌러 모아보세요.':'Tap the heart on any card to save it.',
+  // 검색
+  '직접 찾아보기':'Search it yourself', '관광공사·공공데이터에서 바로 검색하고, 마음에 들면 커뮤니티에 추가하세요.':'Search official tourism and public data directly, and add favorites to the community.',
+  '관광지·맛집':'Sights & food', '숙소':'Stays', '공연·전시':'Shows & exhibitions', '병원·박물관':'Clinics & museums', '화장실':'Restrooms', '유튜브':'YouTube',
+  '전국 관광지·음식점·숙박·레포츠 26만 건 (한국관광공사)':'260K sights, restaurants, stays and activities nationwide (Korea Tourism Organization)',
+  '추가할 때 저장될 도시':'City to file it under', '키워드 (예: 계곡, 전망대)':'Keyword in Korean (e.g. 계곡, 전망대)',
+  '전국 호텔·펜션·풀빌라. 예약하기를 누르면 네이버에서 가격·후기를 바로 비교할 수 있어요.':'Hotels, pensions and pool villas nationwide. “Book” compares prices and reviews on Naver.',
+  '키워드 (예: 오션뷰, 애견동반)':'Keyword in Korean (e.g. 오션뷰, 애견동반)', '앞으로 3개월간의 공연·전시 (KOPIS)':'Shows and exhibitions in the next 3 months (KOPIS)',
+  '공연명 (선택)':'Show title (optional)', '소아과는 요일별 진료시간 포함 (신고 기준이니 방문 전 전화 확인 필수)':'Pediatric clinics include weekly hours (from official filings — call before visiting)',
+  '소아과 (진료시간 포함)':'Pediatric clinics (with hours)', '박물관·미술관':'Museums & galleries', '시군구 (예: 화성시, 비워도 됨)':'District in Korean (e.g. 화성시, optional)',
+  '전국 공중화장실 3.3만여 곳':'33,000+ public restrooms nationwide', '시군구 (예: 화성시)':'District in Korean (e.g. 화성시)',
+  '여행 브이로그로 분위기 미리 보기':'Preview the vibe with travel vlogs', '검색어 (예: 화성 브이로그)':'Search (e.g. Seoul vlog)',
+  '관광지':'Attractions', '문화시설':'Cultural venues', '축제·공연·행사':'Festivals & events', '레포츠':'Leisure sports', '숙박(호텔·펜션·풀빌라)':'Stays (hotels, pensions, villas)',
+  '쇼핑':'Shopping', '음식점':'Restaurants', '커뮤니티에 추가':'Add to community', '추가됨':'Added',
+  '관광공사 데이터 조회 중…':'Searching tourism data…', '숙박 정보 조회 중…':'Searching stays…', '국가 데이터 조회 중…':'Searching public data…',
+  'KOPIS 공연정보 조회 중…':'Searching shows…', '화장실 조회 중…':'Searching restrooms…', '유튜브 검색 중…':'Searching YouTube…',
+  '조회 중 오류가 발생했어요.':'Something went wrong while searching.', '결과가 없어요.':'No results.', '검색어를 입력해주세요.':'Enter a search term.',
+  '결과가 없어요. 키워드를 비우거나 분류를 바꿔보세요.':'No results. Clear the keyword or try another category.',
+  '결과가 없어요. 키워드를 비우거나 지역을 바꿔보세요.':'No results. Clear the keyword or try another region.',
+  '결과가 없어요. 검색어를 비우거나 지역을 바꿔보세요.':'No results. Clear the search or try another region.',
+  '결과가 없어요. 시군구 이름을 확인해보세요 (예: 화성시).':'No results. Check the district name in Korean (e.g. 화성시).',
+  '진료시간 정보 미등록 — 전화 문의 필요':'Hours not listed — please call', '이름 없음':'Unnamed', '남녀공용':'Unisex', '오류:':'Error:',
+  'Supabase 설정이 아직 안 되어 있어요.':'Community storage isn’t set up yet.', '추가에 실패했어요 (이미 등록된 곳일 수 있어요).':'Couldn’t add it (it may already be listed).',
+  // 아이와 함께
+  '아이와 함께라면':'Traveling with kids', '나들이 중에 아이가 갑자기 아플 때, 지금 문 연 곳을 공식 서비스에서 바로 확인하세요.':'If your child gets sick on the road, find what’s open right now through official services.',
+  '응급의료포털 E-Gen':'E-Gen emergency portal', '지금 문 연 병원·약국 실시간 검색':'Live search for open hospitals & pharmacies', '바로가기 ↗':'Open ↗',
+  '달빛어린이병원':'Moonlight children’s hospitals', '평일 야간·주말·공휴일 소아 전담 병원':'Pediatric care on weeknights, weekends and holidays',
+  '아이안심톡':'iCareTalk', '소아 응급 의료진 24시간 온라인 상담':'24/7 online consultation with pediatric emergency staff',
+  '병원 영업시간은 점심시간·휴진·야간진료 변동이 잦아서, 고정 데이터 대신 정부 공식 서비스로 연결해드려요. 지역별 소아과 진료시간은 위 ‘직접 찾아보기 → 병원·박물관’에서도 볼 수 있어요.':
+    'Clinic hours change often, so we link to official government services instead of static data. Regional pediatric hours are also under “Search → Clinics & museums”. (Services are in Korean; call 119 in an emergency.)',
+  // 안내
+  '이렇게 만들었어요':'How it works', '순위는 이렇게 정해요':'How rankings work',
+  '별점·리뷰 수는 실시간 내비게이션 이동량이 아니라 네이버 리뷰수·평점·구글 노출순위 기반 추정치예요. 맛집 순위는 네이버 지역검색의 리뷰 많은 순을 메뉴별로 모아 다시 매겼어요. 셰프·미식가 픽은 정용진 회장 개인 추천(보도 기준)과 흑백요리사 출연 셰프 식당(공개 정보 기준)이에요.':
+    'Ratings and review counts are estimates from Naver reviews, ratings and Google search rank — not live traffic. Food rankings combine Naver local search’s “most reviewed” results across cuisines. Chef picks are personal recommendations by Shinsegae chairman Chung Yong-jin (as reported) and restaurants of chefs from Netflix’s Culinary Class Wars.',
+  '데이터 출처':'Data sources',
+  '한국관광공사 TourAPI · 고캠핑 · 국립중앙의료원 · 전국박물관미술관 표준데이터 · KOPIS 공연정보 · 공중화장실 표준데이터 · 전국주차장 표준데이터 · 네이버 지역검색 API':
+    'Korea Tourism Organization TourAPI · GoCamping · National Medical Center · Museum & gallery open data · KOPIS · Public restroom open data · Parking open data · Naver Local Search API',
+  '후기와 체크인':'Reviews & check-ins', '‘다녀왔어요’와 한 줄 후기는 모든 방문자에게 실시간으로 공유돼요. ‘가고 싶은 곳’은 이 기기 브라우저에만 남아요.':
+    '“Been here” check-ins and short reviews are shared live with everyone. “Places to go” stays in this browser only.',
+  '방문 전 운영 정보를 꼭 확인하세요 ·':'Check opening info before you go ·',
+  // 추천 여행지
+  '추천':'Picks', '추천 여행지':'Top picks', '추천 코스':'Suggested routes', '이번 주 추천 여행지':'This week’s picks', '다른 곳 보기':'Shuffle',
+  '한국관광공사에 등록된 관광지와 여행코스에서 매주 새로 골라드려요. 내 지역을 고르면 그 지역 위주로 바뀌어요.':'Fresh picks every week from the Korea Tourism Organization’s attractions and routes. Choose a region to focus on it.',
+  '코스 자세히 보기':'See route', '이 지역엔 등록된 추천 코스가 아직 없어요. ‘추천 여행지’를 눌러보세요.':'No suggested routes for this region yet. Try “Top picks”.',
+  '추천 여행지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.':'Couldn’t load picks. Please try again shortly.', '추천 여행지 ›':'Top picks ›',
+  // 랜덤 뽑기
+  '랜덤 나들이 뽑기':'Random trip picker', '닫기':'Close', '오늘의 랜덤 나들이':'Today’s random trip', '두구두구…':'Drumroll…',
+  '다시 굴리기':'Roll again', '가보자고!':'Let’s go!',
+  // 시·도
+  '서울':'Seoul', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
+  '전북':'Jeonbuk', '경북':'Gyeongbuk', '대구':'Daegu', '울산':'Ulsan', '광주':'Gwangju', '전남':'Jeonnam', '경남':'Gyeongnam', '부산':'Busan', '제주':'Jeju',
+  '경기도':'Gyeonggi-do', '강원도':'Gangwon-do', '충청북도':'Chungcheongbuk-do', '충청남도':'Chungcheongnam-do', '경상북도':'Gyeongsangbuk-do',
+  '경상남도':'Gyeongsangnam-do', '전라북도':'Jeollabuk-do', '전라남도':'Jeollanam-do', '제주도':'Jeju-do',
+  '서울특별시':'Seoul', '부산광역시':'Busan', '대구광역시':'Daegu', '인천광역시':'Incheon', '광주광역시':'Gwangju', '대전광역시':'Daejeon',
+  '울산광역시':'Ulsan', '세종특별자치시':'Sejong', '강원특별자치도':'Gangwon', '전북특별자치도':'Jeonbuk', '제주특별자치도':'Jeju',
+};
+const reviewCount = (v)=>{
+  const n = parseFloat(v);
+  if(/만$/.test(v)) return `${Math.round(n * 10)}K`;
+  if(/천$/.test(v)) return `${n}K`;
+  return v;
+};
+const I18N_RULES = [
+  [/^(\d+)개 지역$/, (m,n)=> `${n} areas`],
+  [/^(\d+)개 시·군·구$/, (m,n)=> `${n} districts`],
+  [/^(\d+)(?:곳|개) 더 보기$/, (m,n)=> `Show ${n} more`],
+  [/^진행 중 · (\d+)일 남음$/, (m,n)=> `On now · ${n} day${n === '1' ? '' : 's'} left`],
+  [/^진행중 (.+)$/, (m,p)=> `On now ${p}`],
+  [/^리뷰 (.+)$/, (m,v)=> `${reviewCount(v)} reviews`],
+  [/^(.+) (\d+)곳$/, (m,label,n)=> `${trText(label) || label} · ${n} places`],
+  [/^기본 (\d+)분 \/ (.+)원$/, (m,min,won)=> `First ${min} min / ₩${won}`],
+  [/^(\d+)면$/, (m,n)=> `${n} spaces`],
+  [/^휴관: (.*)$/, (m,v)=> `Closed: ${v}`],
+  [/^입장료: (.*)$/, (m,v)=> `Admission: ${v}`],
+  [/^총 (\d+)건 중 (\d+)건 · 출처: (.*)$/, (m,total,n,src)=> `${n} of ${total} results · Source: ${src}`],
+  [/^오류: (.*)$/, (m,v)=> `Error: ${v}`],
+  [/^응답을 읽지 못했어요 \(HTTP (\d+)\).*$/, (m,c)=> `Couldn’t read the response (HTTP ${c}).`],
+  [/^· (.+)$/, (m,rest)=> { const t = trText(rest); return t ? `· ${t}` : null; }],
+];
+
+// 지역·도시 이름 로마자 표기 (국어의 로마자 표기법 간이판)
+const RR_INI = ['g','kk','n','d','tt','r','m','b','pp','s','ss','','j','jj','ch','k','t','p','h'];
+const RR_VOW = ['a','ae','ya','yae','eo','e','yeo','ye','o','wa','wae','oe','yo','u','wo','we','wi','yu','eu','ui','i'];
+const RR_FIN = ['','k','k','k','n','n','n','t','l','k','m','l','l','l','p','l','m','p','p','t','t','ng','t','t','k','t','p','t'];
+const RR_LINK = {1:'g',4:'n',7:'d',8:'r',16:'m',17:'b',19:'s',22:'j',23:'ch'}; // 받침 + ㅇ 연음
+function romanize(word){
+  const sy = [...word].map(ch=>{
+    const c = ch.charCodeAt(0) - 0xAC00;
+    if(c < 0 || c > 11171) return null;
+    return { i: Math.floor(c / 588), v: Math.floor((c % 588) / 28), f: c % 28 };
+  });
+  if(sy.some(x=>!x)) return null;
+  let out = '';
+  sy.forEach((s, k)=>{
+    const next = sy[k + 1];
+    let ini = RR_INI[s.i];
+    const prev = sy[k - 1];
+    if(prev && s.i === 5){                         // 초성 ㄹ
+      ini = (prev.f === 8 || prev.f === 4) ? 'l' : (prev.f ? 'n' : 'r');
+    }
+    if(prev && prev.f && s.i === 11 && RR_LINK[prev.f]) ini = '';       // 연음된 자리
+    let fin = RR_FIN[s.f];
+    if(next && s.f && next.i === 11 && RR_LINK[s.f]) fin = RR_LINK[s.f];  // 받침을 다음 음절로
+    if(next && next.i === 5 && s.f === 4) fin = 'l';                    // ㄴ+ㄹ → ll
+    out += ini + RR_VOW[s.v] + fin;
+  });
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+let KNOWN_PLACES = null;
+function placeNameEn(text){
+  if(!KNOWN_PLACES){
+    KNOWN_PLACES = new Set();
+    Object.values(CITIES).forEach(list=> list.forEach(c=> c.name.split(' ').forEach(t=> KNOWN_PLACES.add(t))));
+  }
+  const tokens = text.split(' ');
+  if(tokens.length > 3) return null;
+  const parts = tokens.map(t=>{
+    if(I18N[t] && t !== '전체') return I18N[t];
+    if(t === '전체') return '(all)';
+    if(!KNOWN_PLACES.has(t)) return null;
+    const m = t.match(/^(.+?)(시|군|구)$/);
+    if(!m) return romanize(t);
+    const base = romanize(m[1]);
+    return base ? `${base}-${{시:'si', 군:'gun', 구:'gu'}[m[2]]}` : null;
+  });
+  return parts.every(Boolean) ? parts.join(' ') : null;
+}
+
+function trText(raw){
+  const key = String(raw).replace(/\s+/g, ' ').trim();
+  if(!key || !/[가-힣]/.test(key)) return null;
+  if(I18N[key] != null) return I18N[key];
+  for(const [re, fn] of I18N_RULES){
+    const m = key.match(re);
+    if(m){ const r = fn(...m); if(r) return r; }
+  }
+  const place = placeNameEn(key);
+  if(place) return place;
+  if(key.includes(' · ')){                       // "광주 · 박물관·과학관 · ★ 4.5" 같은 조합
+    const parts = key.split(' · ');
+    const tr = parts.map(p=> trText(p) || p);
+    if(tr.some((t, i)=> t !== parts[i])) return tr.join(' · ');
+  }
+  return null;
+}
+
+// 가게 이름·주소처럼 그대로 둘 곳
+const I18N_SKIP = '.card-name, .rank-name, .rank-sub, .slot-name, .review-item, .pick-card b, [data-no-i18n], script, style, code, textarea';
+function translateTree(root){
+  if(!root) return;
+  if(root.nodeType === 3){ translateTextNode(root); return; }
+  if(root.nodeType !== 1) return;
+  if(root.closest && root.closest(I18N_SKIP)) return;
+  translateAttrs(root);
+  root.querySelectorAll('[placeholder],[aria-label],[title]').forEach(translateAttrs);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while(walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(translateTextNode);
+}
+function translateTextNode(node){
+  const p = node.parentElement;
+  if(!p || p.closest(I18N_SKIP)) return;
+  const t = trText(node.nodeValue);
+  if(t == null) return;
+  // <option>에 value가 없으면 글자가 곧 값이라, 번역 전에 원래 값을 붙여둡니다 (API 검색어 보존)
+  if(p.tagName === 'OPTION' && !p.hasAttribute('value')) p.setAttribute('value', p.textContent);
+  const lead = node.nodeValue.match(/^\s*/)[0], tail = node.nodeValue.match(/\s*$/)[0];
+  node.nodeValue = lead + t + tail;
+}
+function translateAttrs(el){
+  if(!el.getAttribute || (el.closest && el.closest(I18N_SKIP))) return;
+  ['placeholder','aria-label','title'].forEach(a=>{
+    const v = el.getAttribute(a);
+    const t = v && trText(v);
+    if(t) el.setAttribute(a, t);
+  });
+}
+
+function initLanguage(){
+  const btn = document.getElementById('langToggle');
+  if(btn){
+    btn.textContent = LANG === 'en' ? '한국어' : 'EN';
+    btn.setAttribute('aria-label', LANG === 'en' ? '한국어로 보기' : 'View in English');
+    btn.addEventListener('click', ()=>{
+      const next = LANG === 'en' ? 'ko' : 'en';
+      try{ localStorage.setItem('spot-radar-lang', next); }catch(e){}
+      const url = new URL(location.href);
+      url.searchParams.set('lang', next);
+      location.replace(url.toString());
+    });
+  }
+  if(LANG !== 'en') return;
+  document.title = 'Gabojago — Festivals, food & day trips across Korea';
+  const nativeAlert = window.alert.bind(window);
+  window.alert = (msg)=> nativeAlert(trText(msg) || msg);
+  translateTree(document.body);
+  new MutationObserver((muts)=>{
+    muts.forEach(m=>{
+      if(m.type === 'characterData') translateTextNode(m.target);
+      else if(m.type === 'attributes') translateAttrs(m.target);
+      else m.addedNodes.forEach(translateTree);
+    });
+  }).observe(document.body, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['placeholder','aria-label','title'] });
+  document.documentElement.classList.remove('i18n-pending');
+}
+
+const LANG = window.LANG || 'ko';
+try{ initLanguage(); }catch(e){ console.warn('언어 초기화 실패', e); document.documentElement.classList.remove('i18n-pending'); }
 
 /* ---------------- 초기화 ---------------- */
 (async function init(){
