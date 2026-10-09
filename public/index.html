@@ -3164,7 +3164,7 @@ async function loadFestivals(){
   document.getElementById('festivalMore').innerHTML = '';
   // 이미 시작해서 진행 중인 축제도 잡으려고 두 달 전 시작분부터 받아옵니다.
   const from = new Date(); from.setDate(from.getDate() - 60);
-  const qs = new URLSearchParams({ mode:'festival', rows:'300', eventStartDate: ymd(from) });
+  const qs = new URLSearchParams({ mode:'festival', rows:'500', eventStartDate: ymd(from) });
   if(festState.area) qs.set('areaCode', festState.area);
   let items = [];
   try{
