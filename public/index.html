@@ -877,7 +877,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
         <div class="stacked-controls">
           <select id="tourArea"></select>
           <select id="tourType"></select>
-          <select id="tourCity" title="추가할 때 저장될 도시"></select>
+          <select id="tourCity" aria-label="시·군·구"></select>
           <input id="tourKeyword" type="text" placeholder="키워드 (예: 계곡, 전망대)">
           <button id="tourSearchBtn" class="btn-mini">검색</button>
         </div>
@@ -888,7 +888,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
         <p class="hint">전국 호텔·펜션·풀빌라. 예약하기를 누르면 네이버에서 가격·후기를 바로 비교할 수 있어요.</p>
         <div class="stacked-controls">
           <select id="stayArea"></select>
-          <select id="stayCity" title="추가할 때 저장될 도시"></select>
+          <select id="stayCity" aria-label="시·군·구"></select>
           <input id="stayKeyword" type="text" placeholder="키워드 (예: 오션뷰, 애견동반)">
           <button id="staySearchBtn" class="btn-mini">검색</button>
         </div>
@@ -914,7 +914,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
             <option value="museum">박물관·미술관</option>
           </select>
           <select id="govSido"></select>
-          <input id="govSigungu" type="text" placeholder="시군구 (예: 화성시, 비워도 됨)">
+          <select id="govSigungu" aria-label="시·군·구"></select>
           <button id="govSearchBtn" class="btn-mini">검색</button>
         </div>
         <div id="govResults"></div>
@@ -924,7 +924,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
         <p class="hint">전국 공중화장실 3.3만여 곳</p>
         <div class="stacked-controls">
           <select id="toiletSido"></select>
-          <input id="toiletSigungu" type="text" placeholder="시군구 (예: 화성시)">
+          <select id="toiletSigungu" aria-label="시·군·구"></select>
           <button id="toiletSearchBtn" class="btn-mini">검색</button>
         </div>
         <div id="toiletResults"></div>
@@ -2562,6 +2562,40 @@ const TOUR_TYPES = [
   {key:'12temple',    id:'12', label:'사찰·템플스테이', theme:'temple', cat1:'A02', cat2:'A0201', cat3:'A02010800'},
 ];
 
+/* ---------------- 검색 탭 공통: 시·도를 고르면 그 시·도의 시·군·구만 ---------------- */
+// 관광공사 지역코드('31') 또는 시·도 이름('경기도', '서울특별시') → REGIONS id
+function regionIdForArea(area){
+  const code = AREA_SIDO_FULL[area] ? area : Object.keys(AREA_SIDO_FULL).find(k=> AREA_SIDO_FULL[k] === area);
+  if(!code) return null;
+  const hit = REGIONS.find(r=>{
+    const first = (CITIES[r.id] || [])[0];
+    return first && CITY_TOUR[first.id] && CITY_TOUR[first.id].area === code;
+  });
+  return hit ? hit.id : null;
+}
+// "서울 전체" 같은 묶음 항목은 빼고 실제 시·군·구만
+function citiesForArea(area){
+  return (CITIES[regionIdForArea(area)] || []).filter(c=> !/전체$/.test(c.name));
+}
+function fillCitySelect(areaSel, citySel){
+  const list = citiesForArea(areaSel.value);
+  citySel.innerHTML = `<option value="">시·군·구 전체</option>`
+    + list.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+function linkCitySelect(areaSel, citySel){
+  fillCitySelect(areaSel, citySel);
+  areaSel.addEventListener('change', ()=> fillCitySelect(areaSel, citySel));
+}
+// 선택된 도시 id → 검색어로 쓸 시·군·구 이름 (전체면 '')
+function selectedCityName(citySel){
+  const c = Object.values(CITIES).flat().find(x=> x.id === citySel.value);
+  return c && !/전체$/.test(c.name) ? c.name : '';
+}
+// 커뮤니티에 추가할 때 저장할 도시: 고른 시·군·구, 없으면 그 시·도의 첫 항목(예: 서울 전체)
+function saveCityId(areaSel, citySel){
+  return citySel.value || ((CITIES[regionIdForArea(areaSel.value)] || [])[0] || {}).id || '';
+}
+
 function initTourPanel(){
   const areaSel = document.getElementById('tourArea');
   const typeSel = document.getElementById('tourType');
@@ -2571,13 +2605,7 @@ function initTourPanel(){
   areaSel.innerHTML = TOUR_AREAS.map(a=>`<option value="${a.code}">${a.name}</option>`).join('');
   areaSel.value = '31';
   typeSel.innerHTML = TOUR_TYPES.map(t=>`<option value="${t.key}">${t.label}</option>`).join('');
-
-  const allCities = [];
-  Object.entries(CITIES).forEach(([regionId, list])=>{
-    const region = REGIONS.find(r=>r.id===regionId);
-    list.forEach(c => allCities.push({ id:c.id, label:`${region ? region.name : ''} · ${c.name}` }));
-  });
-  citySel.innerHTML = allCities.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+  linkCitySelect(areaSel, citySel);
 
   document.getElementById('tourSearchBtn')?.addEventListener('click', searchTour);
 }
@@ -2591,6 +2619,8 @@ async function searchTour(){
   box.innerHTML = '<div class="empty">관광공사 데이터 조회 중…</div>';
 
   const qs = new URLSearchParams({ areaCode, contentTypeId: typeDef.id, rows: '50' });
+  const sgg = selectedCityName(document.getElementById('tourCity'));
+  if(sgg) qs.set('sigunguName', sgg);
   if(keyword) qs.set('keyword', keyword);
   if(typeDef.cat1) qs.set('cat1', typeDef.cat1);
   if(typeDef.cat2) qs.set('cat2', typeDef.cat2);
@@ -2647,7 +2677,7 @@ async function addTourSpotToCommunity(item, theme, btn){
     alert('Supabase 설정이 아직 안 되어 있어요.');
     return;
   }
-  const city = document.getElementById('tourCity').value;
+  const city = saveCityId(document.getElementById('tourArea'), document.getElementById('tourCity'));
   const id = `tour_${item.contentId || Date.now()}`;
   const row = {
     id, city, name: item.name, theme,
@@ -2679,13 +2709,7 @@ function initStayPanel(){
 
   areaSel.innerHTML = TOUR_AREAS.map(a=>`<option value="${a.code}">${a.name}</option>`).join('');
   areaSel.value = '31';
-
-  const allCities = [];
-  Object.entries(CITIES).forEach(([regionId, list])=>{
-    const region = REGIONS.find(r=>r.id===regionId);
-    list.forEach(c => allCities.push({ id:c.id, label:`${region ? region.name : ''} · ${c.name}` }));
-  });
-  citySel.innerHTML = allCities.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+  linkCitySelect(areaSel, citySel);
 
   document.getElementById('staySearchBtn')?.addEventListener('click', searchStay);
 }
@@ -2697,6 +2721,8 @@ async function searchStay(){
   box.innerHTML = '<div class="empty">숙박 정보 조회 중…</div>';
 
   const qs = new URLSearchParams({ areaCode, contentTypeId: '32', rows: '20' });
+  const sgg = selectedCityName(document.getElementById('stayCity'));
+  if(sgg) qs.set('sigunguName', sgg);
   if(keyword) qs.set('keyword', keyword);
 
   try{
@@ -2747,7 +2773,7 @@ async function addStaySpotToCommunity(item, btn){
     alert('Supabase 설정이 아직 안 되어 있어요.');
     return;
   }
-  const city = document.getElementById('stayCity').value;
+  const city = saveCityId(document.getElementById('stayArea'), document.getElementById('stayCity'));
   const id = `stay_${item.contentId || Date.now()}`;
   const row = {
     id, city, name: item.name, theme: 'stay',
@@ -2779,13 +2805,14 @@ function initGovPanel(){
   if(!sidoSelect) return;
   sidoSelect.innerHTML = SIDO_LIST.map(s=>`<option value="${s}">${s}</option>`).join('');
   sidoSelect.value = '경기도';
+  linkCitySelect(sidoSelect, document.getElementById('govSigungu'));
   document.getElementById('govSearchBtn')?.addEventListener('click', searchGovData);
 }
 
 async function searchGovData(){
   const type = document.getElementById('govType').value;
   const sido = document.getElementById('govSido').value;
-  const sigungu = document.getElementById('govSigungu').value.trim();
+  const sigungu = selectedCityName(document.getElementById('govSigungu'));
   const box = document.getElementById('govResults');
   box.innerHTML = '<div class="empty">국가 데이터 조회 중…</div>';
 
@@ -2840,13 +2867,7 @@ function initCulturePanel(){
 
   sidoSelect.innerHTML = SIDO_LIST.map(s=>`<option value="${s}">${s}</option>`).join('');
   sidoSelect.value = '경기도';
-
-  const allCities = [];
-  Object.entries(CITIES).forEach(([regionId, list])=>{
-    const region = REGIONS.find(r=>r.id===regionId);
-    list.forEach(c => allCities.push({ id:c.id, label:`${region ? region.name : ''} · ${c.name}` }));
-  });
-  citySelect.innerHTML = allCities.map(c=>`<option value="${c.id}">${c.label}</option>`).join('');
+  linkCitySelect(sidoSelect, citySelect);
 
   document.getElementById('cultureSearchBtn')?.addEventListener('click', searchCulture);
 }
@@ -2905,7 +2926,7 @@ async function addCultureSpotToCommunity(item, btn){
     alert('Supabase 설정이 아직 안 되어 있어요.');
     return;
   }
-  const city = document.getElementById('cultureCity').value;
+  const city = saveCityId(document.getElementById('cultureSido'), document.getElementById('cultureCity'));
   const id = `culture_${item.id || Date.now()}`;
   const row = {
     id, city, name: item.name, theme: 'festival',
@@ -2935,12 +2956,13 @@ function initToiletPanel(){
   if(!sidoSelect) return;
   sidoSelect.innerHTML = SIDO_LIST.map(s=>`<option value="${s}">${s}</option>`).join('');
   sidoSelect.value = '경기도';
+  linkCitySelect(sidoSelect, document.getElementById('toiletSigungu'));
   document.getElementById('toiletSearchBtn')?.addEventListener('click', searchToilets);
 }
 
 async function searchToilets(){
   const sido = document.getElementById('toiletSido').value;
-  const sigungu = document.getElementById('toiletSigungu').value.trim();
+  const sigungu = selectedCityName(document.getElementById('toiletSigungu'));
   const box = document.getElementById('toiletResults');
   box.innerHTML = '<div class="empty">화장실 조회 중…</div>';
 
@@ -3626,7 +3648,7 @@ const I18N = {
   '키워드 (예: 오션뷰, 애견동반)':'Keyword in Korean (e.g. 오션뷰, 애견동반)', '앞으로 3개월간의 공연·전시 (KOPIS)':'Shows and exhibitions in the next 3 months (KOPIS)',
   '공연명 (선택)':'Show title (optional)', '소아과는 요일별 진료시간 포함 (신고 기준이니 방문 전 전화 확인 필수)':'Pediatric clinics include weekly hours (from official filings — call before visiting)',
   '소아과 (진료시간 포함)':'Pediatric clinics (with hours)', '박물관·미술관':'Museums & galleries', '시군구 (예: 화성시, 비워도 됨)':'District in Korean (e.g. 화성시, optional)',
-  '전국 공중화장실 3.3만여 곳':'33,000+ public restrooms nationwide', '시군구 (예: 화성시)':'District in Korean (e.g. 화성시)',
+  '전국 공중화장실 3.3만여 곳':'33,000+ public restrooms nationwide', '시·군·구 전체':'All cities & districts', '시군구 (예: 화성시)':'District in Korean (e.g. 화성시)',
   '여행 브이로그로 분위기 미리 보기':'Preview the vibe with travel vlogs', '검색어 (예: 화성 브이로그)':'Search (e.g. Seoul vlog)',
   '관광지':'Attractions', '문화시설':'Cultural venues', '축제·공연·행사':'Festivals & events', '레포츠':'Leisure sports', '숙박(호텔·펜션·풀빌라)':'Stays (hotels, pensions, villas)',
   '쇼핑':'Shopping', '음식점':'Restaurants', '커뮤니티에 추가':'Add to community', '추가됨':'Added',
