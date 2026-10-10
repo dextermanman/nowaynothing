@@ -3382,6 +3382,13 @@ function goToPick(){
 
 /* ---------------- 내비게이션: 스크롤 위치 표시 / 등장 애니메이션 ---------------- */
 function initNavEffects(){
+  // 로고(#top)는 화면에 붙어 있는 상단 메뉴바라 기본 앵커 이동이 안 먹어서, 직접 맨 위로 올립니다.
+  document.querySelectorAll('a[href="#top"]').forEach(a=> a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    window.scrollTo({ top:0, behavior:'smooth' });
+    document.getElementById('mobileMenu')?.classList.remove('open');
+    if(location.hash) history.replaceState(null, '', location.pathname + location.search);
+  }));
   const nav = document.querySelector('.topnav');
   const onScroll = ()=> nav && nav.classList.toggle('scrolled', window.scrollY > 8);
   window.addEventListener('scroll', onScroll, {passive:true});
