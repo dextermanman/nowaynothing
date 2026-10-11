@@ -1865,6 +1865,30 @@ const TOUR_TYPE_THEME = {
 
 const tourCache = {}; // 같은 도시를 다시 눌러도 재요청 안 하도록 캐시
 
+// 관광공사 법정동 시·도 코드 (지역코드 → 법정동). 기존 지역코드 조회는 행정구역 개편(예: 화성시 만세구)으로
+// 코드가 바뀐 곳이 빠지고(경기 문화시설 106건 vs 420건), 법정동 조회는 빠짐없이 나와서 이쪽을 씁니다.
+// 광주·전남(통합 후 코드 미확인)과 세종은 법정동 조회가 비어서 기존 방식으로 대체합니다.
+const LDONG_SIDO = { '1':'11', '6':'26', '4':'27', '2':'28', '3':'30', '7':'31', '31':'41', '32':'51',
+  '33':'43', '34':'44', '37':'52', '35':'47', '36':'48', '39':'50' };
+const ldongCache = {};
+function ldongList(sido, type){
+  const key = `${sido}|${type}`;
+  if(!ldongCache[key]){
+    const qs = new URLSearchParams({ lDongRegnCd: sido, contentTypeId: type, rows: type === '12' ? '1800' : '700', arrange:'Q' });
+    ldongCache[key] = fetch(`/api/tour-search?${qs}`).then(r=> r.json()).then(d=> (d && d.items) || []).catch(()=> []);
+    ldongCache[key].then(list=>{ if(!list.length) delete ldongCache[key]; });
+  }
+  return ldongCache[key];
+}
+// 시·도 전체를 최근 수정순으로 받아 주소의 시·군·구로 거름 (비면 기존 조회로 대체)
+async function fetchByLdong(m, type, limit, fallback){
+  const sido = LDONG_SIDO[m.area];
+  if(!sido) return fallback();
+  const list = await ldongList(sido, type);
+  const mine = !m.sgg ? list : list.filter(it=> String(it.address || '').split(/\s+/).slice(1, 3).includes(m.sgg));
+  return mine.length ? mine.slice(0, limit) : fallback();
+}
+
 async function loadTourSpots(cityId){
   if(tourCache[cityId]) return tourCache[cityId];
   const m = CITY_TOUR[cityId];
@@ -1890,11 +1914,8 @@ async function loadTourSpots(cityId){
   // 관광지·문화시설은 최근 수정순(대표사진 있는 것, arrange=Q)으로 넉넉히 — 가나다순 앞 몇 건만 받으면
   // '매향리평화생태공원'처럼 뒤쪽 이름은 잘려서 안 보였어요.
   const [attractions, cultures, general, stays, camps, festivals, museums, clinics, parkings, cafes, hotsprings, temples, foods] = await Promise.all([
-    fetchOne(buildUrl({ rows:'60', contentTypeId:'12', arrange:'Q' })), // 관광지
-    // 문화시설(미술관·공연장·문화센터 등): 시·군·구 코드로 조회하면 행정구역 개편(예: 화성시 만세구)으로
-    // 코드가 바뀐 시설이 빠져서, 시·도 단위로 받아 주소로 거릅니다.
-    fetchOne(`/api/tour-search?${new URLSearchParams({ areaCode: m.area, contentTypeId:'14', rows:'300', arrange:'Q' })}`)
-      .then(list=> !m.sgg ? list.slice(0, 40) : list.filter(it=> String(it.address || '').split(/\s+/).slice(1, 3).includes(m.sgg))),
+    fetchByLdong(m, '12', 60, ()=> fetchOne(buildUrl({ rows:'60', contentTypeId:'12', arrange:'Q' }))), // 관광지
+    fetchByLdong(m, '14', 40, ()=> fetchOne(buildUrl({ rows:'30', contentTypeId:'14', arrange:'Q' }))), // 문화시설(미술관·공연장·문화센터)
     fetchOne(buildUrl({ rows:'18', arrange:'Q' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
