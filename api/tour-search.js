@@ -77,7 +77,7 @@ export default async function handler(req, res) {
 
   const { areaCode, sigunguName, contentTypeId, keyword, page, rows, mode, cat1, cat2, cat3 } = req.query;
   // 축제는 전국 단위 조회도 허용 (이번 달 축제 모아보기용)
-  if (!areaCode && !keyword && mode !== 'festival') {
+  if (!areaCode && !keyword && mode !== 'festival' && !req.query.lDongRegnCd) {
     return res.status(400).json({ error: 'areaCode 또는 keyword 중 하나는 필요합니다.' });
   }
 
@@ -97,6 +97,9 @@ export default async function handler(req, res) {
         arrange: req.query.arrange || 'O',
       });
       if (areaCode) params.set('areaCode', areaCode);
+      // 법정동 코드 조회 (행정구역 개편으로 기존 시군구 코드에서 빠진 곳용, 예: 화성시 → 41 / 590)
+      if (req.query.lDongRegnCd) params.set('lDongRegnCd', req.query.lDongRegnCd);
+      if (req.query.lDongSignguCd) params.set('lDongSignguCd', req.query.lDongSignguCd);
       if (contentTypeId && !isFestival) params.set('contentTypeId', contentTypeId);
       if (isKeywordSearch) params.set('keyword', keyword.trim());
       // 세부 카테고리(cat1>cat2>cat3)로 좁혀서 검색 — 예: 음식점 중 카페만, 관광지 중 사찰만

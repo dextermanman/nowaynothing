@@ -625,6 +625,17 @@ dialog.sheet[open]{animation:sheetIn .4s var(--spring);}
 .link-tile span{font-size:13.5px;color:var(--ink-dim);line-height:1.5;}
 .link-tile .arrow{display:block;margin-top:auto;padding-top:16px;color:var(--route);font-size:13.5px;font-weight:600;font-style:normal;}
 .note{font-size:13px;color:var(--ink-dim);margin:16px 0 0;line-height:1.6;}
+.arch-card{padding:20px;}
+.arch-by{
+  display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 0 14px;
+  font-size:13px;font-weight:700;letter-spacing:-.01em;color:#7d7aa8;
+}
+.arch-by span{font-size:12px;font-weight:600;color:var(--ink-dim);font-variant-numeric:tabular-nums;}
+.arch-name{font-size:19px;font-weight:800;letter-spacing:-.04em;line-height:1.3;margin:0 0 4px;color:var(--heading);}
+.arch-ko{font-size:13px;color:var(--ink-dim);margin:0 0 2px;}
+.arch-note{font-size:13.5px;line-height:1.55;margin:10px 0 0;color:var(--ink);}
+.arch-card .card-actions{margin-top:14px;align-items:center;}
+.arch-card .card-actions .save-btn{flex:none;}
 .saved-empty{
   text-align:center;padding:48px 24px;border-radius:24px;border:1.5px dashed var(--line);color:var(--ink-dim);grid-column:1/-1;
 }
@@ -716,6 +727,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
       <a href="#picks" data-spy="picks">추천</a>
       <a href="#festival" data-spy="festival">축제</a>
       <a href="#food" data-spy="food">맛집</a>
+      <a href="#architecture" data-spy="architecture">건축</a>
       <a href="#explore" data-spy="explore">지역 탐색</a>
       <a href="#saved" data-spy="saved">저장함 <span class="nav-count" data-saved-count></span></a>
       <a href="#search" data-spy="search">검색</a>
@@ -734,6 +746,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
   <a href="#picks">추천 여행지 <span>›</span></a>
   <a href="#festival">축제 <span>›</span></a>
   <a href="#food">맛집 <span>›</span></a>
+  <a href="#architecture">건축가의 공간 <span>›</span></a>
   <a href="#explore">지역 탐색 <span>›</span></a>
   <a href="#saved">저장함 <span>›</span></a>
   <a href="#search">검색 <span>›</span></a>
@@ -824,6 +837,16 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
       <div class="rank-list" id="foodResults"></div>
       <div class="more-row" id="foodMore"></div>
     </div>
+  </section>
+
+  <section class="section reveal" id="architecture">
+    <div class="section-head">
+      <p class="kicker" style="--k:#7d7aa8">ARCHITECTURE</p>
+      <h2 class="section-title">건축가의 공간</h2>
+      <p class="section-desc">자하 하디드, 안도 다다오, 이타미 준, 김수근… 이름난 건축가가 설계했고 직접 가볼 수 있는 곳만 모았어요.</p>
+    </div>
+    <div class="theme-chips" id="archFilter"></div>
+    <div class="cards" id="archResults"></div>
   </section>
 
   <section class="section reveal" id="explore">
@@ -1079,6 +1102,7 @@ const THEMES = {
   cafe:      {label:'카페·디저트',   color:'#c9a27a'},
   hotspring: {label:'온천·스파',     color:'#e0a45c'},
   temple:    {label:'사찰·템플스테이', color:'#a3b57d'},
+  architecture: {label:'건축 명소', color:'#7d7aa8'},
 };
 
 const REGIONS = [
@@ -1502,7 +1526,39 @@ try {
 
 // 런타임에 실제로 화면에 쓰이는 명소 배열. 시드 데이터로 시작해서,
 // Supabase 연동이 되어 있으면 커뮤니티가 추가한 명소를 여기에 합칩니다.
-let SPOTS = [...SEED_SPOTS];
+/* ---------------- 건축가의 공간 (유명 건축가가 설계한, 방문 가능한 건축물) ---------------- */
+const ARCH_SPOTS = [
+  {id:'arch_ddp', city:'c1_중구', name:'동대문디자인플라자(DDP)', nameEn:'Dongdaemun Design Plaza (DDP)', architect:'자하 하디드', architectEn:'Zaha Hadid', year:2014, address:'서울 중구 을지로 281', note:'곡선만으로 이어진 비정형 외피, 밤에 더 멋져요', noteEn:'A seamless curving shell — even better at night'},
+  {id:'arch_leeum', city:'c1_용산구', name:'리움미술관', nameEn:'Leeum Museum of Art', architect:'마리오 보타·장 누벨·렘 콜하스', architectEn:'Mario Botta, Jean Nouvel & Rem Koolhaas', year:2004, address:'서울 용산구 이태원로55길 60-16', note:'세 거장의 건물이 한 미술관 안에', noteEn:'Three masters, one museum'},
+  {id:'arch_amore', city:'c1_용산구', name:'아모레퍼시픽 본사', nameEn:'Amorepacific Headquarters', architect:'데이비드 치퍼필드', architectEn:'David Chipperfield', year:2017, address:'서울 용산구 한강대로 100', note:'달항아리를 닮은 큐브, 1층 아트리움과 미술관 개방', noteEn:'A moon-jar-inspired cube; the atrium and museum are open'},
+  {id:'arch_ecc', city:'c1_서대문구', name:'이화여대 ECC', nameEn:'Ewha Campus Complex (ECC)', architect:'도미니크 페로', architectEn:'Dominique Perrault', year:2008, address:'서울 서대문구 이화여대길 52', note:'땅을 갈라 만든 지하 캠퍼스와 거대한 계단', noteEn:'A campus carved into the ground, with a grand stair valley'},
+  {id:'arch_songeun', city:'c1_강남구', name:'송은 (ST송은빌딩)', nameEn:'SongEun Art Space', architect:'헤르조그 & 드 뫼롱', architectEn:'Herzog & de Meuron', year:2021, address:'서울 강남구 도산대로 441', note:'뾰족한 삼각 실루엣의 콘크리트 미술관', noteEn:'A sharp, triangular concrete art space'},
+  {id:'arch_lotte', city:'c1_송파구', name:'롯데월드타워', nameEn:'Lotte World Tower', architect:'KPF', architectEn:'Kohn Pedersen Fox (KPF)', year:2017, address:'서울 송파구 올림픽로 300', note:'붓끝을 닮은 555m 초고층, 서울스카이 전망대', noteEn:'A 555 m brush-tip tower with the Seoul Sky deck'},
+  {id:'arch_cityhall', city:'c1_중구', name:'서울시청 신청사', nameEn:'Seoul City Hall', architect:'유걸', architectEn:'Yoo Kerl', year:2012, address:'서울 중구 세종대로 110', note:'파도처럼 덮친 유리 처마와 실내 수직정원', noteEn:'A wave-like glass canopy and indoor vertical garden'},
+  {id:'arch_space', city:'c1_종로구', name:'아라리오뮤지엄 인 스페이스 (구 공간사옥)', nameEn:'Arario Museum in Space', architect:'김수근', architectEn:'Kim Swoo-geun', year:1971, address:'서울 종로구 율곡로 83', note:'담쟁이 덮인 벽돌 건물, 한국 현대건축의 상징', noteEn:'Ivy-clad brick icon of Korean modern architecture'},
+  {id:'arch_kyungdong', city:'c1_중구', name:'경동교회', nameEn:'Kyungdong Church', architect:'김수근', architectEn:'Kim Swoo-geun', year:1981, address:'서울 중구 장충단로 204', note:'기도하는 손을 닮은 벽돌 교회', noteEn:'A brick church shaped like praying hands'},
+  {id:'arch_arko', city:'c1_종로구', name:'아르코미술관', nameEn:'Arko Art Center', architect:'김수근', architectEn:'Kim Swoo-geun', year:1979, address:'서울 종로구 동숭길 3', note:'대학로 붉은 벽돌 건축의 시작', noteEn:'Where Daehangno’s red-brick look began'},
+  {id:'arch_whanki', city:'c1_종로구', name:'환기미술관', nameEn:'Whanki Museum', architect:'우규승', architectEn:'Kyu Sung Woo', year:1992, address:'서울 종로구 자하문로40길 63', note:'부암동 언덕에 앉은 고요한 미술관', noteEn:'A quiet museum on the Buam-dong hillside'},
+  {id:'arch_snumoa', city:'c1_관악구', name:'서울대학교미술관', nameEn:'Seoul National University Museum of Art', architect:'렘 콜하스 (OMA)', architectEn:'Rem Koolhaas (OMA)', year:2006, address:'서울 관악구 관악로 1', note:'경사지에 떠 있는 듯한 유리 상자', noteEn:'A glass box that seems to float over the slope'},
+  {id:'arch_mmca', city:'c31_과천시', name:'국립현대미술관 과천관', nameEn:'MMCA Gwacheon', architect:'김태수', architectEn:'Kim Tai Soo', year:1986, address:'경기 과천시 광명로 313', note:'산성처럼 둘러싼 화강석 미술관과 백남준 다다익선', noteEn:'Fortress-like granite museum around Nam June Paik’s tower'},
+  {id:'arch_mimesis', city:'paju', name:'미메시스 아트 뮤지엄', nameEn:'Mimesis Art Museum', architect:'알바루 시자', architectEn:'Álvaro Siza', year:2009, address:'경기 파주시 문발로 253', note:'파주출판도시의 하얀 곡면 미술관', noteEn:'A white, curving museum in Paju Book City'},
+  {id:'arch_san', city:'c32_원주시', name:'뮤지엄 산', nameEn:'Museum SAN', architect:'안도 다다오', architectEn:'Tadao Ando', year:2013, address:'강원 원주시 지정면 오크밸리2길 260', note:'물의 정원과 돌의 정원, 제임스 터렐관까지', noteEn:'Water and stone gardens, plus the James Turrell wing'},
+  {id:'arch_bonte', city:'seogwipo', name:'본태박물관', nameEn:'Bonte Museum', architect:'안도 다다오', architectEn:'Tadao Ando', year:2012, address:'제주 서귀포시 안덕면 산록남로762번길 69', note:'노출콘크리트와 전통 담장이 만나는 곳', noteEn:'Exposed concrete meets traditional stone walls'},
+  {id:'arch_yumin', city:'seogwipo', name:'유민미술관', nameEn:'Yumin Art Nouveau Collection', architect:'안도 다다오', architectEn:'Tadao Ando', year:2008, address:'제주 서귀포시 성산읍 섭지코지로 107', note:'성산일출봉을 액자처럼 담는 동선', noteEn:'A path that frames Seongsan Ilchulbong like a painting'},
+  {id:'arch_glasshouse', city:'seogwipo', name:'글라스하우스', nameEn:'Glass House', architect:'안도 다다오', architectEn:'Tadao Ando', year:2008, address:'제주 서귀포시 성산읍 섭지코지로', note:'섭지코지 바다를 향해 열린 유리 건물', noteEn:'Glass pavilion opening onto the Seopjikoji sea'},
+  {id:'arch_bangju', city:'seogwipo', name:'방주교회', nameEn:'Bangju Church', architect:'이타미 준', architectEn:'Itami Jun', year:2009, address:'제주 서귀포시 안덕면 산록남로762번길 113', note:'물 위에 뜬 노아의 방주', noteEn:'Noah’s ark floating on water'},
+  {id:'arch_podo', city:'seogwipo', name:'포도호텔', nameEn:'Podo Hotel', architect:'이타미 준', architectEn:'Itami Jun', year:2001, address:'제주 서귀포시 안덕면 산록남로 863', note:'포도송이와 제주 초가를 닮은 지붕', noteEn:'Roofs like grape clusters and Jeju thatched houses'},
+  {id:'arch_acc', city:'c5_동구', name:'국립아시아문화전당', nameEn:'Asia Culture Center (ACC)', architect:'우규승', architectEn:'Kyu Sung Woo', year:2015, address:'광주 동구 문화전당로 38', note:'땅 아래로 내려앉은 거대한 문화 광장', noteEn:'A vast cultural plaza sunk below ground'},
+  {id:'arch_bcc', city:'c6_해운대구', name:'영화의전당', nameEn:'Busan Cinema Center', architect:'쿱 힘멜블라우', architectEn:'Coop Himmelb(l)au', year:2011, address:'부산 해운대구 수영강변대로 120', note:'세계 최장 캔틸레버 지붕, 밤엔 LED 천장', noteEn:'A record-long cantilever roof with an LED ceiling'},
+  {id:'arch_sayuwon', city:'c4_군위군', name:'사유원', nameEn:'Sayuwon', architect:'승효상·알바루 시자', architectEn:'Seung H-Sang & Álvaro Siza', year:2021, address:'대구 군위군 부계면 치산효령로 1150', note:'수목원 속 건축 산책, 예약제', noteEn:'An architectural walk through an arboretum (booking required)'},
+];
+const ARCH_EN = Object.fromEntries(ARCH_SPOTS.map(a=> [a.architect, a.architectEn]));
+// 지역 탐색용 시드 형태로 변환
+const ARCH_SEEDS = ARCH_SPOTS.map(a=> ({
+  id:a.id, city:a.city, name:a.name, theme:'architecture', weekday:true, weekend:true,
+  rating:null, reviews:null, popularity:60, address:a.address, architect:a.architect,
+}));
+let SPOTS = [...SEED_SPOTS, ...ARCH_SEEDS];
 
 async function loadCommunitySpots(){
   if(!supabaseReady) return; // Supabase 미설정 시 시드 데이터만 사용
@@ -1510,7 +1566,7 @@ async function loadCommunitySpots(){
     const { data, error } = await supabaseClient.from('spots').select('*').eq('source','community');
     if(error){ console.warn('커뮤니티 명소 로드 실패', error); return; }
     if(data && data.length){
-      SPOTS = [...SEED_SPOTS, ...data];
+      SPOTS = [...SEED_SPOTS, ...ARCH_SEEDS, ...data];
     }
   }catch(e){
     console.warn('커뮤니티 명소 로드 오류', e);
@@ -1536,6 +1592,7 @@ function getTags(spot){
     cafe:      ['#카페', '#디저트', '#인생샷카페'],
     hotspring: ['#온천', '#스파', '#힐링여행'],
     temple:    ['#사찰', '#템플스테이', '#고요한여행'],
+    architecture: ['#건축여행', '#건축가의공간'],
   };
   const tags = [...(base[spot.theme] || [])];
   if (spot.popularity >= 85) tags.push('#핫플레이스');
@@ -1830,8 +1887,15 @@ async function loadTourSpots(cityId){
     }catch(e){ return []; }
   };
 
-  const [general, stays, camps, festivals, museums, clinics, parkings, cafes, hotsprings, temples, foods] = await Promise.all([
-    fetchOne(buildUrl({ rows:'18' })),
+  // 관광지·문화시설은 최근 수정순(대표사진 있는 것, arrange=Q)으로 넉넉히 — 가나다순 앞 몇 건만 받으면
+  // '매향리평화생태공원'처럼 뒤쪽 이름은 잘려서 안 보였어요.
+  const [attractions, cultures, general, stays, camps, festivals, museums, clinics, parkings, cafes, hotsprings, temples, foods] = await Promise.all([
+    fetchOne(buildUrl({ rows:'60', contentTypeId:'12', arrange:'Q' })), // 관광지
+    // 문화시설(미술관·공연장·문화센터 등): 시·군·구 코드로 조회하면 행정구역 개편(예: 화성시 만세구)으로
+    // 코드가 바뀐 시설이 빠져서, 시·도 단위로 받아 주소로 거릅니다.
+    fetchOne(`/api/tour-search?${new URLSearchParams({ areaCode: m.area, contentTypeId:'14', rows:'300', arrange:'Q' })}`)
+      .then(list=> !m.sgg ? list.slice(0, 40) : list.filter(it=> String(it.address || '').split(/\s+/).slice(1, 3).includes(m.sgg))),
+    fetchOne(buildUrl({ rows:'18', arrange:'Q' })),
     fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
     fetchCamping(m),
     festivalsForCity(m),                                    // 진행중·예정 축제 (전국 목록에서 주소로 거름)
@@ -1845,7 +1909,7 @@ async function loadTourSpots(cityId){
   ]);
 
   const seen = new Set();
-  const merged = [...general, ...stays, ...festivals].filter(it=>{
+  const merged = [...attractions, ...cultures, ...general, ...stays, ...festivals].filter(it=>{
     if(!it.contentId || seen.has(it.contentId)) return false;
     seen.add(it.contentId);
     return true;
@@ -2256,7 +2320,7 @@ function festivalBadge(s){
 function spotCardHTML(s){
   const t = THEMES[s.theme] || THEMES.nature;
   // 관광공사에서 막 불러온 곳은 별점 데이터가 없어서 주소를, 시드 명소는 실제 입력된 별점을 보여줍니다.
-  const metaLine = s.fromTour
+  const metaLine = (s.fromTour || s.architect)
     ? (s.address ? `<div class="card-meta">${escapeHtml(s.address)}</div>` : '')
     : '';
 
@@ -2279,6 +2343,7 @@ function spotCardHTML(s){
         ${s.badge==='bbcs' ? '<span class="badge source-bbcs">흑백요리사</span>' : ''}
         ${s.fromCamping ? '<span class="badge" style="background:#7aa86a22;color:#7aa86a;">고캠핑</span>' : (s.fromTour && !s.fromNaver ? '<span class="badge" style="background:#4fae7a22;color:var(--jade);">관광공사</span>' : '')}
         ${s.fromNaver ? '<span class="badge hot">리뷰 많은 집</span>' : ''}
+        ${s.architect ? `<span class="badge hot">설계 ${escapeHtml(s.architect)}</span>` : ''}
         ${s.induty ? `<span class="badge" style="background:#5b9bd522;color:#5b9bd5;">${escapeHtml(s.induty)}</span>` : ''}
         ${festivalBadge(s)}
         ${s.isPet ? '<span class="badge" style="background:#e8a04722;color:#e8a047;">반려동물 동반</span>' : ''}
@@ -2414,7 +2479,12 @@ async function renderCards(){
   if(!currentRegion){ box.innerHTML = '<div class="empty">지도에서 지역을 먼저 선택해주세요.</div>'; return; }
 
   const cityAtStart = currentCity;
-  const seedSpots = applyFilters(SPOTS.filter(s=>s.city===currentCity));
+  // '서울 전체'처럼 묶음 항목을 고르면 그 시·도의 구·시에 등록된 명소도 함께
+  const cityEntry = (CITIES[currentRegion] || []).find(c=> c.id === currentCity);
+  const cityIds = cityEntry && /전체$/.test(cityEntry.name)
+    ? new Set((CITIES[currentRegion] || []).map(c=> c.id))
+    : new Set([currentCity]);
+  const seedSpots = applyFilters(SPOTS.filter(s=> cityIds.has(s.city)));
 
   box.innerHTML = seedSpots.map(spotCardHTML).join('')
     + `<div class="empty" id="tourLoading" style="grid-column:1/-1;">명소·맛집 더 불러오는 중…</div>`;
@@ -2618,7 +2688,7 @@ async function searchTour(){
   const box = document.getElementById('tourResults');
   box.innerHTML = '<div class="empty">관광공사 데이터 조회 중…</div>';
 
-  const qs = new URLSearchParams({ areaCode, contentTypeId: typeDef.id, rows: '50' });
+  const qs = new URLSearchParams({ areaCode, contentTypeId: typeDef.id, rows: '50', arrange: 'Q' });
   const sgg = selectedCityName(document.getElementById('tourCity'));
   if(sgg) qs.set('sigunguName', sgg);
   if(keyword) qs.set('keyword', keyword);
@@ -3537,6 +3607,38 @@ async function loadPicks(){
   box.querySelectorAll('[data-save]').forEach(b=> b.addEventListener('click', ()=> toggleSave(b.dataset.save)));
 }
 
+const archState = { region:'all' };
+
+function renderArchitecture(){
+  const box = document.getElementById('archResults');
+  const bar = document.getElementById('archFilter');
+  if(!box || !bar) return;
+  const en = LANG === 'en';
+  const regionOf = (a)=> (cityMeta(a.city) || {}).regionName || '';
+  const regions = [...new Set(ARCH_SPOTS.map(regionOf))];
+  bar.innerHTML = [['all', '전체'], ...regions.map(r=> [r, r])].map(([k, label])=>
+    `<button type="button" class="chip ${archState.region===k?'active':''}" data-arch-region="${k}">${label}</button>`).join('');
+  bar.querySelectorAll('[data-arch-region]').forEach(b=> b.addEventListener('click', ()=>{ archState.region = b.dataset.archRegion; renderArchitecture(); }));
+  const list = ARCH_SPOTS.filter(a=> archState.region === 'all' || regionOf(a) === archState.region);
+  box.innerHTML = list.map(a=>{
+    SPOT_INDEX[a.id] = { id:a.id, name:a.name, theme:'architecture', address:a.address };
+    return `
+    <div class="card arch-card" data-no-i18n>
+      <p class="arch-by">${escapeHtml(en ? a.architectEn : a.architect)}<span>${a.year}</span></p>
+      <p class="arch-name">${escapeHtml(en ? a.nameEn : a.name)}</p>
+      ${en ? `<p class="arch-ko">${escapeHtml(a.name)}</p>` : ''}
+      <p class="card-meta">${escapeHtml(a.address)}</p>
+      <p class="arch-note">${escapeHtml(en ? a.noteEn : a.note)}</p>
+      <div class="card-spacer"></div>
+      <div class="card-actions">
+        <a class="btn-mini" href="${naverMapLink(a.name, a.address)}" target="_blank" rel="noopener">${en ? 'Map' : '지도'}</a>
+        <button type="button" class="save-btn ${isSaved(a.id)?'on':''}" data-save="${a.id}" aria-label="${en ? 'Save' : '저장'}">${ICON_HEART}</button>
+      </div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-save]').forEach(b=> b.addEventListener('click', ()=> toggleSave(b.dataset.save)));
+}
+
 const HOME_KEY = 'spot-radar-home';
 let homeRegion = null;
 function applyHomeRegion(regionId, {remember = true} = {}){
@@ -3570,6 +3672,7 @@ function initFeatures(){
   initFoodSection();
   initFestivalSection();
   initPicksSection();
+  renderArchitecture();
   initNavEffects();
   document.querySelectorAll('[data-random]').forEach(b=> b.addEventListener('click', openRandom));
   document.getElementById('rerollBtn')?.addEventListener('click', rollRandom);
@@ -3683,6 +3786,10 @@ const I18N = {
   '한국관광공사에 등록된 관광지와 여행코스에서 매주 새로 골라드려요. 내 지역을 고르면 그 지역 위주로 바뀌어요.':'Fresh picks every week from the Korea Tourism Organization’s attractions and routes. Choose a region to focus on it.',
   '코스 자세히 보기':'See route', '이 지역엔 등록된 추천 코스가 아직 없어요. ‘추천 여행지’를 눌러보세요.':'No suggested routes for this region yet. Try “Top picks”.',
   '추천 여행지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.':'Couldn’t load picks. Please try again shortly.', '광주·전남':'Gwangju · Jeonnam',
+  // 건축
+  '건축':'Architecture', '건축 명소':'Architecture', '건축가의 공간':'Architect-designed places',
+  '자하 하디드, 안도 다다오, 이타미 준, 김수근… 이름난 건축가가 설계했고 직접 가볼 수 있는 곳만 모았어요.':'Zaha Hadid, Tadao Ando, Itami Jun, Kim Swoo-geun… buildings by renowned architects that you can actually visit.',
+  '#건축여행':'#architecture', '#건축가의공간':'#archdaily',
   // 랜덤 뽑기
   '랜덤 나들이 뽑기':'Random trip picker', '닫기':'Close', '오늘의 랜덤 나들이':'Today’s random trip', '두구두구…':'Drumroll…',
   '다시 굴리기':'Roll again', '가보자고!':'Let’s go!',
@@ -3714,6 +3821,7 @@ const I18N_RULES = [
   [/^입장료: (.*)$/, (m,v)=> `Admission: ${v}`],
   [/^총 (\d+)건 중 (\d+)건 · 출처: (.*)$/, (m,total,n,src)=> `${n} of ${total} results · Source: ${src}`],
   [/^오류: (.*)$/, (m,v)=> `Error: ${v}`],
+  [/^설계 (.+)$/, (m,v)=> `Designed by ${ARCH_EN[v] || v}`],
   [/^응답을 읽지 못했어요 \(HTTP (\d+)\).*$/, (m,c)=> `Couldn’t read the response (HTTP ${c}).`],
   [/^· (.+)$/, (m,rest)=> { const t = trText(rest); return t ? `· ${t}` : null; }],
 ];
