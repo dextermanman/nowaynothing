@@ -224,7 +224,7 @@ svg{flex:none;}
 
 /* ───────── 히어로 ───────── */
 .hero{
-  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:24px 48px;align-items:center;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px 56px;align-items:center;
   padding:56px 0 8px;
 }
 .hero-copy{min-width:0;}
@@ -252,39 +252,56 @@ h1{
 .hero-cta .btn-lg.brand{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-strong);}
 .hero-cta .btn-lg.brand:hover{box-shadow:inset 0 0 0 1.5px var(--ink);}
 
-/* 노선도 일러스트 */
-.route-map{width:100%;max-width:430px;justify-self:end;margin:0;}
-.route-map svg{width:100%;height:auto;display:block;overflow:visible;}
-.route-map .rl{fill:none;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;}
-.route-map .rl.sea{stroke-width:4;stroke-dasharray:2 10;}
-.route-map .st{cursor:pointer;pointer-events:bounding-box;}
-.route-map .st circle{fill:var(--bg);stroke:var(--ink);stroke-width:3.5;transition:r .25s var(--spring), fill .2s var(--ease);}
-.route-map .st.hub circle{stroke-width:4.5;}
-.route-map .st text{font-size:15px;font-weight:700;fill:var(--heading);letter-spacing:-.02em;font-family:inherit;transition:fill .2s var(--ease);}
-.route-map .st:hover circle, .route-map .st:focus-visible circle{fill:var(--ink);}
-.route-map .st:focus{outline:none;}
-.route-map .st:focus-visible text{text-decoration:underline;}
-.route-map figcaption{font-size:13px;color:var(--ink-dim);margin-top:8px;text-align:right;}
-@media (prefers-reduced-motion: no-preference){
-  .route-map .rl{stroke-dasharray:var(--len) var(--len);stroke-dashoffset:var(--len);animation:draw 1.3s var(--ease) forwards;animation-delay:var(--d,0s);}
-  .route-map .rl.sea{stroke-dasharray:2 10;stroke-dashoffset:0;opacity:0;animation:fade .6s var(--ease) 1.4s forwards;}
-  .route-map .st{opacity:0;animation:fade .5s var(--ease) forwards;animation-delay:calc(var(--d,0s) + .9s);}
+/* 히어로 사진 + 기차표 */
+.hero-photo{position:relative;margin:0;border-radius:28px;overflow:hidden;aspect-ratio:5/4;background:var(--bg-panel);}
+.hero-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s var(--ease);}
+.hero-photo img.show{opacity:1;}
+.hero-photo .credit{position:absolute;right:14px;top:12px;font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.ticket{
+  position:absolute;left:16px;right:16px;bottom:16px;display:grid;grid-template-columns:1fr auto;align-items:stretch;
+  background:var(--bg);color:var(--ink);border-radius:18px;
+  -webkit-mask:radial-gradient(circle 9px at calc(100% - 92px) 0, transparent 98%, #000) top/100% 51% no-repeat,
+               radial-gradient(circle 9px at calc(100% - 92px) 100%, transparent 98%, #000) bottom/100% 51% no-repeat;
+          mask:radial-gradient(circle 9px at calc(100% - 92px) 0, transparent 98%, #000) top/100% 51% no-repeat,
+               radial-gradient(circle 9px at calc(100% - 92px) 100%, transparent 98%, #000) bottom/100% 51% no-repeat;
 }
-@keyframes draw{to{stroke-dashoffset:0;}}
-@keyframes fade{to{opacity:1;}}
+.ticket-main{padding:16px 18px 16px 20px;min-width:0;}
+.ticket-label{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--go-ink);margin:0 0 4px;}
+.ticket-label::before{content:'';width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 3px var(--go);}
+.ticket-label span{color:var(--ink-dim);font-weight:600;}
+.ticket-name{font-size:21px;font-weight:800;letter-spacing:-.04em;line-height:1.25;margin:0;color:var(--heading);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ticket-meta{font-size:13px;color:var(--ink-dim);margin:2px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ticket-meta a{color:var(--ink);font-weight:650;text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px;margin-left:8px;}
+.ticket-next{
+  width:92px;border:none;border-left:1.5px dashed var(--line-strong);background:transparent;cursor:pointer;color:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:700;
+  transition:color .2s var(--ease);
+}
+.ticket-next svg{width:22px;height:22px;transition:transform .3s var(--spring);}
+.ticket-next:hover{color:var(--go-ink);}
+.ticket-next:hover svg{transform:translateX(3px);}
+.hero-photo:not(.ready) .ticket{visibility:hidden;}
+.hero-photo:not(.ready){background:linear-gradient(90deg,var(--fill) 25%,var(--fill-strong) 37%,var(--fill) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
 
-.hero-regions{grid-column:1/-1;margin-top:28px;padding-top:28px;border-top:1px solid var(--line);
-  display:grid;grid-template-columns:200px 1fr;gap:16px 32px;align-items:start;}
-.quick-caption{font-size:14px;line-height:1.5;color:var(--ink-dim);margin:6px 0 0;}
-.quick-caption b{display:block;color:var(--heading);font-size:15px;font-weight:700;margin-bottom:2px;}
-.quick-regions{display:flex;flex-wrap:wrap;gap:8px;margin:0;}
+.hero-regions{grid-column:1/-1;margin-top:36px;min-width:0;}
+.quick-caption{font-size:14px;line-height:1.5;color:var(--ink-dim);margin:0 0 18px;}
+.quick-regions{display:flex;gap:0;margin:0 -8px;padding:4px 0 6px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;}
+.quick-regions::-webkit-scrollbar{display:none;}
 .quick-regions button{
-  border:none;background:var(--bg);color:var(--ink);font-size:14px;font-weight:600;
-  padding:8px 15px;border-radius:999px;cursor:pointer;box-shadow:inset 0 0 0 1.5px var(--line-strong);
-  transition:box-shadow .2s var(--ease), background .2s var(--ease), color .2s var(--ease);
+  flex:1 0 64px;position:relative;border:none;background:none;padding:0 2px;cursor:pointer;scroll-snap-align:start;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  color:var(--ink-dim);font-size:14px;font-weight:600;white-space:nowrap;transition:color .2s var(--ease);
 }
-.quick-regions button:hover{box-shadow:inset 0 0 0 1.5px var(--ink);}
-.quick-regions button.active{background:var(--ink);color:var(--bg);box-shadow:none;}
+.quick-regions button::before{
+  content:'';position:relative;z-index:1;width:22px;height:22px;border-radius:50%;
+  background:var(--bg);box-shadow:inset 0 0 0 4.5px var(--ink);
+  transition:background .2s var(--ease), box-shadow .2s var(--ease), transform .3s var(--spring);
+}
+.quick-regions button + button::after{content:'';position:absolute;top:8px;right:50%;width:100%;height:6px;background:var(--go);}
+.quick-regions button:hover{color:var(--ink);}
+.quick-regions button:hover::before{transform:scale(1.15);}
+.quick-regions button.active{color:var(--heading);font-weight:800;}
+.quick-regions button.active::before{background:var(--go);box-shadow:inset 0 0 0 4.5px var(--ink), 0 0 0 6px var(--route-glow);transform:scale(1.15);}
 .stats{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 28px;margin:4px 0 0;padding:0;}
 .stats div{font-size:13.5px;color:var(--ink-dim);}
 .stats b{font-weight:750;color:var(--heading);margin-right:4px;font-variant-numeric:tabular-nums;}
@@ -502,6 +519,19 @@ select:focus, input[type="text"]:focus{border-color:var(--go);box-shadow:0 0 0 4
 }
 .fest-body > .btn-mini.block:hover{background:none;text-decoration-color:var(--sec);}
 
+/* 축제: 첫 카드는 크게, 나머지는 3열 (12개씩 늘어나도 빈칸 없이 맞아떨어짐) */
+@media (min-width:901px){
+  #festivalResults{grid-template-columns:repeat(3,minmax(0,1fr));gap:32px 24px;}
+  #festivalResults > .fest-card:first-child{grid-column:span 2;grid-row:span 2;}
+  #festivalResults .poster{aspect-ratio:1/1;}
+  #festivalResults > .fest-card:first-child .poster{aspect-ratio:auto;flex:1 1 0;min-height:0;}
+  #festivalResults > .fest-card:first-child .poster img{position:absolute;inset:0;}
+  #festivalResults > .fest-card:first-child .fest-body{flex:none;padding-top:18px;}
+  #festivalResults > .fest-card:first-child .card-name{font-size:26px;letter-spacing:-.045em;}
+  #festivalResults > .fest-card:first-child .fest-date{font-size:15px;}
+  #festivalResults > .fest-card:first-child .dday{font-size:14px;padding:6px 12px;}
+}
+
 /* ───────── 맛집 ───────── */
 .hscroll{
   display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:12px;
@@ -641,10 +671,7 @@ footer a:hover{text-decoration:underline;}
 
 /* ───────── 태블릿 ───────── */
 @media (max-width:900px){
-  .hero{grid-template-columns:1fr;padding-top:44px;}
-  .route-map{justify-self:start;max-width:440px;}
-  .route-map figcaption{text-align:left;}
-  .hero-regions{grid-template-columns:1fr;gap:12px;}
+  .hero{grid-template-columns:minmax(0,1fr);padding-top:44px;}
 }
 
 /* ───────── 모바일 ───────── */
@@ -658,11 +685,6 @@ footer a:hover{text-decoration:underline;}
   .hero-cta{margin-top:24px;}
   .hero-cta .btn-lg{flex:1 1 auto;}
   .btn-lg{height:48px;font-size:15px;padding:0 18px;}
-  .route-map{max-width:330px;justify-self:center;}
-  .route-map figcaption{text-align:center;}
-  .hero-regions{margin-top:12px;padding-top:22px;}
-  .quick-regions{gap:6px;}
-  .quick-regions button{padding:7px 13px;font-size:13.5px;}
   .stats{gap:4px 18px;}
   .section{padding:60px 0 0 34px;}
   .section::before{left:7px;width:4px;}
@@ -673,6 +695,19 @@ footer a:hover{text-decoration:underline;}
   .panel{padding:16px;border-radius:18px;}
   .layout{gap:14px;}
   .cards{grid-template-columns:1fr;gap:24px;}
+  #recResults, #festivalResults{
+    grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:76%;gap:14px;
+    overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-right:-16px;padding-right:16px;
+  }
+  #recResults::-webkit-scrollbar, #festivalResults::-webkit-scrollbar{display:none;}
+  #recResults > *, #festivalResults > *{scroll-snap-align:start;}
+  #recResults > .empty, #festivalResults > .empty{grid-column:auto;}
+  .hero-photo{aspect-ratio:1/1;border-radius:22px;}
+  .ticket{left:10px;right:10px;bottom:10px;}
+  .ticket-name{font-size:18px;}
+  .ticket-next{width:78px;}
+  .hero-regions{margin-top:20px;}
+  .quick-regions{margin:0 -16px;padding-left:8px;padding-right:8px;}
   select, input[type="text"]{font-size:16px;}
   .city-tabs select, .festival-bar select{width:100%;}
   .festival-bar .segmented{flex:1 1 100%;}
@@ -764,25 +799,17 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
         <button class="btn-lg brand" type="button" data-random><svg><use href="#i-dice"/></svg>아무 데나 골라줘</button>
       </div>
     </div>
-    <figure class="route-map">
-      <svg viewBox="0 0 420 500" role="group" aria-label="지역 노선도">
-        <path class="rl" pathLength="1" style="--len:1;--d:.0s" stroke="var(--l-green)" d="M110 80V175L150 215L110 255V290L80 320V360"/>
-        <path class="rl" pathLength="1" style="--len:1;--d:.15s" stroke="var(--l-sky)" d="M110 80H310L330 60"/>
-        <path class="rl" pathLength="1" style="--len:1;--d:.3s" stroke="var(--l-red)" d="M150 215H315L350 250"/>
-        <path class="rl" pathLength="1" style="--len:1;--d:.45s" stroke="var(--l-orange)" d="M330 60L370 100V230L350 250V315L320 345"/>
-        <path class="rl" pathLength="1" style="--len:1;--d:.6s" stroke="var(--l-purple)" d="M320 345L280 385H200L175 360H80"/>
-        <path class="rl sea" stroke="var(--l-sky)" d="M200 385L130 455V470"/>
-        <g class="st hub" data-station="r1" tabindex="0" role="button" aria-label="서울" style="--d:0s"><circle cx="110" cy="80" r="11"/><text x="92" y="86" text-anchor="end">서울</text></g>
-        <g class="st" data-station="r32" tabindex="0" role="button" aria-label="강릉" style="--d:0.15s"><circle cx="330" cy="60" r="9"/><text x="330" y="38" text-anchor="middle">강릉</text></g>
-        <g class="st" data-station="r3" tabindex="0" role="button" aria-label="대전" style="--d:0.3s"><circle cx="150" cy="215" r="9"/><text x="166" y="201" text-anchor="start">대전</text></g>
-        <g class="st" data-station="r37" tabindex="0" role="button" aria-label="전주" style="--d:0.2s"><circle cx="110" cy="290" r="9"/><text x="126" y="295" text-anchor="start">전주</text></g>
-        <g class="st" data-station="r5" tabindex="0" role="button" aria-label="광주" style="--d:0.4s"><circle cx="80" cy="360" r="9"/><text x="62" y="366" text-anchor="end">광주</text></g>
-        <g class="st" data-station="r35" tabindex="0" role="button" aria-label="경주" style="--d:0.45s"><circle cx="350" cy="250" r="9"/><text x="368" y="256" text-anchor="start">경주</text></g>
-        <g class="st hub" data-station="r6" tabindex="0" role="button" aria-label="부산" style="--d:0.6s"><circle cx="320" cy="345" r="11"/><text x="340" y="352" text-anchor="start">부산</text></g>
-        <g class="st" data-station="r38" tabindex="0" role="button" aria-label="여수" style="--d:0.65s"><circle cx="200" cy="385" r="9"/><text x="214" y="413" text-anchor="start">여수</text></g>
-        <g class="st" data-station="r39" tabindex="0" role="button" aria-label="제주" style="--d:0.8s"><circle cx="130" cy="470" r="9"/><text x="148" y="476" text-anchor="start">제주</text></g>
-      </svg>
-      <figcaption>역을 누르면 그 지역으로 맞춰드려요</figcaption>
+    <figure class="hero-photo" id="heroPhoto" aria-live="polite">
+      <img id="heroImg" alt="">
+      <span class="credit">사진 한국관광공사</span>
+      <div class="ticket">
+        <div class="ticket-main">
+          <p class="ticket-label">이번 주 추천 <span id="heroRegion" data-no-i18n></span></p>
+          <p class="ticket-name" id="heroName" data-no-i18n></p>
+          <p class="ticket-meta"><span id="heroAddr" data-no-i18n></span><a id="heroLink" href="#picks" target="_blank" rel="noopener">지도에서 보기</a></p>
+        </div>
+        <button class="ticket-next" type="button" id="heroNext" aria-label="다음 추천"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>다음</button>
+      </div>
     </figure>
     <div class="hero-regions">
       <p class="quick-caption">내 지역을 고르면 축제·맛집·명소를 그 지역으로 맞춰드려요</p>
@@ -3828,7 +3855,7 @@ const I18N = {
   '랜덤 나들이 뽑기':'Random trip picker', '닫기':'Close', '오늘의 랜덤 나들이':'Today’s random trip', '두구두구…':'Drumroll…',
   '다시 굴리기':'Roll again', '가보자고!':'Let’s go!',
   // 시·도
-  '서울':'Seoul', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '역을 누르면 그 지역으로 맞춰드려요':'Tap a station to set your region', '지역 노선도':'Region route map', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
+  '서울':'Seoul', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '이번 주 추천':'This week’s pick', '다음':'Next', '다음 추천':'Next pick', '사진 한국관광공사':'Photo: Korea Tourism Org.', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
   '전북':'Jeonbuk', '경북':'Gyeongbuk', '대구':'Daegu', '울산':'Ulsan', '광주':'Gwangju', '전남':'Jeonnam', '경남':'Gyeongnam', '부산':'Busan', '제주':'Jeju',
   '경기도':'Gyeonggi-do', '강원도':'Gangwon-do', '충청북도':'Chungcheongbuk-do', '충청남도':'Chungcheongnam-do', '경상북도':'Gyeongsangbuk-do',
   '경상남도':'Gyeongsangnam-do', '전라북도':'Jeollabuk-do', '전라남도':'Jeollanam-do', '제주도':'Jeju-do',
@@ -4007,12 +4034,47 @@ try{ initLanguage(); }catch(e){ console.warn('언어 초기화 실패', e); docu
   if(currentRegion) renderCards();
 })();
 
-/* ---------------- 히어로 노선도: 역을 누르면 그 지역으로 ---------------- */
-document.querySelectorAll('.route-map [data-station]').forEach(g=>{
-  const go = ()=> document.querySelector('#quickRegions [data-region="' + g.dataset.station + '"]')?.click();
-  g.addEventListener('click', go);
-  g.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
-});
+/* ---------------- 히어로: 이번 주 추천 사진을 크게 (추천 카드에서 읽어옴) ---------------- */
+(function heroPhoto(){
+  const box = document.getElementById('recResults');
+  const fig = document.getElementById('heroPhoto');
+  if(!box || !fig) return;
+  const img = document.getElementById('heroImg');
+  let items = [], idx = 0;
+  function paint(){
+    const it = items[idx % items.length];
+    if(!it) return;
+    img.classList.remove('show');
+    const pre = new Image();
+    pre.onload = ()=>{ img.src = it.img; img.alt = it.name; img.classList.add('show'); };
+    pre.src = it.img;
+    document.getElementById('heroName').textContent = it.name;
+    document.getElementById('heroRegion').textContent = it.region;
+    document.getElementById('heroAddr').textContent = it.addr;
+    const a = document.getElementById('heroLink');
+    a.href = it.href || '#picks';
+    fig.classList.add('ready');
+  }
+  function read(){
+    const cards = [...box.querySelectorAll('.fest-card')].map(c=>{
+      const im = c.querySelector('.poster img');
+      return {
+        img: im && im.getAttribute('src'), w: im ? im.naturalWidth : 0, h: im ? im.naturalHeight : 0,
+        name: c.querySelector('.card-name')?.textContent || '',
+        addr: c.querySelector('.card-meta')?.textContent || '',
+        region: c.querySelector('.dday')?.textContent || '',
+        href: c.querySelector('a.btn-mini')?.href || '',
+      };
+    }).filter(x=> x.img);
+    if(!cards.length) return;
+    // 가로 사진을 앞으로 (세로 사진은 크게 잘리니까 뒤로)
+    items = cards.filter(x=> !(x.h > x.w)).concat(cards.filter(x=> x.h > x.w));
+    idx = 0; paint();
+  }
+  new MutationObserver(()=> setTimeout(read, 50)).observe(box, { childList:true });
+  read();
+  document.getElementById('heroNext').addEventListener('click', ()=>{ idx++; paint(); });
+})();
 </script>
 </body>
 </html>
