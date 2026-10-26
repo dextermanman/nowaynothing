@@ -8,7 +8,7 @@
 <meta name="description" content="심심하면, 가보자고. 전국 229개 시·군·구의 명소, 맛집 순위, 이번 달 축제, 숙소를 한 번에.">
 <meta property="og:title" content="가보자고 — 전국 나들이·맛집·축제">
 <meta property="og:description" content="심심하면, 가보자고. 전국 명소·맛집 순위·축제를 한 번에.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23ff6b1a'/%3E%3Cpath d='M10 22L22 10M12 10h10v10' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23141a24'/%3E%3Cpath d='M9 16h14' stroke='%2300a84d' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='9' cy='16' r='5' fill='%2300a84d'/%3E%3Ccircle cx='23' cy='16' r='4' fill='%23141a24' stroke='%2300a84d' stroke-width='3'/%3E%3C/svg%3E">
 <title>가보자고 — 전국 나들이·맛집·축제</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css">
@@ -21,79 +21,83 @@
     try{ var s = localStorage.getItem('spot-radar-lang'); if(s === 'en' || s === 'ko') return s; }catch(e){}
     return /^ko/i.test(navigator.language || '') ? 'ko' : 'en';
   })();
-  (function(){ var h = location.hash.slice(1), V = {home:1,festival:1,food:1,places:1,search:1,saved:1,info:1}, A = {picks:'places',architecture:'places',explore:'places',kids:'info',about:'info'}; document.documentElement.setAttribute('data-view', V[h] ? h : (A[h] || 'home')); })();
   if(window.LANG === 'en'){ document.documentElement.lang = 'en'; document.documentElement.classList.add('i18n-pending'); }
 </script>
 <style>
-/* ───────── 가보자고 v3 · 사진이 주인공인 여행 사이트 ─────────
-   흰 바탕 + 먹색 글자 + 포인트는 제주 귤색 하나. */
+/* ───────── 디자인 토큰 · "가보자고 노선도" ─────────
+   흰 바탕 + 남색 잉크 + 섹션마다 지하철 노선 색 하나.
+   메인 색은 '출발 신호' 초록(2호선 초록). */
 :root{
   --bg:#ffffff;
-  --bg-panel:#f4f4f5;
+  --bg-panel:#f4f6f8;
   --bg-card:#ffffff;
-  --bg-sunken:#ececee;
-  --fill:rgba(24,24,27,.055);
-  --fill-strong:rgba(24,24,27,.1);
-  --line:#e7e7ea;
-  --line-strong:#d4d4d8;
-  --ink:#18181b;
-  --ink-dim:#64646c;
-  --heading:#18181b;
-  --tang:#ff6b1a;
-  --tang-ink:#cf4f08;
-  --route:var(--tang-ink);
+  --bg-sunken:#eef1f4;
+  --fill:rgba(20,26,36,.055);
+  --fill-strong:rgba(20,26,36,.1);
+  --line:#e3e7ec;
+  --line-strong:#cfd5dc;
+  --ink:#141a24;
+  --ink-dim:#5d6774;
+  --heading:#141a24;
+  --go:#00a84d;
+  --go-ink:#00813a;
+  --route:var(--go-ink);
   --route-ink:#ffffff;
-  --route-glow:rgba(255,107,26,.24);
-  --sec:var(--tang-ink);
-  --brand:var(--tang);
-  --brand-1:var(--tang); --brand-2:var(--tang); --brand-3:var(--tang);
-  --amber:#b25000; --red:#e0244b; --jade:#14804a; --violet:#8944ab; --gold:#946200;
-  --pink:#e8336d;
-  --nav-bg:rgba(255,255,255,.88);
+  --route-glow:rgba(0,168,77,.22);
+  /* 노선 색 */
+  --l-green:#00a84d; --l-red:#d4003b; --l-orange:#ef7c1c; --l-purple:#996cac;
+  --l-sky:#00a5de; --l-navy:#0052a4; --l-gold:#a68f52; --l-pink:#e6186c; --l-gray:#8a94a0;
+  --brand-1:var(--l-orange); --brand-2:var(--l-red); --brand-3:var(--l-purple);
+  --brand:var(--go);
+  --amber:#b25000;
+  --red:#e0244b;
+  --jade:#00813a;
+  --violet:#8944ab;
+  --gold:#946200;
+  --nav-bg:rgba(255,255,255,.86);
   --shadow:0 0 0 1px var(--line);
   --shadow-hover:0 0 0 1px var(--line-strong);
-  --shadow-float:0 18px 50px rgba(24,24,27,.14), 0 2px 6px rgba(24,24,27,.06);
-  --r-hero:30px; --r-panel:22px; --r-card:16px; --r-btn:12px;
+  --r-panel:22px; --r-card:16px; --r-btn:12px;
   --ease:cubic-bezier(.25,.1,.25,1);
   --spring:cubic-bezier(.34,1.56,.64,1);
+  --sec:var(--go);
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#111113; --bg-panel:#1a1a1d; --bg-card:#1a1a1d; --bg-sunken:#232327;
-    --fill:rgba(241,241,243,.07); --fill-strong:rgba(241,241,243,.13);
-    --line:#2a2a2f; --line-strong:#3a3a40;
-    --ink:#f1f1f3; --ink-dim:#9c9ca5; --heading:#f7f7f8;
-    --tang-ink:#ff8a45; --route-glow:rgba(255,138,69,.25);
-    --amber:#ffa94d; --red:#ff5a77; --jade:#45d18a; --violet:#c48df0; --gold:#f2c94c;
-    --nav-bg:rgba(17,17,19,.86);
-    --shadow-float:0 18px 50px rgba(0,0,0,.5), 0 0 0 1px #2a2a2f;
+    --bg:#0e1318; --bg-panel:#151b22; --bg-card:#151b22; --bg-sunken:#1c232b;
+    --fill:rgba(233,237,242,.07); --fill-strong:rgba(233,237,242,.13);
+    --line:#232b34; --line-strong:#34404c;
+    --ink:#e9edf2; --ink-dim:#8f9aa7; --heading:#f3f6f9;
+    --go-ink:#3ad483; --route-glow:rgba(58,212,131,.25);
+    --amber:#ffa94d; --red:#ff5a77; --jade:#3ad483; --violet:#c48df0; --gold:#f2c94c;
+    --nav-bg:rgba(14,19,24,.84);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#111113; --bg-panel:#1a1a1d; --bg-card:#1a1a1d; --bg-sunken:#232327;
-  --fill:rgba(241,241,243,.07); --fill-strong:rgba(241,241,243,.13);
-  --line:#2a2a2f; --line-strong:#3a3a40;
-  --ink:#f1f1f3; --ink-dim:#9c9ca5; --heading:#f7f7f8;
-  --tang-ink:#ff8a45; --route-glow:rgba(255,138,69,.25);
-  --amber:#ffa94d; --red:#ff5a77; --jade:#45d18a; --violet:#c48df0; --gold:#f2c94c;
-  --nav-bg:rgba(17,17,19,.86);
-  --shadow-float:0 18px 50px rgba(0,0,0,.5), 0 0 0 1px #2a2a2f;
+  --bg:#0e1318; --bg-panel:#151b22; --bg-card:#151b22; --bg-sunken:#1c232b;
+  --fill:rgba(233,237,242,.07); --fill-strong:rgba(233,237,242,.13);
+  --line:#232b34; --line-strong:#34404c;
+  --ink:#e9edf2; --ink-dim:#8f9aa7; --heading:#f3f6f9;
+  --go-ink:#3ad483; --route-glow:rgba(58,212,131,.25);
+  --amber:#ffa94d; --red:#ff5a77; --jade:#3ad483; --violet:#c48df0; --gold:#f2c94c;
+  --nav-bg:rgba(14,19,24,.84);
   color-scheme:dark;
 }
 
 *{box-sizing:border-box;}
 html.i18n-pending body{opacity:0;}
-html{scroll-padding-top:80px;overflow-x:clip;}
-@media (prefers-reduced-motion: no-preference){ html{scroll-behavior:smooth;} }
+html{scroll-behavior:smooth;scroll-padding-top:76px;overflow-x:clip;}
 ::selection{background:var(--route-glow);}
-:focus-visible{outline:2px solid var(--tang);outline-offset:2px;border-radius:8px;}
+:focus-visible{outline:2px solid var(--go);outline-offset:2px;border-radius:8px;}
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font-family:'Wanted Sans Variable','Wanted Sans','Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
   font-size:15px;line-height:1.55;letter-spacing:-.005em;word-break:keep-all;
-  min-height:100vh;overflow-x:clip;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  min-height:100vh;overflow-x:clip;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  font-feature-settings:'ss01' on;
 }
 a{color:var(--route);}
 button,input,select{font-family:inherit;}
@@ -101,245 +105,295 @@ svg{flex:none;}
 ::-webkit-scrollbar{width:8px;height:8px;}
 ::-webkit-scrollbar-thumb{background:var(--fill-strong);border-radius:4px;}
 
-/* ───────── 상단 메뉴 ───────── */
+/* ───────── 상단 내비게이션 ───────── */
 .topnav{
   position:sticky;top:0;z-index:100;background:var(--nav-bg);
   -webkit-backdrop-filter:saturate(160%) blur(18px);backdrop-filter:saturate(160%) blur(18px);
   border-bottom:1px solid transparent;transition:border-color .3s var(--ease);
 }
 .topnav.scrolled{border-bottom-color:var(--line);}
-.topnav-inner{max-width:1232px;margin:0 auto;padding:0 24px;height:66px;display:flex;align-items:center;gap:28px;}
-.brand{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:20px;color:var(--heading);text-decoration:none;letter-spacing:-.045em;white-space:nowrap;}
-.brand-mark{width:30px;height:30px;border-radius:9px;background:var(--tang);color:#fff;display:inline-flex;align-items:center;justify-content:center;}
-.brand-mark svg{width:17px;height:17px;}
-.nav-links{display:flex;gap:2px;align-items:center;flex:1;}
+.topnav-inner{
+  max-width:1200px;margin:0 auto;padding:0 24px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.brand{
+  display:inline-flex;align-items:center;gap:10px;
+  font-weight:800;font-size:19px;color:var(--heading);text-decoration:none;letter-spacing:-.04em;white-space:nowrap;
+}
+.brand-mark{width:34px;height:18px;display:inline-flex;align-items:center;color:var(--go);}
+.brand-mark svg{width:34px;height:18px;}
+.nav-links{display:flex;gap:2px;align-items:center;}
 .nav-links a{
-  position:relative;color:var(--ink-dim);text-decoration:none;font-size:15px;font-weight:600;
-  padding:8px 12px;border-radius:10px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;
+  position:relative;color:var(--ink-dim);text-decoration:none;font-size:14px;font-weight:550;
+  padding:8px 12px 8px 12px;border-radius:10px;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:7px;
   transition:color .2s var(--ease), background .2s var(--ease);
 }
+.nav-links a::before{
+  content:'';width:8px;height:8px;border-radius:50%;
+  box-shadow:inset 0 0 0 2px var(--sec);background:transparent;
+  transition:background .2s var(--ease), transform .25s var(--spring);
+}
 .nav-links a:hover{color:var(--ink);background:var(--fill);}
-.nav-links a.active{color:var(--heading);font-weight:750;}
-.nav-links a.active::after{content:'';position:absolute;left:12px;right:12px;bottom:-12px;height:3px;border-radius:2px;background:var(--tang);}
+.nav-links a.active{color:var(--heading);font-weight:700;}
+.nav-links a.active::before{background:var(--sec);transform:scale(1.2);}
+[data-spy="picks"]{--sec:var(--l-green);}
+[data-spy="festival"]{--sec:var(--l-red);}
+[data-spy="food"]{--sec:var(--l-orange);}
+[data-spy="architecture"]{--sec:var(--l-purple);}
+[data-spy="explore"]{--sec:var(--l-sky);}
+[data-spy="saved"]{--sec:var(--l-pink);}
+[data-spy="search"]{--sec:var(--l-navy);}
 .nav-count{
   font-size:10.5px;font-weight:700;min-width:17px;height:17px;padding:0 5px;border-radius:9px;
-  background:var(--tang);color:#fff;display:inline-flex;align-items:center;justify-content:center;
+  background:var(--l-pink);color:#fff;display:inline-flex;align-items:center;justify-content:center;
 }
 .nav-count:empty{display:none;}
-.nav-actions{display:flex;gap:4px;align-items:center;margin-left:auto;}
+.nav-actions{display:flex;gap:6px;align-items:center;}
 .icon-btn{
-  width:40px;height:40px;border-radius:12px;border:none;background:transparent;color:var(--ink);
-  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s var(--ease), transform .2s var(--ease);
+  width:38px;height:38px;border-radius:12px;border:none;background:transparent;color:var(--ink);
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .2s var(--ease), transform .2s var(--ease);
 }
 .icon-btn:hover{background:var(--fill);}
 .icon-btn:active{transform:scale(.92);}
 .icon-btn svg{width:19px;height:19px;}
-.lang-btn{height:40px;padding:0 10px;border-radius:12px;border:none;cursor:pointer;background:transparent;color:var(--ink);font-size:13px;font-weight:700;transition:background .2s var(--ease);}
-.lang-btn:hover{background:var(--fill);}
-.dice-btn{
-  height:40px;padding:0 16px 0 13px;border-radius:999px;border:1.5px solid var(--line-strong);cursor:pointer;
-  background:var(--bg);color:var(--ink);font-size:14px;font-weight:650;display:inline-flex;align-items:center;gap:7px;margin-right:6px;
-  transition:border-color .2s var(--ease), transform .2s var(--ease);
+.lang-btn{
+  height:38px;padding:0 10px;border-radius:12px;border:none;cursor:pointer;
+  background:transparent;color:var(--ink);font-size:13px;font-weight:700;letter-spacing:.01em;
+  transition:background .2s var(--ease), transform .2s var(--ease);
 }
-.dice-btn:hover{border-color:var(--ink);}
+.lang-btn:hover{background:var(--fill);}
+.lang-btn:active{transform:scale(.94);}
+.dice-btn{
+  height:38px;padding:0 15px 0 12px;border-radius:12px;border:none;cursor:pointer;
+  background:var(--ink);color:var(--bg);font-size:13.5px;font-weight:650;
+  display:inline-flex;align-items:center;gap:7px;margin-right:4px;
+  transition:transform .2s var(--ease), background .2s var(--ease);
+}
+.dice-btn:hover{background:var(--go-ink);color:#fff;}
 .dice-btn:active{transform:scale(.95);}
-.dice-btn svg{width:17px;height:17px;}
+.dice-btn svg{width:16px;height:16px;}
 .menu-btn{display:none;}
 .mobile-menu{display:none;}
-@media (max-width:1000px){ .nav-links a{padding:8px 9px;font-size:14.5px;} .topnav-inner{gap:16px;} }
-@media (max-width:860px){
+
+@media (max-width:1060px){ .nav-links a{padding:8px 8px;font-size:13.5px;} }
+@media (max-width:900px){
   .nav-links{display:none;}
   .menu-btn{display:inline-flex;}
   .mobile-menu{
-    display:block;position:fixed;top:66px;left:0;right:0;z-index:99;background:var(--bg);
+    display:block;position:fixed;top:64px;left:0;right:0;z-index:99;background:var(--bg);
     border-bottom:1px solid var(--line);padding:8px 24px 20px;
-    opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .25s var(--ease), transform .25s var(--ease);
+    opacity:0;transform:translateY(-8px);pointer-events:none;
+    transition:opacity .25s var(--ease), transform .25s var(--ease);
   }
   .mobile-menu.open{opacity:1;transform:none;pointer-events:auto;}
-  .mobile-menu a{display:flex;justify-content:space-between;align-items:center;color:var(--ink);text-decoration:none;font-size:19px;font-weight:650;letter-spacing:-.025em;padding:13px 0;border-bottom:1px solid var(--line);}
+  .mobile-menu a{
+    display:flex;justify-content:space-between;align-items:center;
+    color:var(--ink);text-decoration:none;font-size:19px;font-weight:650;letter-spacing:-.025em;
+    padding:13px 0;border-bottom:1px solid var(--line);
+  }
   .mobile-menu a:last-child{border-bottom:none;}
   .mobile-menu a span{color:var(--ink-dim);font-weight:400;}
 }
+
+/* 모바일 하단 탭바 */
 .tabbar{display:none;}
 @media (max-width:640px){
   .tabbar{
-    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:100;justify-content:space-around;
-    padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--nav-bg);
-    -webkit-backdrop-filter:saturate(160%) blur(18px);backdrop-filter:saturate(160%) blur(18px);border-top:1px solid var(--line);
+    display:flex;position:fixed;left:0;right:0;bottom:0;z-index:100;
+    justify-content:space-around;padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+    background:var(--nav-bg);
+    -webkit-backdrop-filter:saturate(160%) blur(18px);backdrop-filter:saturate(160%) blur(18px);
+    border-top:1px solid var(--line);
   }
-  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--ink-dim);text-decoration:none;padding:6px 0 4px;position:relative;}
+  .tabbar a{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    font-size:10.5px;font-weight:600;color:var(--ink-dim);text-decoration:none;
+    padding:6px 0 4px;position:relative;transition:color .2s var(--ease);
+  }
   .tabbar a svg{width:22px;height:22px;}
-  .tabbar a.active{color:var(--tang-ink);}
+  .tabbar a.active{color:var(--sec);}
   .tabbar .nav-count{position:absolute;top:0;left:calc(50% + 6px);}
   body{padding-bottom:76px;}
   .dice-btn .dice-label{display:none;}
-  .dice-btn{width:40px;padding:0;justify-content:center;margin-right:0;border:none;}
+  .dice-btn{width:38px;padding:0;justify-content:center;margin-right:0;}
 }
 
-/* ───────── 화면 전환 (홈 / 축제 / 맛집 / 여행지 / 검색 / 저장 / 안내) ───────── */
-html[data-view="home"]     [data-views]:not([data-views~="home"]),
-html[data-view="festival"] [data-views]:not([data-views~="festival"]),
-html[data-view="food"]     [data-views]:not([data-views~="food"]),
-html[data-view="places"]   [data-views]:not([data-views~="places"]),
-html[data-view="search"]   [data-views]:not([data-views~="search"]),
-html[data-view="saved"]    [data-views]:not([data-views~="saved"]),
-html[data-view="info"]     [data-views]:not([data-views~="info"]){display:none !important;}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px 80px;}
 
-.wrap{max-width:1232px;margin:0 auto;padding:0 24px 88px;display:flex;flex-direction:column;}
-html[data-view="home"] #festival{order:1;}
-html[data-view="home"] #picks{order:2;}
-html[data-view="home"] #food{order:3;}
-html[data-view="home"] #architecture{order:4;}
-html[data-view="home"] #kids{order:5;}
-
-/* ───────── 홈 히어로: 큰 사진 + 검색창 ───────── */
+/* ───────── 히어로 ───────── */
 .hero{
-  position:relative;margin:4px 16px 0;border-radius:var(--r-hero);overflow:hidden;isolation:isolate;
-  min-height:min(78vh, 720px);display:flex;align-items:flex-end;background:#2a2a2e;color:#fff;
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:24px 48px;align-items:center;
+  padding:56px 0 8px;
 }
-.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:0;transform:scale(1.03);transition:opacity .8s var(--ease), transform 1.6s var(--ease);}
-.hero-img.show{opacity:1;transform:none;}
-.hero::after{content:'';position:absolute;inset:0;z-index:-1;
-  background:linear-gradient(to top, rgba(10,10,12,.78) 0%, rgba(10,10,12,.45) 40%, rgba(10,10,12,.08) 72%),
-             linear-gradient(to bottom, rgba(10,10,12,.25), rgba(10,10,12,0) 22%);}
-.hero-inner{width:100%;max-width:1232px;margin:0 auto;padding:0 24px 112px;display:flex;align-items:flex-end;justify-content:space-between;gap:32px;}
-.hero-copy{max-width:760px;}
-h1{font-size:clamp(54px, 8.4vw, 120px);font-weight:800;margin:0;letter-spacing:-.055em;line-height:.98;color:#fff;text-shadow:0 2px 24px rgba(0,0,0,.25);}
-.grad{color:inherit;}
-.subtitle{color:rgba(255,255,255,.88);font-size:19px;margin:22px 0 0;max-width:32em;line-height:1.6;font-weight:450;}
-.hero-place{
-  flex:none;display:flex;align-items:center;gap:4px;padding:6px 6px 6px 14px;border-radius:999px;
-  background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  font-size:13.5px;color:#fff;max-width:340px;
+.hero-copy{min-width:0;}
+h1{
+  font-size:clamp(56px, 8.2vw, 112px);font-weight:800;margin:0;letter-spacing:-.055em;line-height:.98;
+  color:var(--heading);
 }
-.hero-place svg{width:15px;height:15px;opacity:.9;}
-.hero-place a{color:#fff;text-decoration:none;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-left:4px;}
-.hero-place a:hover{text-decoration:underline;text-underline-offset:3px;}
-.hero-place small{opacity:.75;font-size:12.5px;white-space:nowrap;margin:0 6px 0 2px;}
-.hero-place button{
-  flex:none;width:32px;height:32px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,.92);color:#18181b;
-  display:inline-flex;align-items:center;justify-content:center;transition:transform .25s var(--spring);
+.grad{color:var(--heading);}
+.subtitle{color:var(--ink-dim);font-size:19px;margin:26px 0 0;max-width:30em;line-height:1.6;font-weight:450;letter-spacing:-.015em;}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px;}
+.btn-lg{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:50px;padding:0 22px;border-radius:var(--r-btn);border:none;cursor:pointer;
+  font-size:15.5px;font-weight:650;text-decoration:none;letter-spacing:-.015em;
+  transition:transform .2s var(--ease), background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease);
 }
-.hero-place button:hover{transform:translateX(2px);}
-.hero-place button svg{width:16px;height:16px;opacity:1;}
-.hero:not(.ready) .hero-place{visibility:hidden;}
+.btn-lg svg{width:18px;height:18px;}
+.btn-lg:active{transform:scale(.97);}
+.btn-lg.primary{background:var(--ink);color:var(--bg);}
+.btn-lg.primary:hover{background:var(--go-ink);color:#fff;}
+.btn-lg.brand{background:var(--go);color:#fff;}
+.btn-lg.brand:hover{background:var(--go-ink);}
+.btn-lg.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-strong);}
+.btn-lg.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink);}
+.hero-cta .btn-lg.brand{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-strong);}
+.hero-cta .btn-lg.brand:hover{box-shadow:inset 0 0 0 1.5px var(--ink);}
 
-/* 검색창: "어디로 / 무엇을" */
-.finder{
-  position:relative;z-index:2;width:min(1000px, calc(100% - 64px));margin:-52px auto 0;
-  background:var(--bg);border-radius:22px;box-shadow:var(--shadow-float);
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) auto;align-items:center;gap:0;padding:10px;
+/* 노선도 일러스트 */
+.route-map{width:100%;max-width:430px;justify-self:end;margin:0;}
+.route-map svg{width:100%;height:auto;display:block;overflow:visible;}
+.route-map .rl{fill:none;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;}
+.route-map .rl.sea{stroke-width:4;stroke-dasharray:2 10;}
+.route-map .st{cursor:pointer;pointer-events:bounding-box;}
+.route-map .st circle{fill:var(--bg);stroke:var(--ink);stroke-width:3.5;transition:r .25s var(--spring), fill .2s var(--ease);}
+.route-map .st.hub circle{stroke-width:4.5;}
+.route-map .st text{font-size:15px;font-weight:700;fill:var(--heading);letter-spacing:-.02em;font-family:inherit;transition:fill .2s var(--ease);}
+.route-map .st:hover circle, .route-map .st:focus-visible circle{fill:var(--ink);}
+.route-map .st:focus{outline:none;}
+.route-map .st:focus-visible text{text-decoration:underline;}
+.route-map figcaption{font-size:13px;color:var(--ink-dim);margin-top:8px;text-align:right;}
+@media (prefers-reduced-motion: no-preference){
+  .route-map .rl{stroke-dasharray:var(--len) var(--len);stroke-dashoffset:var(--len);animation:draw 1.3s var(--ease) forwards;animation-delay:var(--d,0s);}
+  .route-map .rl.sea{stroke-dasharray:2 10;stroke-dashoffset:0;opacity:0;animation:fade .6s var(--ease) 1.4s forwards;}
+  .route-map .st{opacity:0;animation:fade .5s var(--ease) forwards;animation-delay:calc(var(--d,0s) + .9s);}
 }
-.finder-field{padding:8px 18px;min-width:0;}
-.finder-field + .finder-field{border-left:1px solid var(--line);}
-.finder-label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-dim);margin:0 0 4px;}
-.finder select{
-  border:none;background-color:transparent;padding:2px 26px 2px 0;font-size:17px;font-weight:700;color:var(--heading);
-  background-position:right 2px center;box-shadow:none !important;
-}
-.finder select:focus{box-shadow:none;}
-.finder-kinds{display:flex;gap:6px;flex-wrap:wrap;}
-.finder-kinds button{
-  border:none;background:var(--bg-panel);color:var(--ink);font-size:14px;font-weight:650;padding:7px 13px;border-radius:999px;cursor:pointer;
-  transition:background .2s var(--ease), color .2s var(--ease);
-}
-.finder-kinds button:hover{background:var(--fill-strong);}
-.finder-kinds button[aria-pressed="true"]{background:var(--ink);color:var(--bg);}
-.finder-go{
-  height:60px;padding:0 28px;border:none;border-radius:16px;cursor:pointer;background:var(--tang);color:#fff;
-  font-size:16.5px;font-weight:750;display:inline-flex;align-items:center;gap:8px;transition:filter .2s var(--ease), transform .2s var(--ease);
-}
-.finder-go:hover{filter:brightness(1.06);}
-.finder-go:active{transform:scale(.97);}
-.finder-go svg{width:19px;height:19px;}
+@keyframes draw{to{stroke-dashoffset:0;}}
+@keyframes fade{to{opacity:1;}}
 
-/* 사용하지 않는 기존 요소 */
-.quick-caption, .quick-regions, .stats, .eyebrow-pill, .kicker{display:none !important;}
-
-/* ───────── 섹션 공통 ───────── */
-.section{padding-top:80px;}
-html[data-view]:not([data-view="home"]) .wrap > .section:first-of-type{padding-top:48px;}
-.section-head{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:24px;align-items:end;margin-bottom:26px;}
-.section-title{grid-column:1;font-size:34px;font-weight:800;letter-spacing:-.045em;margin:0;color:var(--heading);line-height:1.18;}
-.section-desc{grid-column:1;font-size:16px;color:var(--ink-dim);margin:8px 0 0;line-height:1.6;max-width:38em;}
-.see-all{
-  grid-column:2;grid-row:1 / span 2;align-self:end;display:none;
-  font-size:14.5px;font-weight:700;color:var(--ink);text-decoration:none;white-space:nowrap;
-  padding:9px 14px;border-radius:999px;border:1.5px solid var(--line-strong);transition:border-color .2s var(--ease);
+.hero-regions{grid-column:1/-1;margin-top:28px;padding-top:28px;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:200px 1fr;gap:16px 32px;align-items:start;}
+.quick-caption{font-size:14px;line-height:1.5;color:var(--ink-dim);margin:6px 0 0;}
+.quick-caption b{display:block;color:var(--heading);font-size:15px;font-weight:700;margin-bottom:2px;}
+.quick-regions{display:flex;flex-wrap:wrap;gap:8px;margin:0;}
+.quick-regions button{
+  border:none;background:var(--bg);color:var(--ink);font-size:14px;font-weight:600;
+  padding:8px 15px;border-radius:999px;cursor:pointer;box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  transition:box-shadow .2s var(--ease), background .2s var(--ease), color .2s var(--ease);
 }
-.see-all:hover{border-color:var(--ink);}
-html[data-view="home"] .see-all{display:inline-flex;}
-.sub-title{font-size:18px;font-weight:750;letter-spacing:-.03em;margin:0 0 14px;color:var(--heading);}
+.quick-regions button:hover{box-shadow:inset 0 0 0 1.5px var(--ink);}
+.quick-regions button.active{background:var(--ink);color:var(--bg);box-shadow:none;}
+.stats{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 28px;margin:4px 0 0;padding:0;}
+.stats div{font-size:13.5px;color:var(--ink-dim);}
+.stats b{font-weight:750;color:var(--heading);margin-right:4px;font-variant-numeric:tabular-nums;}
 
-/* 홈에서는 미리보기만 */
-html[data-view="home"] #festival .festival-bar,
-html[data-view="home"] #festivalMore,
-html[data-view="home"] #picks .festival-bar,
-html[data-view="home"] #food .panel,
-html[data-view="home"] #archFilter,
-html[data-view="home"] #kids .note{display:none;}
-html[data-view="home"] #festivalResults > :nth-child(n+5),
-html[data-view="home"] #recResults > :nth-child(n+5),
-html[data-view="home"] #archResults > :nth-child(n+4){display:none;}
-html[data-view="home"] #food .hscroll{margin-bottom:0;}
-html[data-view="home"] #food .sub-title{display:none;}
-html[data-view="home"] #archResults{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+/* ───────── 섹션: 노선을 따라 이어지는 역 ───────── */
+.section{position:relative;padding:76px 0 0 60px;}
+.section::before{
+  content:'';position:absolute;left:13px;top:0;bottom:-2px;width:6px;border-radius:3px;background:var(--sec);opacity:.9;
+}
+#picks.section::before{top:84px;}
+#about.section::before{bottom:auto;height:96px;}
+.section-head{margin-bottom:26px;max-width:720px;position:relative;}
+.kicker{
+  position:absolute;left:-60px;top:4px;margin:0;
+  width:32px;height:32px;border-radius:50%;
+  background:var(--bg);box-shadow:inset 0 0 0 6px var(--sec);
+  font-size:0;color:transparent;overflow:hidden;
+}
+.section-title{font-size:38px;font-weight:800;letter-spacing:-.045em;margin:0;color:var(--heading);line-height:1.15;}
+.section-desc{font-size:16px;color:var(--ink-dim);margin:10px 0 0;line-height:1.6;max-width:36em;}
+.sub-title{font-size:18px;font-weight:750;letter-spacing:-.03em;margin:0 0 14px;color:var(--heading);display:flex;align-items:center;gap:8px;}
+
+#picks{--sec:var(--l-green);}
+#festival{--sec:var(--l-red);}
+#food{--sec:var(--l-orange);}
+#architecture{--sec:var(--l-purple);}
+#explore{--sec:var(--l-sky);}
+#saved{--sec:var(--l-pink);}
+#search{--sec:var(--l-navy);}
+#kids{--sec:var(--l-gold);}
+#about{--sec:var(--l-gray);}
 
 /* 데스크톱: 지도(왼쪽, 고정) + 카드(오른쪽) */
 .layout{display:grid;gap:20px;align-items:start;grid-template-columns:300px 1fr;}
 @media (max-width:900px){ .layout{grid-template-columns:1fr;} }
-@media (min-width:901px){ #leftPanel{position:sticky;top:86px;} }
+@media (min-width:901px){ #leftPanel{position:sticky;top:84px;} }
+
 .panel{background:var(--bg-panel);border-radius:var(--r-panel);padding:24px;}
 .panel h2{font-size:24px;margin:0 0 4px;color:var(--heading);font-weight:800;letter-spacing:-.035em;}
 .panel .hint, .hint{font-size:13.5px;color:var(--ink-dim);margin:0 0 16px;line-height:1.55;}
 .panel .card{border-color:transparent;}
 
+/* 지도 */
 .map-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
 .map-head b{font-size:15px;font-weight:750;color:var(--heading);}
 .map-head span{font-size:12.5px;color:var(--ink-dim);}
 #map-svg{width:100%;height:auto;overflow:visible;display:block;}
 .region-tile{cursor:pointer;fill:var(--bg);transition:fill .2s var(--ease);}
 .region-tile:hover{fill:var(--fill-strong);}
-.region-tile.active{fill:var(--tang);}
+.region-tile.active{fill:var(--l-sky);}
 .region-label{font-family:inherit;font-size:13px;font-weight:700;fill:var(--heading);pointer-events:none;text-anchor:middle;}
 .region-sub{font-family:inherit;font-size:9.5px;fill:var(--ink-dim);text-anchor:middle;pointer-events:none;}
 g.active .region-label, g.active .region-sub{fill:#fff;}
 
-/* ───────── 컨트롤 ───────── */
-.side-tab-bar, .segmented{display:flex;gap:2px;background:var(--fill);border-radius:12px;padding:3px;overflow-x:auto;scrollbar-width:none;}
+/* ───────── 세그먼트 컨트롤 ───────── */
+.side-tab-bar, .segmented{
+  display:flex;gap:2px;background:var(--fill);border-radius:12px;padding:3px;
+  overflow-x:auto;scrollbar-width:none;
+}
 .side-tab-bar{margin:0 0 20px;background:transparent;padding:0;gap:4px;border-bottom:1px solid var(--line);border-radius:0;}
 .side-tab-bar::-webkit-scrollbar, .segmented::-webkit-scrollbar{display:none;}
-.segmented button{flex:1;padding:8px 14px;border-radius:9px;border:none;background:transparent;color:var(--ink-dim);font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s var(--ease), color .2s var(--ease);}
+.segmented button{
+  flex:1;padding:8px 14px;border-radius:9px;border:none;background:transparent;color:var(--ink-dim);
+  font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease);
+}
 .segmented button.active{background:var(--bg-card);color:var(--heading);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08), 0 0 0 1px var(--line);}
-.side-tab-btn{flex:none;padding:10px 6px 12px;margin-right:14px;border:none;background:transparent;color:var(--ink-dim);font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;position:relative;transition:color .2s var(--ease);}
+.side-tab-btn{
+  flex:none;padding:10px 6px 12px;margin-right:14px;border:none;background:transparent;color:var(--ink-dim);
+  font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap;position:relative;
+  transition:color .2s var(--ease);
+}
 .side-tab-btn:hover{color:var(--ink);}
 .side-tab-btn.active{color:var(--heading);font-weight:750;}
-.side-tab-btn.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:var(--tang);}
+.side-tab-btn.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:var(--sec);}
+
 .side-tab-content .stacked-controls, .controls-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
-.side-tab-content .stacked-controls > select, .side-tab-content .stacked-controls > input, .controls-row > select{flex:1 1 170px;width:auto;}
+.side-tab-content .stacked-controls > select,
+.side-tab-content .stacked-controls > input,
+.controls-row > select{flex:1 1 170px;width:auto;}
 .side-tab-content .stacked-controls > button{flex:0 0 auto;min-width:100px;}
 @media (max-width:640px){ .side-tab-content .stacked-controls > *{flex:1 1 100% !important;} }
 select, input[type="text"]{
   width:100%;background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);
-  border-radius:var(--r-btn);padding:10px 14px;font-size:14px;outline:none;transition:border-color .2s var(--ease), box-shadow .2s var(--ease);
+  border-radius:var(--r-btn);padding:10px 14px;font-size:14px;outline:none;
+  transition:border-color .2s var(--ease), box-shadow .2s var(--ease);
 }
 select:hover, input[type="text"]:hover{border-color:var(--line-strong);}
 select{appearance:none;-webkit-appearance:none;padding-right:34px;cursor:pointer;font-weight:600;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%238a8a93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%238a94a0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 12px center;}
-select:focus, input[type="text"]:focus{border-color:var(--tang);box-shadow:0 0 0 4px var(--route-glow);}
-.side-tab-content .stacked-controls button{background:var(--ink);color:var(--bg);font-weight:650;border:none;cursor:pointer;border-radius:var(--r-btn);padding:11px 18px;font-size:14px;}
-.side-tab-content .stacked-controls button:hover{background:var(--tang);color:#fff;}
+select:focus, input[type="text"]:focus{border-color:var(--go);box-shadow:0 0 0 4px var(--route-glow);}
+.side-tab-content .stacked-controls button{
+  background:var(--ink);color:var(--bg);font-weight:650;border:none;cursor:pointer;
+  border-radius:var(--r-btn);padding:11px 18px;font-size:14px;
+}
+.side-tab-content .stacked-controls button:hover{background:var(--go-ink);color:#fff;filter:none;}
 #govResults, #toiletResults, #youtubeResults{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
 #govResults > .hint, #govResults > .empty, #toiletResults > .empty, #youtubeResults > .empty{grid-column:1/-1;}
 #govResults > .card, #toiletResults > .card, #youtubeResults > .card{margin:0 !important;}
 
+/* ───────── 지역/테마 필터 ───────── */
 .city-tabs{display:flex;gap:8px;margin:16px 0 12px;flex-wrap:wrap;align-items:center;}
 .city-tabs select{width:auto;min-width:200px;}
 .city-tab, .chip{
-  padding:7px 14px;border-radius:999px;border:none;background:var(--bg-card);box-shadow:inset 0 0 0 1.5px var(--line);
-  color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+  padding:7px 14px;border-radius:999px;border:none;background:transparent;box-shadow:inset 0 0 0 1.5px var(--line-strong);
+  color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;
   transition:background .2s var(--ease), color .2s var(--ease), box-shadow .2s var(--ease);
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
 }
 .city-tab:hover, .chip:hover{box-shadow:inset 0 0 0 1.5px var(--ink);}
 .city-tab.active, .chip.active{background:var(--ink);color:var(--bg);box-shadow:none;}
@@ -347,51 +401,70 @@ select:focus, input[type="text"]:focus{border-color:var(--tang);box-shadow:0 0 0
 .theme-chips{display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap;}
 
 /* ───────── 카드 ───────── */
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:32px 20px;}
-.card{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:16px;position:relative;overflow:hidden;display:flex;flex-direction:column;transition:border-color .25s var(--ease);}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:28px 20px;}
+.card{
+  background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:16px;
+  position:relative;overflow:hidden;display:flex;flex-direction:column;
+  transition:border-color .25s var(--ease);
+}
 .card:hover{border-color:var(--line-strong);}
-.card-img{width:calc(100% + 32px);margin:-16px -16px 14px;aspect-ratio:16/10;height:auto;object-fit:cover;display:block;background:var(--bg-sunken);}
+.card-img{
+  width:calc(100% + 32px);margin:-16px -16px 14px;aspect-ratio:16/10;height:auto;
+  object-fit:cover;display:block;background:var(--bg-sunken);
+}
 .card-link{color:inherit;text-decoration:none;}
 .card-link img{border-radius:10px !important;}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
 .card-name{font-size:17px;font-weight:750;color:var(--heading);margin:0 0 4px;letter-spacing:-.03em;line-height:1.35;}
 .card-sub{display:flex;align-items:center;flex-wrap:wrap;gap:10px;}
 .card-theme{font-size:12.5px;color:var(--ink-dim);font-weight:600;display:inline-flex;align-items:center;gap:6px;}
-.card-theme::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--tag-color,var(--tang));}
+.card-theme::before{content:'';width:8px;height:8px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--tag-color,var(--sec));}
 .card-rating{font-size:12.5px;font-weight:700;color:var(--ink);}
 .card-rating-count{font-size:12.5px;font-weight:400;color:var(--ink-dim);}
 .badges{display:flex;gap:5px;margin:10px 0 4px;flex-wrap:wrap;}
 .badges:empty{display:none;}
-.badge{font-size:11.5px;padding:3px 8px;border-radius:6px;font-weight:600;background:var(--fill) !important;color:var(--ink-dim) !important;border:none !important;}
-.badge.hot{background:var(--tang) !important;color:#fff !important;}
-.badge.source-jyj, .badge.source-bbcs{background:color-mix(in srgb, var(--tang) 14%, transparent) !important;color:var(--tang-ink) !important;}
+.badge{
+  font-size:11.5px;padding:3px 8px;border-radius:6px;font-weight:600;
+  background:var(--fill) !important;color:var(--ink-dim) !important;border:none !important;
+}
+.badge.hot{background:var(--l-red) !important;color:#fff !important;}
+.badge.source-jyj, .badge.source-bbcs{background:color-mix(in srgb, var(--l-orange) 14%, transparent) !important;color:var(--amber) !important;}
 .card-meta{font-size:13.5px;color:var(--ink-dim);margin:2px 0 0;line-height:1.5;}
 .card-meta a{color:var(--route) !important;}
 .tag-row{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:8px;}
 .tag-row:empty{display:none;}
 .hashtag{font-size:12.5px;color:var(--ink-dim);}
+
 .save-btn{
-  flex:none;width:34px;height:34px;border-radius:50%;border:none;background:var(--fill);color:var(--ink-dim);cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;transition:color .2s var(--ease), transform .3s var(--spring), background .2s var(--ease);
+  flex:none;width:34px;height:34px;border-radius:50%;border:none;background:var(--fill);
+  color:var(--ink-dim);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;
+  transition:color .2s var(--ease), transform .3s var(--spring), background .2s var(--ease);
 }
 .save-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;}
-.save-btn:hover{color:var(--pink);}
-.save-btn.on{color:var(--pink);background:color-mix(in srgb, var(--pink) 12%, transparent);}
+.save-btn:hover{color:var(--l-pink);}
+.save-btn.on{color:var(--l-pink);background:color-mix(in srgb, var(--l-pink) 12%, transparent);}
 .save-btn.on svg{fill:currentColor;}
 .save-btn.pop{animation:pop .4s var(--spring);}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}
+
 .card-spacer{flex:1;min-height:6px;}
 .card > .btn-mini.block, .card > .card-actions{margin-top:10px;}
 .card > .btn-mini, .fest-body > .btn-mini{flex:none;}
 .card-actions{display:flex;gap:6px;}
 .card-actions .btn-mini{padding:9px 6px;white-space:nowrap;}
-.btn-mini{flex:1;border:none;background:var(--fill);color:var(--ink);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:650;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s var(--ease), color .2s var(--ease), transform .15s var(--ease);}
+.btn-mini{
+  flex:1;border:none;background:var(--fill);color:var(--ink);
+  border-radius:10px;padding:9px 12px;font-size:13px;font-weight:650;cursor:pointer;
+  transition:background .2s var(--ease), color .2s var(--ease), transform .15s var(--ease);
+  text-align:center;text-decoration:none;
+}
 .btn-mini:hover{background:var(--fill-strong);}
-.btn-mini:active,.chip:active,.city-tab:active,.segmented button:active,.finder-kinds button:active{transform:scale(.96);}
+.btn-mini:active,.chip:active,.city-tab:active,.quick-regions button:active,.segmented button:active{transform:scale(.96);}
 .btn-mini.block{display:block;width:100%;}
 .btn-mini.btn-primary{background:var(--ink);color:var(--bg);}
-.btn-mini.btn-primary:hover{background:var(--tang);color:#fff;}
-.btn-mini.checked{background:var(--tang);color:#fff;}
+.btn-mini.btn-primary:hover{background:var(--go-ink);color:#fff;filter:none;}
+.btn-mini.checked{background:var(--go);color:#fff;}
+
 .reviews{display:none;margin-top:12px;border-top:1px solid var(--line);padding-top:10px;}
 .reviews.open{display:block;}
 .review-item{font-size:13px;color:var(--ink-dim);padding:8px 0;border-bottom:1px solid var(--line);}
@@ -399,195 +472,207 @@ select:focus, input[type="text"]:focus{border-color:var(--tang);box-shadow:0 0 0
 .review-form{display:flex;gap:6px;margin-top:10px;}
 .review-form input{border-radius:10px !important;padding:9px 12px !important;font-size:13px !important;}
 .review-form button{background:var(--ink);border:none;color:var(--bg);font-weight:650;border-radius:10px;padding:0 16px;cursor:pointer;font-size:13px;}
+.review-form button:active{transform:scale(.96);}
+
 .empty{color:var(--ink-dim);font-size:14px;padding:40px 0;text-align:center;grid-column:1/-1;}
+
 .skeleton{border-radius:var(--r-card);background:linear-gradient(90deg,var(--fill) 25%,var(--fill-strong) 37%,var(--fill) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;}
 @keyframes shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
 
-/* 사진 카드 (추천·축제) */
+/* ───────── 사진 카드 (추천·축제): 테두리 없이 사진 + 글 ───────── */
 .fest-card{padding:0;border:none;background:transparent;border-radius:0;overflow:visible;}
 .fest-card:hover{border-color:transparent;}
 .fest-card .poster{position:relative;aspect-ratio:4/3;background:var(--bg-sunken);overflow:hidden;border-radius:var(--r-card);}
 .fest-card .poster img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s var(--ease);}
 .fest-card:hover .poster img{transform:scale(1.035);}
 .fest-card .poster .noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;background:var(--bg-panel);}
-.dday{position:absolute;left:10px;top:10px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;color:var(--heading);background:var(--bg);}
-.dday.live{background:var(--tang);color:#fff;}
-.fest-card .save-btn{position:absolute;right:10px;top:10px;background:rgba(255,255,255,.92);color:#18181b;}
-.fest-card .save-btn.on{background:#fff;color:var(--pink);}
+.dday{
+  position:absolute;left:10px;top:10px;font-size:12px;font-weight:700;letter-spacing:-.01em;
+  padding:4px 10px;border-radius:8px;color:var(--heading);background:var(--bg);
+}
+.dday.live{background:var(--sec);color:#fff;}
+.fest-card .save-btn{position:absolute;right:10px;top:10px;background:rgba(255,255,255,.92);color:#141a24;}
+.fest-card .save-btn.on{background:#fff;color:var(--l-pink);}
 .fest-body{padding:14px 2px 0;display:flex;flex-direction:column;flex:1;}
-.fest-date{font-size:13px;font-weight:700;color:var(--tang-ink);margin:0 0 3px;font-variant-numeric:tabular-nums;}
+.fest-date{font-size:13px;font-weight:700;color:var(--sec);margin:0 0 3px;font-variant-numeric:tabular-nums;}
 .fest-body > .btn-mini.block{
-  display:inline-flex;width:auto;align-self:flex-start;background:none;padding:6px 0 0;border-radius:0;font-size:13.5px;font-weight:650;color:var(--ink);
+  display:inline-flex;align-items:center;gap:6px;width:auto;align-self:flex-start;
+  background:none;padding:6px 0 0;border-radius:0;font-size:13.5px;font-weight:650;color:var(--ink);
   text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:4px;text-decoration-thickness:1.5px;
 }
-.fest-body > .btn-mini.block:hover{background:none;text-decoration-color:var(--tang);}
-#festivalResults .poster{aspect-ratio:4/5;}
-
-/* 축제 화면: 첫 카드 크게 + 3열 */
-@media (min-width:901px){
-  html[data-view="festival"] #festivalResults{grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 24px;}
-  html[data-view="festival"] #festivalResults > .fest-card:first-child:nth-last-child(n+4){grid-column:span 2;grid-row:span 2;}
-  html[data-view="festival"] #festivalResults > .fest-card:first-child:nth-last-child(n+4) .poster{aspect-ratio:auto;flex:1 1 0;min-height:0;}
-  html[data-view="festival"] #festivalResults > .fest-card:first-child:nth-last-child(n+4) .poster img{position:absolute;inset:0;}
-  html[data-view="festival"] #festivalResults > .fest-card:first-child:nth-last-child(n+4) .card-name{font-size:26px;letter-spacing:-.045em;}
-  html[data-view="festival"] #festivalResults > .fest-card:first-child:nth-last-child(n+4) .fest-date{font-size:15px;}
-  html[data-view="home"] #festivalResults, html[data-view="home"] #recResults{grid-template-columns:repeat(4,minmax(0,1fr));}
-}
+.fest-body > .btn-mini.block:hover{background:none;text-decoration-color:var(--sec);}
 
 /* ───────── 맛집 ───────── */
-.hscroll{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,1fr);gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 14px;margin:0 -2px 30px;scrollbar-width:none;}
-.hscroll::-webkit-scrollbar{display:none;}
-.pick-card{
-  scroll-snap-align:start;position:relative;overflow:hidden;border-radius:var(--r-card);padding:18px;min-height:150px;color:var(--ink);text-decoration:none;
-  display:flex;flex-direction:column;justify-content:space-between;background:var(--bg-panel);transition:background .25s var(--ease);
+.hscroll{
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:12px;
+  overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 14px;margin:0 -2px 30px;scrollbar-width:none;
 }
-.pick-card:hover{background:var(--bg-sunken);}
-.pick-card .pick-tag{align-self:flex-start;font-size:12px;font-weight:700;color:var(--tang-ink);background:color-mix(in srgb, var(--tang) 13%, transparent);padding:3px 9px;border-radius:999px;}
-.pick-card b{font-size:19px;font-weight:800;letter-spacing:-.04em;line-height:1.25;display:block;margin-top:18px;color:var(--heading);}
-.pick-card span.loc{font-size:13px;color:var(--ink-dim);margin-top:3px;display:block;}
-.pick-card .pick-rating{font-size:12.5px;font-weight:700;margin-top:10px;display:inline-flex;gap:4px;align-items:center;color:var(--ink);align-self:flex-start;}
+.hscroll::-webkit-scrollbar{display:none;}
+/* 셰프·미식가 픽: 기차표 모양 */
+.pick-card{
+  scroll-snap-align:start;position:relative;overflow:hidden;
+  border-radius:14px;padding:16px 18px 16px 18px;min-height:148px;color:var(--ink);text-decoration:none;
+  display:flex;flex-direction:column;justify-content:space-between;
+  background:var(--bg-card);box-shadow:inset 0 0 0 1px var(--line);
+  transition:box-shadow .25s var(--ease);
+}
+.pick-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--sec);}
+.pick-card:hover{box-shadow:inset 0 0 0 1px var(--ink);}
+.pick-card .pick-tag{font-size:12px;font-weight:700;color:var(--amber);display:inline-flex;gap:6px;align-items:center;}
+.pick-card b{font-size:18px;font-weight:800;letter-spacing:-.04em;line-height:1.25;display:block;margin-top:16px;color:var(--heading);}
+.pick-card span.loc{font-size:12.5px;color:var(--ink-dim);margin-top:4px;display:block;}
+.pick-card .pick-rating{font-size:12px;font-weight:700;margin-top:10px;display:inline-flex;gap:4px;align-items:center;color:var(--ink);align-self:flex-start;}
+
 .cuisine-bar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px;margin:0 -2px 18px;}
 .cuisine-bar::-webkit-scrollbar{display:none;}
-.cuisine{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;width:70px;padding:12px 4px 10px;border-radius:14px;border:none;cursor:pointer;background:var(--bg-card);color:var(--ink);font-size:12.5px;font-weight:650;transition:background .2s var(--ease), color .2s var(--ease);}
+.cuisine{
+  flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;
+  width:70px;padding:12px 4px 10px;border-radius:14px;border:none;cursor:pointer;
+  background:var(--bg-card);color:var(--ink);font-size:12.5px;font-weight:650;
+  transition:background .2s var(--ease), color .2s var(--ease);
+}
 .cuisine .emo{font-size:26px;line-height:1;transition:transform .3s var(--spring);}
 .cuisine:hover .emo{transform:scale(1.12);}
 .cuisine.active{background:var(--ink);color:var(--bg);}
+.cuisine:active{transform:scale(.95);}
+
 .food-meta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
 .food-meta p{margin:0;font-size:13px;color:var(--ink-dim);}
 .rank-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px;}
 @media (max-width:760px){ .rank-list{grid-template-columns:1fr;} }
 .rank-row{display:flex;align-items:center;gap:14px;padding:14px 2px;border-bottom:1px solid var(--line);min-width:0;}
-.rank-num{flex:none;width:30px;font-size:17px;font-weight:800;color:var(--ink-dim);font-variant-numeric:tabular-nums;letter-spacing:-.03em;}
-.rank-row:nth-child(-n+3) .rank-num{color:var(--tang-ink);font-size:20px;}
+.rank-num{
+  flex:none;width:30px;text-align:left;font-size:17px;font-weight:800;color:var(--ink-dim);
+  font-variant-numeric:tabular-nums;letter-spacing:-.03em;
+}
+.rank-row:nth-child(-n+3) .rank-num{color:var(--sec);font-size:20px;}
 .rank-body{flex:1;min-width:0;}
 .rank-name{font-size:15.5px;font-weight:700;color:var(--heading);letter-spacing:-.03em;display:flex;align-items:center;gap:6px;min-width:0;}
 .rank-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.rank-hot{flex:none;font-size:11px;font-weight:700;color:var(--tang-ink);background:color-mix(in srgb, var(--tang) 12%, transparent);padding:2px 6px;border-radius:5px;}
+.rank-hot{flex:none;font-size:11px;font-weight:700;color:var(--l-red);background:color-mix(in srgb, var(--l-red) 10%, transparent);padding:2px 6px;border-radius:5px;}
 .rank-sub{font-size:12.5px;color:var(--ink-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
 .rank-actions{flex:none;display:flex;gap:6px;align-items:center;}
 .rank-actions .btn-mini{flex:none;padding:7px 12px;font-size:12.5px;background:var(--bg-card);}
-.more-row{display:flex;justify-content:center;margin-top:32px;}
-.btn-lg{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:999px;border:none;cursor:pointer;
-  font-size:15px;font-weight:650;text-decoration:none;transition:transform .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease), filter .2s var(--ease);
-}
-.btn-lg svg{width:18px;height:18px;}
-.btn-lg:active{transform:scale(.97);}
-.btn-lg.primary{background:var(--ink);color:var(--bg);}
-.btn-lg.brand{background:var(--tang);color:#fff;}
-.btn-lg.brand:hover{filter:brightness(1.06);}
-.btn-lg.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line-strong);}
-.btn-lg.ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink);}
-.festival-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:24px;}
+.rank-actions .btn-mini:hover{background:var(--fill-strong);}
+.more-row{display:flex;justify-content:center;margin-top:28px;}
+.more-row .btn-lg{height:44px;font-size:14.5px;}
+
+/* ───────── 축제/추천 상단 필터 ───────── */
+.festival-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px;}
 .festival-bar select{width:auto;min-width:160px;}
 .festival-bar .segmented{flex:0 0 auto;}
-.shuffle-btn{height:40px;font-size:13.5px;padding:0 16px;margin-left:auto;}
+.shuffle-btn{height:40px;font-size:13.5px;padding:0 14px;margin-left:auto;}
 .shuffle-btn svg{width:16px;height:16px;}
 
-/* ───────── 랜덤 뽑기 ───────── */
-dialog.sheet{border:none;padding:0;border-radius:26px;width:min(420px, calc(100vw - 32px));background:var(--bg);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden;}
-dialog.sheet::backdrop{background:rgba(17,17,19,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+/* ───────── 랜덤 뽑기 시트 ───────── */
+dialog.sheet{
+  border:none;padding:0;border-radius:24px;width:min(420px, calc(100vw - 32px));
+  background:var(--bg);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden;
+}
+dialog.sheet::backdrop{background:rgba(14,19,24,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
 dialog.sheet[open]{animation:sheetIn .35s var(--ease);}
 @keyframes sheetIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-.sheet-hero{position:relative;height:200px;background:var(--tang);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.sheet-hero{position:relative;height:170px;background:var(--go);display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .sheet-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s var(--ease);}
 .sheet-hero img.show{opacity:1;}
 .sheet-hero .big-dice{font-size:60px;line-height:1;}
 .sheet-hero .big-dice.roll{animation:roll .6s var(--ease) infinite;}
 @keyframes roll{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.12)}100%{transform:rotate(360deg) scale(1)}}
-.sheet-body{padding:22px 24px;text-align:left;}
-.sheet-body .kicker{display:block !important;font-size:13px;font-weight:700;color:var(--tang-ink);margin:0 0 4px;}
+.sheet-body{padding:22px 24px 22px;text-align:left;}
+.sheet-body .kicker{position:static;width:auto;height:auto;box-shadow:none;background:none;border-radius:0;font-size:13px;font-weight:700;color:var(--go-ink);margin:0 0 4px;overflow:visible;}
 .slot-name{font-size:27px;font-weight:800;letter-spacing:-.045em;margin:0 0 6px;color:var(--heading);min-height:1.3em;line-height:1.25;}
 .slot-meta{font-size:14px;color:var(--ink-dim);margin:0;min-height:1.5em;}
 .sheet-actions{display:flex;gap:8px;margin-top:22px;}
 .sheet-actions .btn-lg{flex:1;height:50px;font-size:15px;padding:0 12px;}
-.sheet-close{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:rgba(255,255,255,.92);color:#18181b;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:1;}
+.sheet-close{position:absolute;right:12px;top:12px;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(255,255,255,.92);color:#141a24;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:1;}
 
-/* ───────── 아이와 함께 / 저장 / 안내 ───────── */
+/* ───────── 저장함 / 아이와 함께 / 안내 ───────── */
 .link-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
-.link-tile{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);background:var(--bg-panel);border-radius:var(--r-card);padding:22px;min-height:170px;transition:background .25s var(--ease);}
-.link-tile:hover{background:var(--bg-sunken);}
-.link-tile .tile-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;color:#fff;background:var(--tile-bg, var(--tang));}
+.link-tile{
+  display:flex;flex-direction:column;text-decoration:none;color:var(--ink);background:var(--bg-panel);
+  border-radius:var(--r-card);padding:22px;min-height:170px;box-shadow:inset 0 0 0 1px transparent;
+  transition:box-shadow .25s var(--ease);
+}
+.link-tile:hover{box-shadow:inset 0 0 0 1px var(--ink);}
+.link-tile .tile-icon{
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  margin-bottom:18px;color:#fff;background:var(--tile-bg, var(--route));
+}
 .link-tile .tile-icon svg{width:20px;height:20px;}
 .link-tile b{display:block;font-size:17.5px;font-weight:750;letter-spacing:-.03em;margin-bottom:4px;color:var(--heading);}
 .link-tile span{font-size:14px;color:var(--ink-dim);line-height:1.5;}
 .link-tile .arrow{display:block;margin-top:auto;padding-top:16px;color:var(--ink);font-size:13.5px;font-weight:650;font-style:normal;}
-html[data-view="home"] .link-tile{min-height:0;display:grid;grid-template-columns:auto 1fr;column-gap:14px;align-items:center;padding:18px;}
-html[data-view="home"] .link-tile .tile-icon{margin:0;grid-row:span 2;}
-html[data-view="home"] .link-tile .arrow{display:none;}
-html[data-view="home"] .link-tile b{font-size:16px;margin:0;}
-html[data-view="home"] .link-tile span{font-size:13px;}
 .note{font-size:13.5px;color:var(--ink-dim);margin:16px 0 0;line-height:1.65;max-width:52em;}
 .arch-card{padding:20px;}
-.arch-by{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 0 14px;font-size:13px;font-weight:700;color:var(--tang-ink);}
+.arch-by{
+  display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 0 14px;
+  font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--sec);
+}
 .arch-by span{font-size:12px;font-weight:600;color:var(--ink-dim);font-variant-numeric:tabular-nums;}
 .arch-name{font-size:19px;font-weight:800;letter-spacing:-.04em;line-height:1.3;margin:0 0 4px;color:var(--heading);}
 .arch-ko{font-size:13px;color:var(--ink-dim);margin:0 0 2px;}
 .arch-note{font-size:14px;line-height:1.6;margin:10px 0 0;color:var(--ink);}
 .arch-card .card-actions{margin-top:14px;align-items:center;}
 .arch-card .card-actions .save-btn{flex:none;}
-.saved-empty{text-align:left;padding:28px;border-radius:var(--r-card);border:1.5px dashed var(--line-strong);color:var(--ink-dim);grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;column-gap:16px;align-items:center;}
+.saved-empty{
+  text-align:left;padding:28px;border-radius:var(--r-card);border:1.5px dashed var(--line-strong);color:var(--ink-dim);grid-column:1/-1;
+  display:grid;grid-template-columns:auto 1fr;column-gap:16px;align-items:center;
+}
 .saved-empty .big{font-size:32px;grid-row:span 2;}
 .saved-empty b{display:block;color:var(--heading);font-size:16.5px;margin-bottom:2px;}
+
 .about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
 .about-grid .panel h3{font-size:16px;font-weight:750;margin:0 0 8px;color:var(--heading);letter-spacing:-.02em;}
 .about-grid .panel p{font-size:14px;color:var(--ink-dim);margin:0;line-height:1.7;}
 
 footer{
-  max-width:1232px;margin:0 auto;padding:32px 24px 48px;border-top:1px solid var(--line);
-  color:var(--ink-dim);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;
+  max-width:1200px;margin:48px auto 0;padding:28px 24px 44px;border-top:1px solid var(--line);
+  color:var(--ink-dim);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;
 }
-footer .brand{font-size:17px;}
-footer .brand-mark{width:24px;height:24px;border-radius:7px;}
-footer .brand-mark svg{width:14px;height:14px;}
-footer nav{display:flex;gap:18px;flex-wrap:wrap;}
-footer a{color:var(--ink);text-decoration:none;font-weight:600;}
-footer a:hover{text-decoration:underline;text-underline-offset:3px;}
+footer .brand{font-size:16px;}
+footer .brand-mark, footer .brand-mark svg{width:28px;height:15px;}
+footer a{text-decoration:none;}
+footer a:hover{text-decoration:underline;}
 
+/* 스크롤 등장: 효과 없이 바로 보이게 (히어로 노선도 한 곳에만 움직임) */
 .reveal{opacity:1;transform:none;}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
 
 /* ───────── 태블릿 ───────── */
 @media (max-width:900px){
-  .finder{grid-template-columns:1fr;width:calc(100% - 48px);padding:8px;}
-  .finder-field + .finder-field{border-left:none;border-top:1px solid var(--line);}
-  .finder-field{padding:12px 14px;}
-  .finder-go{width:100%;height:54px;justify-content:center;margin-top:4px;}
-  .hero-inner{flex-direction:column;align-items:flex-start;padding-bottom:84px;}
+  .hero{grid-template-columns:1fr;padding-top:44px;}
+  .route-map{justify-self:start;max-width:440px;}
+  .route-map figcaption{text-align:left;}
+  .hero-regions{grid-template-columns:1fr;gap:12px;}
 }
 
 /* ───────── 모바일 ───────── */
 @media (max-width:640px){
-  .topnav-inner{padding:0 16px;height:60px;}
-  .mobile-menu{top:60px;padding:8px 16px 20px;}
+  .topnav-inner{padding:0 16px;height:58px;}
+  .mobile-menu{top:58px;padding:8px 16px 20px;}
   .wrap{padding:0 16px 48px;}
-  .hero{margin:0 10px;border-radius:24px;min-height:560px;}
-  .hero-inner{padding:0 20px 76px;gap:18px;}
+  .hero{padding:36px 0 8px;gap:20px;}
   h1{font-size:54px;}
-  .subtitle{font-size:16px;margin-top:14px;}
-  .hero-place{max-width:100%;}
-  .finder{width:calc(100% - 36px);margin-top:-44px;border-radius:20px;}
-  .section{padding-top:60px;}
-  .section-title{font-size:27px;}
+  .subtitle{font-size:16.5px;margin-top:18px;}
+  .hero-cta{margin-top:24px;}
+  .hero-cta .btn-lg{flex:1 1 auto;}
+  .btn-lg{height:48px;font-size:15px;padding:0 18px;}
+  .route-map{max-width:330px;justify-self:center;}
+  .route-map figcaption{text-align:center;}
+  .hero-regions{margin-top:12px;padding-top:22px;}
+  .quick-regions{gap:6px;}
+  .quick-regions button{padding:7px 13px;font-size:13.5px;}
+  .stats{gap:4px 18px;}
+  .section{padding:60px 0 0 34px;}
+  .section::before{left:7px;width:4px;}
+  #picks.section::before{top:64px;}
+  .kicker{left:-34px;top:3px;width:22px;height:22px;box-shadow:inset 0 0 0 4.5px var(--sec);}
+  .section-title{font-size:28px;}
   .section-desc{font-size:15px;}
-  .see-all{padding:7px 12px;font-size:13.5px;grid-row:1;align-self:center;}
-  .section-desc{grid-column:1 / -1;}
   .panel{padding:16px;border-radius:18px;}
   .layout{gap:14px;}
   .cards{grid-template-columns:1fr;gap:24px;}
-  /* 홈 미리보기는 옆으로 넘기기 */
-  html[data-view="home"] #recResults, html[data-view="home"] #festivalResults, html[data-view="home"] #archResults{
-    grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:74%;gap:14px;
-    overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-right:-16px;padding-right:16px;
-  }
-  html[data-view="home"] #recResults > :nth-child(n+5), html[data-view="home"] #festivalResults > :nth-child(n+5){display:flex;}
-  html[data-view="home"] #recResults::-webkit-scrollbar, html[data-view="home"] #festivalResults::-webkit-scrollbar, html[data-view="home"] #archResults::-webkit-scrollbar{display:none;}
-  html[data-view="home"] .cards > *{scroll-snap-align:start;}
-  /* 전체 화면에서는 2열 */
-  #recResults, #festivalResults{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px;}
-  #recResults .card-name, #festivalResults .card-name{font-size:15px;}
-  #recResults .card-meta, #festivalResults .card-meta{font-size:12.5px;}
-  .dday{font-size:11px;padding:3px 8px;left:8px;top:8px;}
-  .fest-card .save-btn{width:30px;height:30px;right:8px;top:8px;}
   select, input[type="text"]{font-size:16px;}
   .city-tabs select, .festival-bar select{width:100%;}
   .festival-bar .segmented{flex:1 1 100%;}
@@ -596,13 +681,13 @@ footer a:hover{text-decoration:underline;text-underline-offset:3px;}
   .review-form{flex-wrap:wrap;}
   .review-form input[data-name]{max-width:100% !important;}
   .review-form button{width:100%;padding:10px;}
-  footer{padding:24px 16px 28px;}
+  footer{padding:20px 16px 24px;}
 }
 
 a.rank-body{text-decoration:none;color:inherit;}
 a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offset:3px;}
 .card.flash{animation:flash 2s var(--ease);}
-@keyframes flash{0%,45%{box-shadow:0 0 0 3px var(--tang);}100%{box-shadow:0 0 0 0 transparent;}}
+@keyframes flash{0%,45%{box-shadow:0 0 0 3px var(--go);}100%{box-shadow:0 0 0 0 transparent;}}
 .skel-row{height:58px;margin:8px 0;}
 </style>
 </head>
@@ -613,7 +698,6 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
       <stop offset="0" stop-color="#00a5de"/><stop offset="1" stop-color="#00a5de"/>
     </linearGradient>
     <symbol id="i-route" viewBox="0 0 34 18"><path d="M9 9H25" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><circle cx="8" cy="9" r="6" fill="currentColor"/><circle cx="26" cy="9" r="5.2" style="fill:var(--bg)" stroke="currentColor" stroke-width="3.4"/></symbol>
-    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11.2L12 4.8l8 6.4V20h-5.6v-5.2H9.6V20H4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
     <symbol id="i-logo" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-dice" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.4" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.4" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.4" fill="currentColor"/></symbol>
     <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4L3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4zM9 4v14M15 6v14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
@@ -629,14 +713,15 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
 
 <nav class="topnav" id="top">
   <div class="topnav-inner">
-    <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-logo"/></svg></span>가보자고</a>
+    <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-route"/></svg></span>가보자고</a>
     <div class="nav-links" id="navLinks">
-      <a href="#home" data-nav="home">홈</a>
-      <a href="#festival" data-nav="festival">축제</a>
-      <a href="#food" data-nav="food">맛집</a>
-      <a href="#places" data-nav="places">여행지</a>
-      <a href="#search" data-nav="search">검색</a>
-      <a href="#saved" data-nav="saved">저장함 <span class="nav-count" data-saved-count></span></a>
+      <a href="#picks" data-spy="picks">추천</a>
+      <a href="#festival" data-spy="festival">축제</a>
+      <a href="#food" data-spy="food">맛집</a>
+      <a href="#architecture" data-spy="architecture">건축</a>
+      <a href="#explore" data-spy="explore">지역 탐색</a>
+      <a href="#saved" data-spy="saved">저장함 <span class="nav-count" data-saved-count></span></a>
+      <a href="#search" data-spy="search">검색</a>
     </div>
     <div class="nav-actions">
       <button class="dice-btn" type="button" data-random title="아무 데나 골라줘"><svg><use href="#i-dice"/></svg><span class="dice-label">어디 가지?</span></button>
@@ -649,66 +734,73 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
   </div>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#home">홈 <span>›</span></a>
+  <a href="#picks">추천 여행지 <span>›</span></a>
   <a href="#festival">축제 <span>›</span></a>
   <a href="#food">맛집 <span>›</span></a>
-  <a href="#places">여행지 <span>›</span></a>
   <a href="#architecture">건축가의 공간 <span>›</span></a>
   <a href="#explore">지역 탐색 <span>›</span></a>
-  <a href="#search">검색 <span>›</span></a>
   <a href="#saved">저장함 <span>›</span></a>
+  <a href="#search">검색 <span>›</span></a>
   <a href="#kids">아이와 함께 <span>›</span></a>
   <a href="#about">안내 <span>›</span></a>
 </div>
 
 <nav class="tabbar" aria-label="바로가기">
-  <a href="#home" data-nav="home"><svg><use href="#i-home"/></svg>홈</a>
-  <a href="#festival" data-nav="festival"><svg><use href="#i-party"/></svg>축제</a>
-  <a href="#food" data-nav="food"><svg><use href="#i-food"/></svg>맛집</a>
-  <a href="#places" data-nav="places"><svg><use href="#i-map"/></svg>여행지</a>
-  <a href="#saved" data-nav="saved"><svg><use href="#i-heart"/></svg>저장<span class="nav-count" data-saved-count></span></a>
+  <a href="#picks" data-spy="picks"><svg><use href="#i-logo"/></svg>추천</a>
+  <a href="#festival" data-spy="festival"><svg><use href="#i-party"/></svg>축제</a>
+  <a href="#food" data-spy="food"><svg><use href="#i-food"/></svg>맛집</a>
+  <a href="#explore" data-spy="explore"><svg><use href="#i-map"/></svg>탐색</a>
+  <a href="#saved" data-spy="saved"><svg><use href="#i-heart"/></svg>저장<span class="nav-count" data-saved-count></span></a>
 </nav>
-
-<header class="hero" id="hero" data-views="home">
-  <img class="hero-img" id="heroImg" alt="">
-  <div class="hero-inner">
-    <div class="hero-copy">
-      <h1>심심하면,<br>가보자고.</h1>
-      <p class="subtitle">전국 229개 시·군·구의 명소, 맛집, 축제, 숙소를 한 번에. 고르기 어렵다면 주사위에 맡겨보세요.</p>
-    </div>
-    <div class="hero-place" aria-live="polite">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><a id="heroLink" href="#places" target="_blank" rel="noopener" data-no-i18n><span id="heroName"></span></a><small id="heroRegion" data-no-i18n></small>
-      <button type="button" id="heroNext" aria-label="다른 사진 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-    </div>
-  </div>
-  <div class="quick-regions" id="quickRegions" hidden></div>
-</header>
-<form class="finder" id="finder" data-views="home" role="search">
-  <div class="finder-field">
-    <label class="finder-label" for="finderRegion">어디로</label>
-    <select id="finderRegion"><option value="">전국 어디든</option></select>
-  </div>
-  <div class="finder-field">
-    <span class="finder-label">무엇을</span>
-    <div class="finder-kinds" role="group" aria-label="무엇을">
-      <button type="button" data-kind="festival" aria-pressed="true">축제</button>
-      <button type="button" data-kind="food" aria-pressed="false">맛집</button>
-      <button type="button" data-kind="places" aria-pressed="false">여행지</button>
-      <button type="button" data-kind="stay" aria-pressed="false">숙소</button>
-    </div>
-  </div>
-  <button class="finder-go" type="submit"><svg><use href="#i-search"/></svg>찾아보기</button>
-</form>
 
 <div class="wrap">
 
-  
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>심심하면,<br><span class="grad">가보자고.</span></h1>
+      <p class="subtitle">전국 229개 시·군·구의 명소, 맛집, 축제, 숙소를 한 번에. 고르기 어렵다면 주사위에 맡겨보세요.</p>
+      <div class="hero-cta">
+        <a class="btn-lg primary" href="#festival">지금 열리는 축제</a>
+        <button class="btn-lg brand" type="button" data-random><svg><use href="#i-dice"/></svg>아무 데나 골라줘</button>
+      </div>
+    </div>
+    <figure class="route-map">
+      <svg viewBox="0 0 420 500" role="group" aria-label="지역 노선도">
+        <path class="rl" pathLength="1" style="--len:1;--d:.0s" stroke="var(--l-green)" d="M110 80V175L150 215L110 255V290L80 320V360"/>
+        <path class="rl" pathLength="1" style="--len:1;--d:.15s" stroke="var(--l-sky)" d="M110 80H310L330 60"/>
+        <path class="rl" pathLength="1" style="--len:1;--d:.3s" stroke="var(--l-red)" d="M150 215H315L350 250"/>
+        <path class="rl" pathLength="1" style="--len:1;--d:.45s" stroke="var(--l-orange)" d="M330 60L370 100V230L350 250V315L320 345"/>
+        <path class="rl" pathLength="1" style="--len:1;--d:.6s" stroke="var(--l-purple)" d="M320 345L280 385H200L175 360H80"/>
+        <path class="rl sea" stroke="var(--l-sky)" d="M200 385L130 455V470"/>
+        <g class="st hub" data-station="r1" tabindex="0" role="button" aria-label="서울" style="--d:0s"><circle cx="110" cy="80" r="11"/><text x="92" y="86" text-anchor="end">서울</text></g>
+        <g class="st" data-station="r32" tabindex="0" role="button" aria-label="강릉" style="--d:0.15s"><circle cx="330" cy="60" r="9"/><text x="330" y="38" text-anchor="middle">강릉</text></g>
+        <g class="st" data-station="r3" tabindex="0" role="button" aria-label="대전" style="--d:0.3s"><circle cx="150" cy="215" r="9"/><text x="166" y="201" text-anchor="start">대전</text></g>
+        <g class="st" data-station="r37" tabindex="0" role="button" aria-label="전주" style="--d:0.2s"><circle cx="110" cy="290" r="9"/><text x="126" y="295" text-anchor="start">전주</text></g>
+        <g class="st" data-station="r5" tabindex="0" role="button" aria-label="광주" style="--d:0.4s"><circle cx="80" cy="360" r="9"/><text x="62" y="366" text-anchor="end">광주</text></g>
+        <g class="st" data-station="r35" tabindex="0" role="button" aria-label="경주" style="--d:0.45s"><circle cx="350" cy="250" r="9"/><text x="368" y="256" text-anchor="start">경주</text></g>
+        <g class="st hub" data-station="r6" tabindex="0" role="button" aria-label="부산" style="--d:0.6s"><circle cx="320" cy="345" r="11"/><text x="340" y="352" text-anchor="start">부산</text></g>
+        <g class="st" data-station="r38" tabindex="0" role="button" aria-label="여수" style="--d:0.65s"><circle cx="200" cy="385" r="9"/><text x="214" y="413" text-anchor="start">여수</text></g>
+        <g class="st" data-station="r39" tabindex="0" role="button" aria-label="제주" style="--d:0.8s"><circle cx="130" cy="470" r="9"/><text x="148" y="476" text-anchor="start">제주</text></g>
+      </svg>
+      <figcaption>역을 누르면 그 지역으로 맞춰드려요</figcaption>
+    </figure>
+    <div class="hero-regions">
+      <p class="quick-caption">내 지역을 고르면 축제·맛집·명소를 그 지역으로 맞춰드려요</p>
+      <div class="quick-regions" id="quickRegions"></div>
+    </div>
+    <div class="stats">
+      <div><b>17</b><span>시·도</span></div>
+      <div><b>229</b><span>시·군·구</span></div>
+      <div><b>26만+</b><span>관광 정보</span></div>
+      <div><b>매일</b><span>맛집 순위 갱신</span></div>
+    </div>
+  </header>
 
-  <section class="section" id="picks" data-views="home places">
+  <section class="section reveal" id="picks">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">PICKS</p>
       <h2 class="section-title">이번 주 추천 여행지</h2>
       <p class="section-desc">한국관광공사에 등록된 관광지와 여행코스에서 매주 새로 골라드려요. 내 지역을 고르면 그 지역 위주로 바뀌어요.</p>
-      <a class="see-all" href="#places">여행지 더 보기</a>
     </div>
     <div class="festival-bar">
       <div class="segmented" id="recMode">
@@ -720,11 +812,11 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     <div class="cards" id="recResults"></div>
   </section>
 
-  <section class="section" id="festival" data-views="home festival">
+  <section class="section reveal" id="festival">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">FESTIVAL</p>
       <h2 class="section-title">지금 열리는 축제</h2>
       <p class="section-desc">한국관광공사에 등록된 전국 축제·행사를 진행 중인 것부터 보여드려요.</p>
-      <a class="see-all" href="#festival">축제 전체 보기</a>
     </div>
     <div class="festival-bar">
       <select id="festivalArea" aria-label="지역"></select>
@@ -738,11 +830,11 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     <div class="more-row" id="festivalMore"></div>
   </section>
 
-  <section class="section" id="food" data-views="home food">
+  <section class="section reveal" id="food">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">EAT</p>
       <h2 class="section-title">오늘 뭐 먹지?</h2>
       <p class="section-desc">네이버 리뷰가 많은 순으로 동네 맛집을 매일 모아요. 여러 메뉴 검색에 동시에 걸린 집일수록 위로 올라가요.</p>
-      <a class="see-all" href="#food">맛집 순위 보기</a>
     </div>
 
     <h3 class="sub-title">셰프·미식가 픽</h3>
@@ -760,18 +852,19 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     </div>
   </section>
 
-  <section class="section" id="architecture" data-views="home places">
+  <section class="section reveal" id="architecture">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">ARCHITECTURE</p>
       <h2 class="section-title">건축가의 공간</h2>
       <p class="section-desc">자하 하디드, 안도 다다오, 이타미 준, 김수근… 이름난 건축가가 설계했고 직접 가볼 수 있는 곳만 모았어요.</p>
-      <a class="see-all" href="#architecture">건축 전체 보기</a>
     </div>
     <div class="theme-chips" id="archFilter"></div>
     <div class="cards" id="archResults"></div>
   </section>
 
-  <section class="section" id="explore" data-views="places">
+  <section class="section reveal" id="explore">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">EXPLORE</p>
       <h2 class="section-title">어디로 가볼까요?</h2>
       <p class="section-desc">지역을 고르면 도시별 명소를 자연·맛집·카페·캠핑 등 테마별로 볼 수 있어요.</p>
     </div>
@@ -790,16 +883,18 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     </div>
   </section>
 
-  <section class="section" id="saved" data-views="saved">
+  <section class="section reveal" id="saved">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">SAVED</p>
       <h2 class="section-title">가고 싶은 곳</h2>
       <p class="section-desc">명소·맛집·축제 어디서든 하트를 누르면 여기 모여요. 이 기기에만 저장돼요.</p>
     </div>
     <div class="cards" id="savedList"></div>
   </section>
 
-  <section class="section" id="search" data-views="search">
+  <section class="section reveal" id="search">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">SEARCH</p>
       <h2 class="section-title">직접 찾아보기</h2>
       <p class="section-desc">관광공사·공공데이터에서 바로 검색하고, 마음에 들면 커뮤니티에 추가하세요.</p>
     </div>
@@ -882,8 +977,9 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     </div>
   </section>
 
-  <section class="section" id="kids" data-views="home info">
+  <section class="section reveal" id="kids">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">WITH KIDS</p>
       <h2 class="section-title">아이와 함께라면</h2>
       <p class="section-desc">나들이 중에 아이가 갑자기 아플 때, 지금 문 연 곳을 공식 서비스에서 바로 확인하세요.</p>
     </div>
@@ -910,8 +1006,9 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     <p class="note">병원 영업시간은 점심시간·휴진·야간진료 변동이 잦아서, 고정 데이터 대신 정부 공식 서비스로 연결해드려요. 지역별 소아과 진료시간은 위 ‘직접 찾아보기 → 병원·박물관’에서도 볼 수 있어요.</p>
   </section>
 
-  <section class="section" id="about" data-views="info">
+  <section class="section reveal" id="about">
     <div class="section-head">
+      <p class="kicker" aria-hidden="true">ABOUT</p>
       <h2 class="section-title">이렇게 만들었어요</h2>
     </div>
     <div class="about-grid">
@@ -932,9 +1029,8 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
 </div>
 
 <footer>
-  <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-logo"/></svg></span>가보자고</a>
-  <nav aria-label="바닥 메뉴"><a href="#kids">아이와 함께</a><a href="#about">안내</a><a href="#search">직접 찾아보기</a></nav>
-  <span>방문 전 운영 정보를 꼭 확인하세요</span>
+  <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-route"/></svg></span>가보자고</a>
+  <span><a href="#kids" style="color:inherit">아이와 함께</a> · <a href="#about" style="color:inherit">안내</a> · 방문 전 운영 정보를 꼭 확인하세요</span>
 </footer>
 
 <dialog class="sheet" id="randomSheet" aria-label="랜덤 나들이 뽑기">
@@ -3455,8 +3551,7 @@ function initNavEffects(){
       if(e.target.id === 'picks') loadPicks();
     });
   }, { rootMargin:'400px 0px' });
-  ['food','festival'].forEach(id=>{ const el = document.getElementById(id); if(el) lazy.observe(el); });
-  loadPicks();  // 홈 첫 화면 사진에 쓰이므로 바로 불러옵니다
+  ['picks','food','festival'].forEach(id=>{ const el = document.getElementById(id); if(el) lazy.observe(el); });
 }
 
 /* ---------------- 이번 주 추천 여행지 (관광공사 관광지·여행코스에서 매주 골라줌) ---------------- */
@@ -3733,7 +3828,7 @@ const I18N = {
   '랜덤 나들이 뽑기':'Random trip picker', '닫기':'Close', '오늘의 랜덤 나들이':'Today’s random trip', '두구두구…':'Drumroll…',
   '다시 굴리기':'Roll again', '가보자고!':'Let’s go!',
   // 시·도
-  '서울':'Seoul', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '홈':'Home', '여행지':'Places', '어디로':'Where', '무엇을':'What', '전국 어디든':'Anywhere in Korea', '찾아보기':'Find', '숙소':'Stays', '축제 전체 보기':'All festivals', '여행지 더 보기':'More places', '맛집 순위 보기':'Food rankings', '건축 전체 보기':'All architecture', '다른 사진 보기':'Next photo', '직접 찾아보기':'Search yourself', '바닥 메뉴':'Footer menu', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
+  '서울':'Seoul', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '역을 누르면 그 지역으로 맞춰드려요':'Tap a station to set your region', '지역 노선도':'Region route map', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
   '전북':'Jeonbuk', '경북':'Gyeongbuk', '대구':'Daegu', '울산':'Ulsan', '광주':'Gwangju', '전남':'Jeonnam', '경남':'Gyeongnam', '부산':'Busan', '제주':'Jeju',
   '경기도':'Gyeonggi-do', '강원도':'Gangwon-do', '충청북도':'Chungcheongbuk-do', '충청남도':'Chungcheongnam-do', '경상북도':'Gyeongsangbuk-do',
   '경상남도':'Gyeongsangnam-do', '전라북도':'Jeollabuk-do', '전라남도':'Jeollanam-do', '제주도':'Jeju-do',
@@ -3912,99 +4007,12 @@ try{ initLanguage(); }catch(e){ console.warn('언어 초기화 실패', e); docu
   if(currentRegion) renderCards();
 })();
 
-/* ---------------- 화면 전환 (홈 / 축제 / 맛집 / 여행지 / 검색 / 저장 / 안내) ---------------- */
-(function appShell(){
-  const VIEWS = ['home','festival','food','places','search','saved','info'];
-  const ALIAS = { picks:'places', architecture:'places', explore:'places', kids:'info', about:'info', top:'home' };
-  const root = document.documentElement;
-  function parse(){
-    const h = decodeURIComponent(location.hash.slice(1));
-    if(VIEWS.includes(h)) return { view:h, anchor:null };
-    if(ALIAS[h]) return { view:ALIAS[h], anchor: h === 'top' ? null : h };
-    return { view:'home', anchor:null };
-  }
-  function showView(view, { scroll = true } = {}){
-    root.setAttribute('data-view', view);
-    document.querySelectorAll('[data-nav]').forEach(a=> a.classList.toggle('active', a.dataset.nav === view));
-    if(scroll) window.scrollTo({ top:0, behavior:'instant' });
-  }
-  window.showView = showView;
-  function route(){
-    const { view, anchor } = parse();
-    showView(view);
-    if(anchor && anchor !== 'picks' && anchor !== 'kids'){
-      requestAnimationFrame(()=> document.getElementById(anchor)?.scrollIntoView({ block:'start' }));
-    }
-  }
-  window.addEventListener('hashchange', route);
-  route();
-  // 로고: 기존 코드가 주소의 #을 지우므로 홈 화면으로 직접 전환
-  document.querySelectorAll('a[href="#top"]').forEach(a=> a.addEventListener('click', ()=> showView('home', { scroll:false })));
-  // 랜덤 뽑기 '가보자고!': 지역 탐색 카드로 이동하므로 먼저 여행지 화면을 연다
-  document.getElementById('goBtn')?.addEventListener('click', ()=>{
-    if(location.hash !== '#places') history.pushState(null, '', '#places');
-    showView('places', { scroll:false });
-  }, true);
-
-  /* ---------- 홈 히어로: 이번 주 추천 여행지 사진 ---------- */
-  const hero = document.getElementById('hero');
-  const box = document.getElementById('recResults');
-  if(hero && box){
-    const img = document.getElementById('heroImg');
-    let items = [], idx = 0;
-    const paint = ()=>{
-      const it = items[idx % items.length];
-      if(!it) return;
-      img.classList.remove('show');
-      const pre = new Image();
-      pre.onload = ()=>{ img.src = it.img; img.alt = it.name; requestAnimationFrame(()=> img.classList.add('show')); };
-      pre.src = it.img;
-      document.getElementById('heroName').textContent = it.name;
-      document.getElementById('heroRegion').textContent = it.region;
-      document.getElementById('heroLink').href = it.href || '#places';
-      hero.classList.add('ready');
-    };
-    const read = ()=>{
-      const cards = [...box.querySelectorAll('.fest-card')].map(c=>{
-        const im = c.querySelector('.poster img');
-        return {
-          img: im && im.getAttribute('src'), w: im ? im.naturalWidth : 0, h: im ? im.naturalHeight : 0,
-          name: c.querySelector('.card-name')?.textContent || '',
-          region: c.querySelector('.dday')?.textContent || '',
-          href: c.querySelector('a.btn-mini')?.href || '',
-        };
-      }).filter(x=> x.img);
-      if(!cards.length) return;
-      items = cards.filter(x=> !(x.h > x.w)).concat(cards.filter(x=> x.h > x.w));
-      idx = 0; paint();
-    };
-    new MutationObserver(()=> setTimeout(read, 50)).observe(box, { childList:true });
-    read();
-    document.getElementById('heroNext')?.addEventListener('click', ()=>{ idx++; paint(); });
-  }
-
-  /* ---------- 홈 검색창: 어디로 / 무엇을 ---------- */
-  const finder = document.getElementById('finder');
-  const sel = document.getElementById('finderRegion');
-  if(finder && sel){
-    REGIONS.forEach(r=>{ const o = document.createElement('option'); o.value = r.id; o.textContent = r.name; sel.appendChild(o); });
-    setTimeout(()=>{ if(homeRegion) sel.value = homeRegion; }, 0);
-    let kind = 'festival';
-    const kinds = finder.querySelectorAll('[data-kind]');
-    kinds.forEach(b=> b.addEventListener('click', ()=>{
-      kind = b.dataset.kind;
-      kinds.forEach(x=> x.setAttribute('aria-pressed', String(x === b)));
-    }));
-    finder.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const r = sel.value;
-      if(r && r !== homeRegion) applyHomeRegion(r);
-      const view = kind === 'stay' ? 'search' : kind;
-      if(location.hash === '#' + view) route(); else location.hash = view;
-      if(kind === 'stay') document.querySelector('#sideTabBar [data-tab="stay"]')?.click();
-    });
-  }
-})();
+/* ---------------- 히어로 노선도: 역을 누르면 그 지역으로 ---------------- */
+document.querySelectorAll('.route-map [data-station]').forEach(g=>{
+  const go = ()=> document.querySelector('#quickRegions [data-region="' + g.dataset.station + '"]')?.click();
+  g.addEventListener('click', go);
+  g.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+});
 </script>
 </body>
 </html>
