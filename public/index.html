@@ -290,13 +290,13 @@ h1{
 .stats b{font-weight:750;color:var(--heading);margin-right:4px;font-variant-numeric:tabular-nums;}
 
 /* ───────── 섹션: 노선을 따라 이어지는 역 ───────── */
-.section{position:relative;padding:76px 0 0 60px;}
+.section{position:relative;padding:60px 0 0 60px;}
 .section::before{
   content:'';position:absolute;left:13px;top:0;bottom:-2px;width:6px;border-radius:3px;background:var(--sec);opacity:.9;
 }
-#picks.section::before{top:84px;}
-#about.section::before{bottom:auto;height:96px;}
-.section-head{margin-bottom:26px;max-width:720px;position:relative;}
+#picks.section::before{top:68px;}
+#about.section::before{bottom:auto;height:80px;}
+.section-head{margin-bottom:22px;max-width:720px;position:relative;}
 .kicker{
   position:absolute;left:-60px;top:4px;margin:0;
   width:32px;height:32px;border-radius:50%;
@@ -689,6 +689,29 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
 .card.flash{animation:flash 2s var(--ease);}
 @keyframes flash{0%,45%{box-shadow:0 0 0 3px var(--go);}100%{box-shadow:0 0 0 0 transparent;}}
 .skel-row{height:58px;margin:8px 0;}
+
+/* ───────── 스크롤 줄이기: 처음엔 한 줄만, '더 보기'로 펼치기 ───────── */
+.is-collapsed.limit-4 > :nth-child(n+5):not(.empty){display:none;}
+.is-collapsed.limit-6 > :nth-child(n+7):not(.empty){display:none;}
+.is-collapsed.limit-10 > :nth-child(n+11):not(.empty){display:none;}
+.is-collapsed.limit-0 > *{display:none;}
+.more-row[hidden]{display:none !important;}
+.more-toggle{margin-top:26px;}
+.more-toggle + .more-row{margin-top:12px;}
+.more-toggle .btn-lg{height:44px;font-size:14.5px;min-width:160px;}
+#about .more-toggle{justify-content:flex-start;margin-top:0;}
+@media (max-width:640px){
+  /* 모바일: 사진 카드는 옆으로 넘기기 */
+  #recResults, #festivalResults, #archResults, #kids .link-tiles{
+    grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:80%;gap:14px;
+    overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-right:-16px;padding-right:16px;
+  }
+  #recResults::-webkit-scrollbar, #festivalResults::-webkit-scrollbar, #archResults::-webkit-scrollbar, #kids .link-tiles::-webkit-scrollbar{display:none;}
+  #recResults > *, #festivalResults > *, #archResults > *, #kids .link-tiles > *{scroll-snap-align:start;}
+  #recResults.is-collapsed > :nth-child(n), #festivalResults.is-collapsed > :nth-child(n), #archResults.is-collapsed > :nth-child(n){display:flex;}
+  #recResults > .empty, #festivalResults > .empty, #archResults > .empty{grid-column:auto;width:calc(100vw - 66px);}
+  #kids .link-tile{min-height:150px;}
+}
 </style>
 </head>
 <body>
@@ -3828,7 +3851,7 @@ const I18N = {
   '랜덤 나들이 뽑기':'Random trip picker', '닫기':'Close', '오늘의 랜덤 나들이':'Today’s random trip', '두구두구…':'Drumroll…',
   '다시 굴리기':'Roll again', '가보자고!':'Let’s go!',
   // 시·도
-  '서울':'Seoul', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '역을 누르면 그 지역으로 맞춰드려요':'Tap a station to set your region', '지역 노선도':'Region route map', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
+  '서울':'Seoul', '접기':'Show less', '자세히 보기':'Show details', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '역을 누르면 그 지역으로 맞춰드려요':'Tap a station to set your region', '지역 노선도':'Region route map', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
   '전북':'Jeonbuk', '경북':'Gyeongbuk', '대구':'Daegu', '울산':'Ulsan', '광주':'Gwangju', '전남':'Jeonnam', '경남':'Gyeongnam', '부산':'Busan', '제주':'Jeju',
   '경기도':'Gyeonggi-do', '강원도':'Gangwon-do', '충청북도':'Chungcheongbuk-do', '충청남도':'Chungcheongnam-do', '경상북도':'Gyeongsangbuk-do',
   '경상남도':'Gyeongsangnam-do', '전라북도':'Jeollabuk-do', '전라남도':'Jeollanam-do', '제주도':'Jeju-do',
@@ -4013,6 +4036,53 @@ document.querySelectorAll('.route-map [data-station]').forEach(g=>{
   g.addEventListener('click', go);
   g.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
 });
+
+/* ---------------- 스크롤 줄이기: 처음엔 한 줄만 보여주고 '더 보기'로 펼치기 ---------------- */
+(function collapsibleLists(){
+  const mobile = window.matchMedia('(max-width:640px)');
+  const LISTS = [
+    { el:'#recResults',      limit:4,  swipe:true },
+    { el:'#festivalResults', limit:4,  swipe:true, loader:'festivalMore' },
+    { el:'#foodResults',     limit:10, loader:'foodMore' },
+    { el:'#archResults',     limit:4,  swipe:true },
+    { el:'#cards',           limit:6 },
+    { el:'#savedList',       limit:4 },
+    { el:'#about .about-grid', limit:0, label:'자세히 보기' },
+  ];
+  const countItems = (box)=> [...box.children].filter(c=> !c.matches('.empty, .skeleton, .skel-row, .saved-empty, .hint, .more-toggle')).length;
+  LISTS.forEach(cfg=>{
+    const box = document.querySelector(cfg.el);
+    if(!box) return;
+    box.classList.add('collapsible', 'is-collapsed', 'limit-' + cfg.limit);
+    const row = document.createElement('div');
+    row.className = 'more-row more-toggle';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-lg ghost';
+    row.appendChild(btn);
+    if(cfg.limit === 0) box.before(row); else box.after(row);
+    const loader = cfg.loader && document.getElementById(cfg.loader);
+    const update = ()=>{
+      const swipe = cfg.swipe && mobile.matches;
+      const collapsed = box.classList.contains('is-collapsed');
+      const extra = countItems(box) - cfg.limit;
+      row.hidden = swipe || extra <= 0;
+      btn.textContent = collapsed ? (cfg.label || `${extra}개 더 보기`) : '접기';
+      btn.setAttribute('aria-expanded', String(!collapsed));
+      if(loader) loader.hidden = collapsed && !swipe && extra > 0;
+    };
+    btn.addEventListener('click', ()=>{
+      const nowCollapsed = box.classList.toggle('is-collapsed');
+      update();
+      if(nowCollapsed) box.closest('section')?.scrollIntoView({ block:'start' });
+    });
+    new MutationObserver(update).observe(box, { childList:true });
+    mobile.addEventListener?.('change', update);
+    update();
+  });
+  // 랜덤 뽑기 '가보자고!'는 지역 탐색 카드로 이동하므로 먼저 펼쳐둡니다
+  document.getElementById('goBtn')?.addEventListener('click', ()=> document.getElementById('cards')?.classList.remove('is-collapsed'), true);
+})();
 </script>
 </body>
 </html>
