@@ -610,6 +610,8 @@ dialog.sheet[open]{animation:sheetIn .35s var(--ease);}
   font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--sec);
 }
 .arch-by span{font-size:12px;font-weight:600;color:var(--ink-dim);font-variant-numeric:tabular-nums;}
+.arch-award{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin:-6px 0 12px;padding:4px 9px;border-radius:7px;font-size:12.5px;font-weight:700;line-height:1.35;color:var(--gold);background:color-mix(in srgb, var(--gold) 12%, transparent);}
+.arch-award svg{width:14px;height:14px;flex:none;}
 .arch-name{font-size:19px;font-weight:800;letter-spacing:-.04em;line-height:1.3;margin:0 0 4px;color:var(--heading);}
 .arch-ko{font-size:13px;color:var(--ink-dim);margin:0 0 2px;}
 .arch-note{font-size:14px;line-height:1.6;margin:10px 0 0;color:var(--ink);}
@@ -879,7 +881,7 @@ a.rank-body:hover .rank-name span{text-decoration:underline;text-underline-offse
     <div class="section-head">
       <p class="kicker" aria-hidden="true">ARCHITECTURE</p>
       <h2 class="section-title">건축가의 공간</h2>
-      <p class="section-desc">자하 하디드, 안도 다다오, 이타미 준, 김수근… 이름난 건축가가 설계했고 직접 가볼 수 있는 곳만 모았어요.</p>
+      <p class="section-desc">이름난 건축가의 작품과 국내외 건축상을 받은 곳 중에서 직접 가볼 수 있는 곳만 모았어요.</p>
     </div>
     <div class="theme-chips" id="archFilter"></div>
     <div class="cards" id="archResults"></div>
@@ -1562,23 +1564,35 @@ try {
 
 // 런타임에 실제로 화면에 쓰이는 명소 배열. 시드 데이터로 시작해서,
 // Supabase 연동이 되어 있으면 커뮤니티가 추가한 명소를 여기에 합칩니다.
-/* ---------------- 건축가의 공간 (유명 건축가가 설계한, 방문 가능한 건축물) ---------------- */
+/* ---------------- 건축가의 공간 (유명 건축가가 설계했거나 건축상을 받은, 방문 가능한 건축물) ---------------- */
 const ARCH_SPOTS = [
   {id:'arch_ddp', city:'c1_중구', name:'동대문디자인플라자(DDP)', nameEn:'Dongdaemun Design Plaza (DDP)', architect:'자하 하디드', architectEn:'Zaha Hadid', year:2014, address:'서울 중구 을지로 281', note:'곡선만으로 이어진 비정형 외피, 밤에 더 멋져요', noteEn:'A seamless curving shell — even better at night'},
-  {id:'arch_leeum', city:'c1_용산구', name:'리움미술관', nameEn:'Leeum Museum of Art', architect:'마리오 보타·장 누벨·렘 콜하스', architectEn:'Mario Botta, Jean Nouvel & Rem Koolhaas', year:2004, address:'서울 용산구 이태원로55길 60-16', note:'세 거장의 건물이 한 미술관 안에', noteEn:'Three masters, one museum'},
-  {id:'arch_amore', city:'c1_용산구', name:'아모레퍼시픽 본사', nameEn:'Amorepacific Headquarters', architect:'데이비드 치퍼필드', architectEn:'David Chipperfield', year:2017, address:'서울 용산구 한강대로 100', note:'달항아리를 닮은 큐브, 1층 아트리움과 미술관 개방', noteEn:'A moon-jar-inspired cube; the atrium and museum are open'},
-  {id:'arch_ecc', city:'c1_서대문구', name:'이화여대 ECC', nameEn:'Ewha Campus Complex (ECC)', architect:'도미니크 페로', architectEn:'Dominique Perrault', year:2008, address:'서울 서대문구 이화여대길 52', note:'땅을 갈라 만든 지하 캠퍼스와 거대한 계단', noteEn:'A campus carved into the ground, with a grand stair valley'},
+  {id:'arch_mmcaseoul',city:'c1_종로구',name:'국립현대미술관 서울관',nameEn:'MMCA Seoul',architect:'민현준',architectEn:'Min Hyun-jun',year:2013,address:'서울 종로구 삼청로 30',award:'2014 한국건축문화대상 대상',awardEn:'2014 Korean Architecture Awards, Grand Prize',note:'담장 없이 마당과 골목으로 열린 미술관',noteEn:'A museum without walls, open to courtyards and alleys'},
+  {id:'arch_leeum', city:'c1_용산구', name:'리움미술관', nameEn:'Leeum Museum of Art', architect:'마리오 보타·장 누벨·렘 콜하스', architectEn:'Mario Botta, Jean Nouvel & Rem Koolhaas', year:2004, address:'서울 용산구 이태원로55길 60-16', award:'2005 서울시 건축상 대상', awardEn:'2005 Seoul Architecture Award, Grand Prize', note:'세 거장의 건물이 한 미술관 안에', noteEn:'Three masters, one museum'},
+  {id:'arch_lgarts',city:'c1_강서구',name:'LG아트센터 서울',nameEn:'LG Arts Center Seoul',architect:'안도 다다오',architectEn:'Tadao Ando',year:2022,address:'서울 강서구 마곡중앙로 136',award:'2023 서울시 건축상 대상',awardEn:'2023 Seoul Architecture Award, Grand Prize',note:'노출 콘크리트 튜브 통로, 공연이 없어도 둘러보기 좋아요',noteEn:'A concrete tube passage worth a walk even without a show'},
+  {id:'arch_amore', city:'c1_용산구', name:'아모레퍼시픽 본사', nameEn:'Amorepacific Headquarters', architect:'데이비드 치퍼필드', architectEn:'David Chipperfield', year:2017, address:'서울 용산구 한강대로 100', award:'2019 서울시 건축상 최우수상', awardEn:'2019 Seoul Architecture Award, Excellence Award', note:'달항아리를 닮은 큐브, 1층 아트리움과 미술관 개방', noteEn:'A moon-jar-inspired cube; the atrium and museum are open'},
+  {id:'arch_oilbase',city:'c1_마포구',name:'문화비축기지',nameEn:'Oil Tank Culture Park',architect:'백정열·허서구·이재삼',architectEn:'Baek Jeong-yeol, Heo Seo-gu & Lee Jae-sam',year:2017,address:'서울 마포구 증산로 87',award:'2019 서울시 건축상 대상',awardEn:'2019 Seoul Architecture Award, Grand Prize',note:'옛 석유탱크를 공연장과 전시장으로 바꾼 공원',noteEn:'Old oil tanks turned into stages and galleries'},
+  {id:'arch_ecc', city:'c1_서대문구', name:'이화여대 ECC', nameEn:'Ewha Campus Complex (ECC)', architect:'도미니크 페로', architectEn:'Dominique Perrault', year:2008, address:'서울 서대문구 이화여대길 52', award:'2008 서울시 건축상 대상', awardEn:'2008 Seoul Architecture Award, Grand Prize', note:'땅을 갈라 만든 지하 캠퍼스와 거대한 계단', noteEn:'A campus carved into the ground, with a grand stair valley'},
   {id:'arch_songeun', city:'c1_강남구', name:'송은 (ST송은빌딩)', nameEn:'SongEun Art Space', architect:'헤르조그 & 드 뫼롱', architectEn:'Herzog & de Meuron', year:2021, address:'서울 강남구 도산대로 441', note:'뾰족한 삼각 실루엣의 콘크리트 미술관', noteEn:'A sharp, triangular concrete art space'},
   {id:'arch_lotte', city:'c1_송파구', name:'롯데월드타워', nameEn:'Lotte World Tower', architect:'KPF', architectEn:'Kohn Pedersen Fox (KPF)', year:2017, address:'서울 송파구 올림픽로 300', note:'붓끝을 닮은 555m 초고층, 서울스카이 전망대', noteEn:'A 555 m brush-tip tower with the Seoul Sky deck'},
   {id:'arch_cityhall', city:'c1_중구', name:'서울시청 신청사', nameEn:'Seoul City Hall', architect:'유걸', architectEn:'Yoo Kerl', year:2012, address:'서울 중구 세종대로 110', note:'파도처럼 덮친 유리 처마와 실내 수직정원', noteEn:'A wave-like glass canopy and indoor vertical garden'},
+  {id:'arch_yoondongju',city:'c1_종로구',name:'윤동주문학관',nameEn:'Yun Dong-ju Literature Museum',architect:'이소진',architectEn:'Lee So-jin',year:2012,address:'서울 종로구 창의문로 119',award:'2014 서울시 건축상 대상',awardEn:'2014 Seoul Architecture Award, Grand Prize',note:'버려진 물탱크를 비워 만든 전시실',noteEn:'Exhibition rooms carved from abandoned water tanks'},
+  {id:'arch_gahoe',city:'c1_종로구',name:'가회동성당',nameEn:'Gahoe-dong Catholic Church',architect:'우대성',architectEn:'Woo Dae-sung',address:'서울 종로구 북촌로 57',award:'2014 한국건축문화대상 대상',awardEn:'2014 Korean Architecture Awards, Grand Prize',note:'북촌 골목에 한옥과 현대 건물이 나란히 선 성당',noteEn:'Hanok and modern wings side by side in Bukchon'},
   {id:'arch_space', city:'c1_종로구', name:'아라리오뮤지엄 인 스페이스 (구 공간사옥)', nameEn:'Arario Museum in Space', architect:'김수근', architectEn:'Kim Swoo-geun', year:1971, address:'서울 종로구 율곡로 83', note:'담쟁이 덮인 벽돌 건물, 한국 현대건축의 상징', noteEn:'Ivy-clad brick icon of Korean modern architecture'},
   {id:'arch_kyungdong', city:'c1_중구', name:'경동교회', nameEn:'Kyungdong Church', architect:'김수근', architectEn:'Kim Swoo-geun', year:1981, address:'서울 중구 장충단로 204', note:'기도하는 손을 닮은 벽돌 교회', noteEn:'A brick church shaped like praying hands'},
   {id:'arch_arko', city:'c1_종로구', name:'아르코미술관', nameEn:'Arko Art Center', architect:'김수근', architectEn:'Kim Swoo-geun', year:1979, address:'서울 종로구 동숭길 3', note:'대학로 붉은 벽돌 건축의 시작', noteEn:'Where Daehangno’s red-brick look began'},
   {id:'arch_whanki', city:'c1_종로구', name:'환기미술관', nameEn:'Whanki Museum', architect:'우규승', architectEn:'Kyu Sung Woo', year:1992, address:'서울 종로구 자하문로40길 63', note:'부암동 언덕에 앉은 고요한 미술관', noteEn:'A quiet museum on the Buam-dong hillside'},
   {id:'arch_snumoa', city:'c1_관악구', name:'서울대학교미술관', nameEn:'Seoul National University Museum of Art', architect:'렘 콜하스 (OMA)', architectEn:'Rem Koolhaas (OMA)', year:2006, address:'서울 관악구 관악로 1', note:'경사지에 떠 있는 듯한 유리 상자', noteEn:'A glass box that seems to float over the slope'},
+  {id:'arch_bukseoul',city:'c1_노원구',name:'서울시립 북서울미술관',nameEn:'Buk-Seoul Museum of Art',architect:'삼우종합건축',architectEn:'Samoo Architects',year:2013,address:'서울 노원구 동일로 1238',award:'2013 서울시 건축상 대상',awardEn:'2013 Seoul Architecture Award, Grand Prize',note:'공원과 이어진 낮은 미술관, 아이와 가기 좋아요',noteEn:'A low museum flowing into a park; great with kids'},
+  {id:'arch_hannae',city:'c1_노원구',name:'한내지혜의숲',nameEn:'Hannae Forest of Wisdom',architect:'장윤규·신창훈 (운생동)',architectEn:'Chang Yoon-gyoo & Shin Chang-hoon (Unsangdong)',year:2017,address:'서울 노원구 마들로 86',award:'2017 서울시 건축상 대상',awardEn:'2017 Seoul Architecture Award, Grand Prize',note:'책장이 벽과 지붕까지 이어지는 공원 속 작은 도서관',noteEn:'A small park library where the shelves climb into the roof'},
+  {id:'arch_gusan',city:'c1_은평구',name:'구산동도서관마을',nameEn:'Gusan-dong Library Village',architect:'최재원',architectEn:'Choi Jae-won',year:2015,address:'서울 은평구 구산동',award:'2016 서울시 건축상 대상',awardEn:'2016 Seoul Architecture Award, Grand Prize',note:'오래된 다세대주택 여러 채를 이어 만든 도서관',noteEn:'A library stitched together from old row houses'},
+  {id:'arch_jinkwan',city:'c1_은평구',name:'진관사 한문화체험관',nameEn:'Jingwansa Korean Culture Hall',architect:'조정구',architectEn:'Cho Jung-goo',address:'서울 은평구 진관길 73',award:'2024 한국건축문화대상 한옥 대상',awardEn:'2024 Korean Architecture Awards, Hanok Grand Prize',note:'북한산 자락 진관사 안에 새로 지은 한옥',noteEn:'A new hanok inside Jingwansa temple at the foot of Bukhansan'},
+  {id:'arch_audeum',city:'c1_서초구',name:'오디움',nameEn:'Audeum',architect:'쿠마 겐고',architectEn:'Kengo Kuma',year:2024,address:'서울 서초구 헌릉로8길 6',award:'2025 베르사유 건축상 박물관 부문 특별상',awardEn:'2025 Prix Versailles, Museums – Special Prize',note:'알루미늄 파이프 2만 개로 감싼 오디오 박물관 (사전 예약제)',noteEn:'An audio museum wrapped in 20,000 aluminum pipes (booking required)'},
   {id:'arch_mmca', city:'c31_과천시', name:'국립현대미술관 과천관', nameEn:'MMCA Gwacheon', architect:'김태수', architectEn:'Kim Tai Soo', year:1986, address:'경기 과천시 광명로 313', note:'산성처럼 둘러싼 화강석 미술관과 백남준 다다익선', noteEn:'Fortress-like granite museum around Nam June Paik’s tower'},
+  {id:'arch_sejonglib',city:'sejong',name:'국립세종도서관',nameEn:'National Library of Korea, Sejong',architect:'삼우종합건축',architectEn:'Samoo Architects',year:2013,address:'세종 다솜3로 48',award:'2014 한국건축문화대상 대상',awardEn:'2014 Korean Architecture Awards, Grand Prize',note:'책장을 펼친 듯한 곡선 지붕',noteEn:'A roof curved like an open book'},
   {id:'arch_mimesis', city:'paju', name:'미메시스 아트 뮤지엄', nameEn:'Mimesis Art Museum', architect:'알바루 시자', architectEn:'Álvaro Siza', year:2009, address:'경기 파주시 문발로 253', note:'파주출판도시의 하얀 곡면 미술관', noteEn:'A white, curving museum in Paju Book City'},
   {id:'arch_san', city:'c32_원주시', name:'뮤지엄 산', nameEn:'Museum SAN', architect:'안도 다다오', architectEn:'Tadao Ando', year:2013, address:'강원 원주시 지정면 오크밸리2길 260', note:'물의 정원과 돌의 정원, 제임스 터렐관까지', noteEn:'Water and stone gardens, plus the James Turrell wing'},
+  {id:'arch_hanokheritage',city:'c32_영월군',name:'더한옥헤리티지',nameEn:'The Hanok Heritage',architect:'조정일',architectEn:'Cho Chung-il',year:2023,address:'강원 영월군 남면 문개실길 37-200',award:'2024 베르사유 건축상 호텔 부문 세계 1위',awardEn:'2024 Prix Versailles, Hotels – World Title',note:'강이 휘감아 도는 터에 지은 한옥 호텔, 투숙객 위주로 둘러볼 수 있어요',noteEn:'A hanok hotel on a river bend; best seen as a guest'},
   {id:'arch_bonte', city:'seogwipo', name:'본태박물관', nameEn:'Bonte Museum', architect:'안도 다다오', architectEn:'Tadao Ando', year:2012, address:'제주 서귀포시 안덕면 산록남로762번길 69', note:'노출콘크리트와 전통 담장이 만나는 곳', noteEn:'Exposed concrete meets traditional stone walls'},
   {id:'arch_yumin', city:'seogwipo', name:'유민미술관', nameEn:'Yumin Art Nouveau Collection', architect:'안도 다다오', architectEn:'Tadao Ando', year:2008, address:'제주 서귀포시 성산읍 섭지코지로 107', note:'성산일출봉을 액자처럼 담는 동선', noteEn:'A path that frames Seongsan Ilchulbong like a painting'},
   {id:'arch_glasshouse', city:'seogwipo', name:'글라스하우스', nameEn:'Glass House', architect:'안도 다다오', architectEn:'Tadao Ando', year:2008, address:'제주 서귀포시 성산읍 섭지코지로', note:'섭지코지 바다를 향해 열린 유리 건물', noteEn:'Glass pavilion opening onto the Seopjikoji sea'},
@@ -1586,6 +1600,7 @@ const ARCH_SPOTS = [
   {id:'arch_podo', city:'seogwipo', name:'포도호텔', nameEn:'Podo Hotel', architect:'이타미 준', architectEn:'Itami Jun', year:2001, address:'제주 서귀포시 안덕면 산록남로 863', note:'포도송이와 제주 초가를 닮은 지붕', noteEn:'Roofs like grape clusters and Jeju thatched houses'},
   {id:'arch_acc', city:'c5_동구', name:'국립아시아문화전당', nameEn:'Asia Culture Center (ACC)', architect:'우규승', architectEn:'Kyu Sung Woo', year:2015, address:'광주 동구 문화전당로 38', note:'땅 아래로 내려앉은 거대한 문화 광장', noteEn:'A vast cultural plaza sunk below ground'},
   {id:'arch_bcc', city:'c6_해운대구', name:'영화의전당', nameEn:'Busan Cinema Center', architect:'쿱 힘멜블라우', architectEn:'Coop Himmelb(l)au', year:2011, address:'부산 해운대구 수영강변대로 120', note:'세계 최장 캔틸레버 지붕, 밤엔 LED 천장', noteEn:'A record-long cantilever roof with an LED ceiling'},
+  {id:'arch_jurye',city:'c6_사상구',name:'주례열린도서관',nameEn:'Jurye Open Library',architect:'정대교·이동규',architectEn:'Jeong Dae-gyo & Lee Dong-gyu',address:'부산 사상구 주례동',award:'2025 한국건축문화대상 대상',awardEn:'2025 Korean Architecture Awards, Grand Prize',note:'가파른 비탈을 계단형 테라스와 경사로로 풀어낸 도서관',noteEn:'A steep slope turned into terraces and ramps'},
   {id:'arch_sayuwon', city:'c4_군위군', name:'사유원', nameEn:'Sayuwon', architect:'승효상·알바루 시자', architectEn:'Seung H-Sang & Álvaro Siza', year:2021, address:'대구 군위군 부계면 치산효령로 1150', note:'수목원 속 건축 산책, 예약제', noteEn:'An architectural walk through an arboretum (booking required)'},
 ];
 const ARCH_EN = Object.fromEntries(ARCH_SPOTS.map(a=> [a.architect, a.architectEn]));
@@ -3673,15 +3688,16 @@ function renderArchitecture(){
   const en = LANG === 'en';
   const regionOf = (a)=> (cityMeta(a.city) || {}).regionName || '';
   const regions = [...new Set(ARCH_SPOTS.map(regionOf))];
-  bar.innerHTML = [['all', '전체'], ...regions.map(r=> [r, r])].map(([k, label])=>
+  bar.innerHTML = [['all', '전체'], ['award', '수상작'], ...regions.map(r=> [r, r])].map(([k, label])=>
     `<button type="button" class="chip ${archState.region===k?'active':''}" data-arch-region="${k}">${label}</button>`).join('');
   bar.querySelectorAll('[data-arch-region]').forEach(b=> b.addEventListener('click', ()=>{ archState.region = b.dataset.archRegion; renderArchitecture(); }));
-  const list = ARCH_SPOTS.filter(a=> archState.region === 'all' || regionOf(a) === archState.region);
+  const list = ARCH_SPOTS.filter(a=> archState.region === 'all' || (archState.region === 'award' ? !!a.award : regionOf(a) === archState.region));
   box.innerHTML = list.map(a=>{
     SPOT_INDEX[a.id] = { id:a.id, name:a.name, theme:'architecture', address:a.address };
     return `
     <div class="card arch-card" data-no-i18n>
-      <p class="arch-by">${escapeHtml(en ? a.architectEn : a.architect)}<span>${a.year}</span></p>
+      <p class="arch-by">${escapeHtml(en ? a.architectEn : a.architect)}<span>${a.year || ''}</span></p>
+      ${a.award ? `<p class="arch-award"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0V4zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/></svg>${escapeHtml(en ? a.awardEn : a.award)}</p>` : ''}
       <p class="arch-name">${escapeHtml(en ? a.nameEn : a.name)}</p>
       ${en ? `<p class="arch-ko">${escapeHtml(a.name)}</p>` : ''}
       <p class="card-meta">${escapeHtml(a.address)}</p>
@@ -3845,13 +3861,13 @@ const I18N = {
   '추천 여행지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.':'Couldn’t load picks. Please try again shortly.', '광주·전남':'Gwangju · Jeonnam',
   // 건축
   '건축':'Architecture', '건축 명소':'Architecture', '건축가의 공간':'Architect-designed places',
-  '자하 하디드, 안도 다다오, 이타미 준, 김수근… 이름난 건축가가 설계했고 직접 가볼 수 있는 곳만 모았어요.':'Zaha Hadid, Tadao Ando, Itami Jun, Kim Swoo-geun… buildings by renowned architects that you can actually visit.',
+  '이름난 건축가의 작품과 국내외 건축상을 받은 곳 중에서 직접 가볼 수 있는 곳만 모았어요.':'Works by renowned architects and award-winning buildings in Korea, all open to visit.',
   '#건축여행':'#architecture', '#건축가의공간':'#archdaily',
   // 랜덤 뽑기
   '랜덤 나들이 뽑기':'Random trip picker', '닫기':'Close', '오늘의 랜덤 나들이':'Today’s random trip', '두구두구…':'Drumroll…',
   '다시 굴리기':'Roll again', '가보자고!':'Let’s go!',
   // 시·도
-  '서울':'Seoul', '접기':'Show less', '자세히 보기':'Show details', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '역을 누르면 그 지역으로 맞춰드려요':'Tap a station to set your region', '지역 노선도':'Region route map', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
+  '서울':'Seoul', '수상작':'Award winners', '접기':'Show less', '자세히 보기':'Show details', '강릉':'Gangneung', '전주':'Jeonju', '경주':'Gyeongju', '여수':'Yeosu', '역을 누르면 그 지역으로 맞춰드려요':'Tap a station to set your region', '지역 노선도':'Region route map', '인천':'Incheon', '경기':'Gyeonggi', '강원':'Gangwon', '충남':'Chungnam', '대전':'Daejeon', '세종':'Sejong', '충북':'Chungbuk',
   '전북':'Jeonbuk', '경북':'Gyeongbuk', '대구':'Daegu', '울산':'Ulsan', '광주':'Gwangju', '전남':'Jeonnam', '경남':'Gyeongnam', '부산':'Busan', '제주':'Jeju',
   '경기도':'Gyeonggi-do', '강원도':'Gangwon-do', '충청북도':'Chungcheongbuk-do', '충청남도':'Chungcheongnam-do', '경상북도':'Gyeongsangbuk-do',
   '경상남도':'Gyeongsangnam-do', '전라북도':'Jeollabuk-do', '전라남도':'Jeollanam-do', '제주도':'Jeju-do',
