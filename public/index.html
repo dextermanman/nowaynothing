@@ -1543,30 +1543,13 @@ const SEED_SPOTS = [
   {id:'gaekridancafe', city:'jeonju', name:'객리단길 카페거리', theme:'cafe', weekday:true, weekend:true, rating:4.3, reviews:'7천', popularity:56},
   {id:'dongmyeongdong', city:'gwangjucity', name:'동명동 카페거리', theme:'cafe', weekday:true, weekend:true, rating:4.3, reviews:'9천', popularity:59},
   {id:'daehandawon', city:'c38_보성군', name:'보성 대한다원(녹차밭)', theme:'cafe', weekday:true, weekend:true, rating:4.5, reviews:'1.3만', popularity:64},
-  // 2026-10 추가: 숙소·아이와 함께·카페 (별점은 확인 전이라 비워둠)
-  {weekday:true,weekend:true,id:'stay_ananticove',city:'c6_기장군',name:'아난티 코브',theme:'stay',address:'부산 기장군 기장읍 기장해안로 268-31',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'stay_gurume',city:'c35_안동시',name:'구름에 (안동 고택 리조트)',theme:'stay',address:'경북 안동시 민속촌길 190',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'stay_paradisecity',city:'incheon',name:'파라다이스시티 (영종도)',theme:'stay',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'stay_solbeachyy',city:'c32_양양군',name:'쏠비치 양양',theme:'stay',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'stay_vivaldi',city:'c32_홍천군',name:'소노벨 비발디파크',theme:'stay',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'stay_mona',city:'c32_평창군',name:'모나 용평 (용평리조트)',theme:'stay',rating:null,reviews:null,popularity:60},
+  // 2026-10 추가: 관광공사 API에 없거나(블루보틀·사우스케이프) 카페로 분류되지 않는 곳만 남김. 별점은 확인 전이라 비워둠
   {weekday:true,weekend:true,id:'stay_southcape',city:'c36_남해군',name:'사우스케이프 (남해)',theme:'stay',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'stay_sonocamyeosu',city:'yeosu',name:'소노캄 여수',theme:'stay',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'stay_shillajeju',city:'seogwipo',name:'제주신라호텔 (중문)',theme:'stay',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'kids_csc',city:'c1_종로구',name:'국립어린이과학관',theme:'family',address:'서울 종로구 창경궁로 215',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'kids_ggcm',city:'yongin',name:'경기도어린이박물관',theme:'family',address:'경기 용인시 기흥구 상갈로 6',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'kids_ngcm',city:'c31_동두천시',name:'경기북부어린이박물관',theme:'family',address:'경기 동두천시 평화로2910번길 46',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'kids_legoland',city:'chuncheon',name:'레고랜드 코리아',theme:'family',address:'강원 춘천시 중도동 603',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'kids_kidzania',city:'c1_송파구',name:'키자니아 서울 (직업체험)',theme:'family',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'kids_seoulzoo',city:'c31_과천시',name:'서울대공원 동물원',theme:'family',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'kids_ecorium',city:'c34_서천군',name:'국립생태원',theme:'family',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'museum_gnsm',city:'c31_과천시',name:'국립과천과학관',theme:'museum',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'cafe_bluebottless',city:'c1_성동구',name:'블루보틀 성수 (국내 1호점)',theme:'cafe',address:'서울 성동구 아차산로 7',rating:null,reviews:null,popularity:60},
   {weekday:true,weekend:true,id:'cafe_bluebottlejeju',city:'jejucity',name:'블루보틀 제주',theme:'cafe',address:'제주 제주시 구좌읍 번영로 2133-30',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'cafe_joyang',city:'c2_강화군',name:'조양방직 (옛 방직공장 카페)',theme:'cafe',address:'인천 강화군 강화읍 향나무길5번길 12',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'cafe_park',city:'c6_영도구',name:'피아크 (영도 오션뷰 복합문화공간)',theme:'cafe',address:'부산 영도구 해양로195번길 180',rating:null,reviews:null,popularity:60},
+  {weekday:true,weekend:true,id:'cafe_joyang',city:'c2_강화군',name:'조양방직',theme:'cafe',address:'인천 강화군 강화읍 향나무길5번길 12',rating:null,reviews:null,popularity:60},
+  {weekday:true,weekend:true,id:'cafe_park',city:'c6_영도구',name:'피아크',theme:'cafe',address:'부산 영도구 해양로195번길 180',rating:null,reviews:null,popularity:60},
   {weekday:true,weekend:true,id:'cafe_osulloc',city:'seogwipo',name:'오설록 티뮤지엄',theme:'cafe',address:'제주 서귀포시 안덕면 신화역사로 15',rating:null,reviews:null,popularity:60},
-  {weekday:true,weekend:true,id:'cafe_ikseon',city:'c1_종로구',name:'익선동 한옥 카페거리',theme:'cafe',rating:null,reviews:null,popularity:60},
+  {weekday:true,weekend:true,id:'cafe_ikseon',city:'c1_종로구',name:'익선동 한옥거리',theme:'cafe',rating:null,reviews:null,popularity:60},
 ];
 
 /* ---------------- Supabase 설정 ---------------- */
@@ -1938,6 +1921,7 @@ const TOUR_TYPE_THEME = {
   '28':'activity', '32':'stay', '38':'night', '39':'food',
 };
 
+const KIDS_NAME_RE = /어린이|키즈|유아|아이랑|동물원|대공원|아쿠아리움|아쿠아플라넷|수족관|과학관|체험관|테마파크|레고랜드|키자니아|놀이공원|생태원|공룡/;
 const tourCache = {}; // 같은 도시를 다시 눌러도 재요청 안 하도록 캐시
 
 // 관광공사 법정동 시·도 코드 (지역코드 → 법정동). 기존 지역코드 조회는 행정구역 개편(예: 화성시 만세구)으로
@@ -1949,7 +1933,7 @@ const ldongCache = {};
 function ldongList(sido, type){
   const key = `${sido}|${type}`;
   if(!ldongCache[key]){
-    const qs = new URLSearchParams({ lDongRegnCd: sido, contentTypeId: type, rows: type === '12' ? '1800' : '700', arrange:'Q' });
+    const qs = new URLSearchParams({ lDongRegnCd: sido, contentTypeId: type, rows: (type === '12' || type === '32') ? '1800' : '700', arrange:'Q' });
     ldongCache[key] = fetch(`/api/tour-search?${qs}`).then(r=> r.json()).then(d=> (d && d.items) || []).catch(()=> []);
     ldongCache[key].then(list=>{ if(!list.length) delete ldongCache[key]; });
   }
@@ -1961,7 +1945,8 @@ async function fetchByLdong(m, type, limit, fallback){
   if(!sido) return fallback();
   const list = await ldongList(sido, type);
   const mine = !m.sgg ? list : list.filter(it=> String(it.address || '').split(/\s+/).slice(1, 3).includes(m.sgg));
-  return mine.length ? mine.slice(0, limit) : fallback();
+  // 상위 limit개에 더해, 뒤로 밀린 아이 관련 장소(레고랜드 등)도 함께 가져옵니다
+  return mine.length ? mine.slice(0, limit).concat(mine.slice(limit).filter(it=> KIDS_NAME_RE.test(String(it.name || '')))) : fallback();
 }
 
 async function loadTourSpots(cityId){
@@ -1992,7 +1977,7 @@ async function loadTourSpots(cityId){
     fetchByLdong(m, '12', 60, ()=> fetchOne(buildUrl({ rows:'60', contentTypeId:'12', arrange:'Q' }))), // 관광지
     fetchByLdong(m, '14', 40, ()=> fetchOne(buildUrl({ rows:'30', contentTypeId:'14', arrange:'Q' }))), // 문화시설(미술관·공연장·문화센터)
     fetchOne(buildUrl({ rows:'18', arrange:'Q' })),
-    fetchOne(buildUrl({ rows:'12', contentTypeId:'32' })), // 32 = 숙박
+    fetchByLdong(m, '32', 40, ()=> fetchOne(buildUrl({ rows:'40', contentTypeId:'32' }))), // 32 = 숙박 (법정동 방식: 지역코드 방식은 리조트가 많이 빠짐)
     fetchCamping(m),
     festivalsForCity(m),                                    // 진행중·예정 축제 (전국 목록에서 주소로 거름)
     fetchMuseums(m),                                        // 전국 박물관·미술관 표준데이터
@@ -2156,6 +2141,10 @@ async function loadTourSpots(cityId){
   // 네이버 리뷰 많은 순 맛집 합치기
   const naverFoods = await naverFoodPromise;
   naverFoods.forEach(f=> spots.push(naverFoodToSpot(f, cityId)));
+
+  // 아이와 가기 좋은 곳은 이름으로 골라 키즈 테마에도 보이게 (관광공사 분류에는 키즈 항목이 따로 없어요)
+  const KIDS_THEMES = new Set(['nature','culture','activity','museum','camping','night']);
+  spots.forEach(s=>{ if(KIDS_THEMES.has(s.theme) && KIDS_NAME_RE.test(String(s.name || '')) && !/주차장|의원|병원/.test(String(s.name || ''))) s.kids = true; });
 
   tourCache[cityId] = spots;
   return spots;
@@ -2439,6 +2428,7 @@ function spotCardHTML(s){
         ${s.badge==='bbcs' ? '<span class="badge source-bbcs">흑백요리사</span>' : ''}
         ${s.fromCamping ? '<span class="badge" style="background:#7aa86a22;color:#7aa86a;">고캠핑</span>' : (s.fromTour && !s.fromNaver ? '<span class="badge" style="background:#4fae7a22;color:var(--jade);">관광공사</span>' : '')}
         ${s.fromNaver ? '<span class="badge hot">리뷰 많은 집</span>' : ''}
+        ${s.kids && s.theme !== 'family' ? '<span class="badge">아이와 함께</span>' : ''}
         ${s.architect ? `<span class="badge hot">설계 ${escapeHtml(s.architect)}</span>` : ''}
         ${s.induty ? `<span class="badge" style="background:#5b9bd522;color:#5b9bd5;">${escapeHtml(s.induty)}</span>` : ''}
         ${festivalBadge(s)}
@@ -2543,7 +2533,7 @@ function applyFilters(list){
   let out = list;
   // 소아과는 놀거리와 성격이 달라, 테마를 직접 골랐을 때만 보여줍니다.
   if(currentTheme === 'all') out = out.filter(s=>s.theme !== 'clinic' && s.theme !== 'parking');
-  if(currentTheme !== 'all') out = out.filter(s=>s.theme===currentTheme);
+  if(currentTheme !== 'all') out = out.filter(s=> s.theme===currentTheme || (currentTheme==='family' && s.kids));
   return out;
 }
 
